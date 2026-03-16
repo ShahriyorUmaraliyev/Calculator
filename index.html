@@ -4,32 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Kalkulyator</title>
-
-  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Kalkulyator">
   <meta name="theme-color" content="#1a1a2e">
-
-  <!-- Apple ikonkalar -->
   <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
-
-  <!-- Android / Chrome -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <meta name="application-name" content="Kalkulyator">
   <meta name="msapplication-TileColor" content="#1a1a2e">
   <meta name="msapplication-TileImage" content="/icon-192.png">
-
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html {
+      height: 100%;
+      height: -webkit-fill-available;
+      overflow: hidden;
+      background: #1a1a2e;
+    }
+    html.light-html { background: #e8eaf6; }
+
     body {
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
+      /* dvh — iOS Safari toolbar ni hisobga oladi */
+      height: 100vh;
+      height: 100dvh;
+      height: -webkit-fill-available;
+      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: auto;
+      position: fixed;
+      width: 100%;
+      top: 0; left: 0; right: 0; bottom: 0;
       font-family: -apple-system, 'Helvetica Neue', sans-serif;
       transition: background 0.4s ease;
     }
@@ -86,90 +95,151 @@
       bottom:-80px; right:-80px; pointer-events:none;
     }
     .calculator {
-      width:340px;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      height: -webkit-fill-available;
+      max-height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       background: var(--calc-bg);
-      backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
-      border-radius:44px; border:1px solid var(--border-col);
-      padding:20px 18px 32px;
-      box-shadow: var(--shadow), inset 0 1px 0 var(--shine);
-      position:relative; z-index:1;
+      backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+      border-radius: 0;
+      border: none;
+      padding: env(safe-area-inset-top, 20px) 18px env(safe-area-inset-bottom, 20px);
+      box-shadow: none;
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
       transition: background 0.4s, box-shadow 0.4s;
     }
     .glass-shine {
-      position:absolute; top:0; left:0; right:0; height:50%;
-      border-radius:44px 44px 0 0;
-      background:linear-gradient(180deg, var(--shine) 0%, transparent 100%);
+      position:absolute; top:0; left:0; right:0; height: 30%;
+      background:linear-gradient(180deg,var(--shine) 0%,transparent 100%);
       pointer-events:none;
     }
     .author {
-      position:absolute;
-      bottom:10px; left:0; right:0;
-      text-align:center;
-      font-size:10px; font-weight:400;
-      letter-spacing:0.5px;
-      opacity:0.22;
-      color:var(--text-main);
-      pointer-events:none;
-      transition:color 0.3s;
+      text-align:center; font-size:10px; font-weight:400;
+      letter-spacing:0.5px; opacity:0.22; color:var(--text-main);
+      pointer-events:none; transition:color 0.3s;
+      padding-bottom: 6px;
     }
-    .top-bar { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+    .top-bar {
+      display:flex; align-items:center; gap:8px;
+      margin-bottom: 8px;
+      padding-top: 8px;
+      flex-shrink: 0;
+    }
     .mode-bar { display:flex; background:var(--mode-bar-bg); border-radius:20px; padding:3px; flex:1; }
     .tab {
-      flex:1; padding:6px 0; border:none; cursor:pointer;
-      border-radius:16px; font-size:12px; font-weight:500;
+      flex:1; padding:7px 0; border:none; cursor:pointer;
+      border-radius:16px; font-size:13px; font-weight:500;
       color:var(--tab-text); background:transparent; transition:all 0.2s;
     }
     .tab.active { background:var(--tab-active-bg); color:var(--tab-active-text); }
     .theme-btn {
-      width:34px; height:34px; border-radius:50%; border:none; cursor:pointer;
-      font-size:16px; display:flex; align-items:center; justify-content:center;
+      width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
+      font-size:17px; display:flex; align-items:center; justify-content:center;
       background:var(--mode-bar-bg); color:var(--tab-active-text);
       transition:transform 0.3s, background 0.3s; flex-shrink:0;
     }
     .theme-btn:active { transform:scale(0.85) rotate(20deg); }
+
+    /* DISPLAY — qolgan bo'sh joyni oladi, lekin tugmalarga joy qoldiradi */
     .display {
-      padding:4px 10px 16px; text-align:right;
-      min-height:110px; display:flex; flex-direction:column;
-      justify-content:flex-end; gap:2px; overflow:hidden;
+      flex: 1;
+      min-height: 0;
+      padding: 8px 16px 16px; text-align: right;
+      display: flex; flex-direction: column;
+      justify-content: flex-end; gap: 4px; overflow: hidden;
     }
     .expr {
-      font-size:17px; font-weight:300; color:var(--expr-color);
-      min-height:22px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-size: clamp(15px, 4vw, 20px);
+      font-weight: 300; color: var(--expr-color);
+      min-height: 24px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      flex-shrink: 0;
     }
     .result {
-      font-weight:200; color:var(--text-main); line-height:1;
-      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-      font-size:72px; transition:font-size 0.1s, color 0.3s;
+      font-weight: 200; color: var(--text-main); line-height: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size: clamp(58px, 16vw, 88px);
+      transition: font-size 0.15s ease, color 0.3s;
+      flex-shrink: 0;
+      text-align: right;
+    }
+    /* Animatsiya faqat span ga — div qimirlamaydi */
+    .result span {
+      display: inline-block;
+      transform-origin: right center;
     }
     @keyframes popIn {
-      0%{transform:scale(0.92);opacity:0.5;} 60%{transform:scale(1.04);} 100%{transform:scale(1);opacity:1;}
+      0%   { opacity: 0.6; transform: scale(0.94); }
+      55%  { opacity: 1;   transform: scale(1.02); }
+      100% { opacity: 1;   transform: scale(1); }
     }
-    .pop { animation:popIn 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-    .buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .pop {
+      animation: popIn 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      transform-origin: right center;
+      display: inline-block;
+      width: 100%;
+      text-align: right;
+    }
+
+    /* TUGMALAR — flex-shrink:0 bilan siqilmaydi, o'z joyini oladi */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(8px, 2.2vw, 12px);
+      padding: 0 0 env(safe-area-inset-bottom, 12px);
+      flex-shrink: 0;
+      flex-shrink: 0;
+    }
     .btn {
-      height:70px; border-radius:50%; border:none; cursor:pointer;
-      font-size:28px; font-weight:400;
-      display:flex; align-items:center; justify-content:center;
-      transition:filter 0.07s, transform 0.07s;
-      user-select:none; outline:none; -webkit-tap-highlight-color:transparent;
+      height: clamp(60px, 22vw, 90px);
+      width: 100%;
+      border-radius: 50%; border: none; cursor: pointer;
+      font-size: clamp(22px, 6.5vw, 34px);
+      font-weight: 400;
+      display: flex; align-items: center; justify-content: center;
+      transition: filter 0.07s, transform 0.07s;
+      user-select: none; outline: none; -webkit-tap-highlight-color: transparent;
     }
-    .btn:active { filter:brightness(0.7); transform:scale(0.93); }
-    .btn-zero { border-radius:35px; grid-column:span 2; justify-content:flex-start; padding-left:24px; }
+    .btn:active { filter: brightness(0.7); transform: scale(0.93); }
+    .btn-zero {
+      border-radius: 999px;
+      grid-column: span 2;
+      justify-content: flex-start;
+      padding-left: clamp(20px, 7vw, 32px);
+    }
     .btn-gray  { background:var(--btn-gray); color:#000; }
     .btn-dark  { background:var(--btn-dark); color:var(--text-main); transition:background 0.3s,color 0.3s,filter 0.07s,transform 0.07s; }
     .btn-orange { background:#ff9500; color:#fff; }
     .btn-orange.op-active { background:#fff; color:#ff9500; }
-    .btn-special { font-size:20px; }
-    .btn-dot { font-size:38px; line-height:1; padding-bottom:4px; }
+    .btn-special { font-size: clamp(16px, 4.5vw, 22px); }
+    .btn-dot { font-size: clamp(30px, 9vw, 44px); line-height:1; padding-bottom:4px; }
     @keyframes fadeSlide { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
     .panel { animation:fadeSlide 0.2s ease forwards; }
+
+    /* Hisob paneli flex column */
+    #panel-calc {
+      display: flex; flex-direction: column; flex: 1; min-height: 0;
+    }
+
+    /* Foiz va valyuta paneli scroll */
+    #panel-pct, #panel-cur {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      flex: 1;
+      padding-bottom: 16px;
+    }
     .s-input, .s-select {
       padding:8px 10px; border-radius:12px;
       border:1px solid var(--input-border);
       background:var(--input-bg); color:var(--input-text);
       font-size:14px; outline:none;
       transition:background 0.3s,color 0.3s,border-color 0.2s;
-      -webkit-appearance:none;
+      -webkit-appearance:none; appearance:none;
     }
     .s-input:focus { border-color:#ff9500; }
     .s-select { flex:0 0 95px; font-size:13px; cursor:pointer; }
@@ -203,11 +273,13 @@
       text-align:right; padding:0 10px 10px; min-height:60px; transition:color 0.3s;
     }
     .cur-status {
-      font-size:11px; text-align:center; padding:4px 0 8px; color:var(--label-color); transition:color 0.3s;
+      font-size:11px; text-align:center; padding:4px 0 6px;
+      color:var(--label-color); transition:color 0.3s;
     }
     .cur-status.loading { color:#ff9500; }
     .cur-status.ok      { color:#34c759; }
     .cur-status.warn    { color:#ff9500; }
+    .cur-status.error   { color:#ff3b30; }
     .cur-res-display {
       flex:1; display:flex; align-items:center;
       font-size:17px; font-weight:300; pointer-events:none;
@@ -215,7 +287,14 @@
       border:1px solid var(--box-border);
       background:var(--box-bg); color:var(--text-main); min-height:38px;
     }
-    @media(max-width:380px){ .calculator{width:95vw;border-radius:32px;} .btn{height:60px;font-size:24px;} }
+    .refresh-btn {
+      display:block; width:100%; margin:6px 0 0; padding:8px;
+      border-radius:10px; border:none; cursor:pointer;
+      background:var(--mode-bar-bg); color:var(--tab-active-text);
+      font-size:12px; font-weight:500; transition:filter 0.1s;
+    }
+    .refresh-btn:active { filter:brightness(0.8); }
+    .refresh-btn:disabled { opacity:0.4; cursor:not-allowed; }
   </style>
 </head>
 <body class="dark">
@@ -231,14 +310,15 @@
     <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
   </div>
 
-  <div id="panel-calc" class="panel">
+  <!-- HISOB PANELI -->
+  <div id="panel-calc" class="panel" style="display:flex;flex-direction:column;flex:1;min-height:0;">
     <div class="display">
       <div class="expr" id="expr"></div>
-      <div class="result" id="result">0</div>
+      <div class="result" id="result"><span id="result-text">0</span></div>
     </div>
     <div class="buttons">
       <button class="btn btn-gray btn-special" id="btn-back">
-        <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
           <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
           <line x1="13" y1="7" x2="21" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           <line x1="21" y1="7" x2="13" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
@@ -265,6 +345,7 @@
     </div>
   </div>
 
+  <!-- FOIZ PANELI -->
   <div id="panel-pct" style="display:none;" class="panel">
     <div style="padding:4px 10px 6px;text-align:right;">
       <div class="expr" id="pct-expr">Foiz miqdori</div>
@@ -279,11 +360,15 @@
     <div class="row">
       <div style="flex:1;">
         <div class="s-label">Asosiy summa</div>
-        <input class="s-input" style="width:100%;" id="pct-base" type="number" placeholder="100 000" oninput="pctUpdate()">
+        <input class="s-input" style="width:100%;" id="pct-base"
+          type="number" inputmode="numeric" pattern="[0-9]*"
+          placeholder="100000" oninput="pctUpdate()">
       </div>
       <div style="flex:0 0 80px;">
         <div class="s-label">Foiz %</div>
-        <input class="s-input" style="width:100%;padding:8px 6px;" id="pct-rate" type="number" placeholder="15" oninput="pctUpdate()">
+        <input class="s-input" style="width:100%;padding:8px 6px;" id="pct-rate"
+          type="number" inputmode="numeric" pattern="[0-9]*"
+          placeholder="15" oninput="pctUpdate()">
       </div>
     </div>
     <div class="s-box">
@@ -293,6 +378,7 @@
     </div>
   </div>
 
+  <!-- VALYUTA PANELI -->
   <div id="panel-cur" style="display:none;" class="panel">
     <div class="cur-status loading" id="cur-status">⏳ Kurslar yuklanmoqda...</div>
     <div class="row">
@@ -307,7 +393,9 @@
         <option value="KZT">🇰🇿 KZT</option>
         <option value="TRY">🇹🇷 TRY</option>
       </select>
-      <input class="s-input" style="flex:1;" id="cur-amount" type="number" placeholder="1" value="1" oninput="curConvert()">
+      <input class="s-input" style="flex:1;" id="cur-amount"
+        type="number" inputmode="numeric" pattern="[0-9]*"
+        placeholder="1" value="1" oninput="curConvert()">
     </div>
     <button class="swap-btn" onclick="swapCurrency()">⇅ Almashish</button>
     <div class="row">
@@ -325,27 +413,29 @@
       <div class="cur-res-display" id="cur-res-display">—</div>
     </div>
     <div class="s-box">
-      <div class="s-box-label">Kurs (CBU rasmiy)</div>
+      <div class="s-box-label">Kurs (Markaziy bank)</div>
       <div class="s-box-val" id="cur-rate-txt" style="font-size:15px;">—</div>
       <div class="s-box-label" id="cur-extra" style="margin-top:4px;"></div>
     </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="manualRefresh()">🔄 Kurslarni yangilash</button>
+
   </div>
 
   <div class="author">Shahriyor Umaraliyev</div>
 </div>
 
 <script>
-/* THEME */
+/* ── TEMA ── */
 var isDark = true;
 function toggleTheme() {
   isDark = !isDark;
   document.body.className = isDark ? 'dark' : 'light';
+  document.documentElement.className = isDark ? '' : 'light-html';
   document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
-  // theme-color meta ni ham yangilaymiz
   document.querySelector('meta[name="theme-color"]').setAttribute('content', isDark ? '#1a1a2e' : '#e8eaf6');
 }
 
-/* TABS */
+/* ── TABLAR ── */
 function switchTab(t) {
   ['calc','pct','cur'].forEach(function(id) {
     document.getElementById('tab-'+id).classList.remove('active');
@@ -358,23 +448,29 @@ function switchTab(t) {
   if (t === 'cur' && !ratesLoaded) loadRates();
 }
 
-/* CALCULATOR */
+/* ── KALKULYATOR ── */
 var firstOp=null, operator=null, inputStr='0', justEvaled=false, waitingSecond=false;
-var resEl  = document.getElementById('result');
-var exprEl = document.getElementById('expr');
-var clrBtn = document.getElementById('btn-clear');
-var opBtns = {
+var resEl    = document.getElementById('result-text');
+var resultEl = document.getElementById('result');
+var exprEl   = document.getElementById('expr');
+var clrBtn   = document.getElementById('btn-clear');
+var opBtns   = {
   '+': document.getElementById('btn-add'),
   '−': document.getElementById('btn-sub'),
   '×': document.getElementById('btn-mul'),
   '÷': document.getElementById('btn-div')
 };
 
-function pop(el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+/* Faqat result-text span qimirlaydi — expr QIMIRLAMAYDI */
+function pop() {
+  resEl.classList.remove('pop');
+  void resEl.offsetWidth;
+  resEl.classList.add('pop');
+}
 
 function setSize(s) {
   var l = s.replace(/[,.\-]/g,'').length;
-  resEl.style.fontSize = l<=6?'72px':l<=8?'58px':l<=10?'44px':'34px';
+  resultEl.style.fontSize = l<=6?'clamp(58px,16vw,88px)':l<=8?'clamp(46px,13vw,70px)':l<=10?'clamp(36px,10vw,54px)':'clamp(28px,8vw,42px)';
 }
 
 function fmt(s) {
@@ -399,15 +495,12 @@ function compute(a, b, op) {
   return parseFloat(r.toPrecision(10)).toString();
 }
 
-// BUG FIX #2: refreshExpr alohida, justEvaled tekshiruvi to'g'ri
 function refreshExpr() {
   if (justEvaled) return;
   if (firstOp !== null && operator !== null) {
-    if (waitingSecond) {
-      exprEl.textContent = fmt(String(firstOp)) + ' ' + operator;
-    } else {
-      exprEl.textContent = fmt(String(firstOp)) + ' ' + operator + ' ' + fmt(inputStr);
-    }
+    exprEl.textContent = waitingSecond
+      ? fmt(String(firstOp)) + ' ' + operator
+      : fmt(String(firstOp)) + ' ' + operator + ' ' + fmt(inputStr);
   } else {
     exprEl.textContent = '';
   }
@@ -420,72 +513,53 @@ function update() {
   refreshExpr();
 }
 
-/* RAQAM */
 document.querySelectorAll('[data-n]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var n = btn.getAttribute('data-n');
     if (justEvaled) {
-      inputStr = n==='0' ? '0' : n;
-      firstOp=null; operator=null;
+      inputStr=n==='0'?'0':n; firstOp=null; operator=null;
       justEvaled=false; waitingSecond=false;
     } else if (waitingSecond) {
-      inputStr = n==='0' ? '0' : n;
-      waitingSecond = false;
+      inputStr=n==='0'?'0':n; waitingSecond=false;
     } else {
-      if (inputStr==='0') inputStr = n==='0' ? '0' : n;
-      else if (inputStr.replace(/[,.\-]/g,'').length < 9) inputStr += n;
+      if (inputStr==='0') inputStr=n==='0'?'0':n;
+      else if (inputStr.replace(/[,.\-]/g,'').length<9) inputStr+=n;
     }
-    hlOp(operator);
-    update(); pop(resEl);
+    hlOp(operator); update(); pop();
   });
 });
 
-/* NUQTA */
 document.getElementById('btn-dot').addEventListener('click', function() {
-  if (justEvaled) {
-    inputStr='0.'; firstOp=null; operator=null;
-    justEvaled=false; waitingSecond=false;
-  } else if (waitingSecond) {
-    inputStr='0.'; waitingSecond=false;
-  } else if (inputStr.indexOf('.')===-1) {
-    inputStr+='.';
-  }
+  if (justEvaled) { inputStr='0.'; firstOp=null; operator=null; justEvaled=false; waitingSecond=false; }
+  else if (waitingSecond) { inputStr='0.'; waitingSecond=false; }
+  else if (inputStr.indexOf('.')===-1) inputStr+='.';
   update();
 });
 
-/* BUG FIX #3: BACKSPACE — refreshExpr chaqiriladi */
 document.getElementById('btn-back').addEventListener('click', function() {
-  if (justEvaled || inputStr==='Xato') {
-    inputStr='0'; firstOp=null; operator=null;
-    justEvaled=false; waitingSecond=false; hlOp(null);
+  if (justEvaled||inputStr==='Xato') {
+    inputStr='0'; firstOp=null; operator=null; justEvaled=false; waitingSecond=false; hlOp(null);
   } else if (waitingSecond) {
     operator=null; waitingSecond=false; hlOp(null);
-  } else if (inputStr.length > 1) {
-    inputStr = inputStr.slice(0, -1);
-    if (inputStr === '-') inputStr = '0';
+  } else if (inputStr.length>1) {
+    inputStr=inputStr.slice(0,-1);
+    if (inputStr==='-') inputStr='0';
   } else {
-    inputStr = '0';
+    inputStr='0';
   }
   update();
 });
 
-/* OPERATOR */
 function handleOp(newOp) {
   if (inputStr==='Xato') return;
   if (firstOp!==null && !waitingSecond) {
-    var r = compute(firstOp, parseFloat(inputStr), operator);
-    if (r===null) {
-      inputStr='Xato'; firstOp=null; operator=null;
-      hlOp(null); update(); return;
-    }
-    firstOp = parseFloat(r);
-    inputStr = r;
-    pop(resEl);
+    var r=compute(firstOp,parseFloat(inputStr),operator);
+    if (r===null) { inputStr='Xato'; firstOp=null; operator=null; hlOp(null); update(); return; }
+    firstOp=parseFloat(r); inputStr=r; pop();
   } else {
-    firstOp = parseFloat(inputStr);
+    firstOp=parseFloat(inputStr);
   }
-  operator=newOp; waitingSecond=true; justEvaled=false;
-  hlOp(newOp); update();
+  operator=newOp; waitingSecond=true; justEvaled=false; hlOp(newOp); update();
 }
 
 document.getElementById('btn-add').addEventListener('click', function(){ handleOp('+'); });
@@ -493,130 +567,158 @@ document.getElementById('btn-sub').addEventListener('click', function(){ handleO
 document.getElementById('btn-mul').addEventListener('click', function(){ handleOp('×'); });
 document.getElementById('btn-div').addEventListener('click', function(){ handleOp('÷'); });
 
-/* BUG FIX #2: TENG — justEvaled OLDIN o'rnatiladi, keyin update() */
 document.getElementById('btn-eq').addEventListener('click', function() {
-  if (firstOp===null || operator===null) return;
-  var second = parseFloat(inputStr);
-  var r = compute(firstOp, second, operator);
-  var exprText = fmt(String(firstOp)) + ' ' + operator + ' ' + fmt(String(second)) + ' =';
-  inputStr = r===null ? 'Xato' : r;
-  firstOp=null; operator=null; waitingSecond=false;
-  justEvaled=true; // update() dan OLDIN — refreshExpr skip qilsin
+  if (firstOp===null||operator===null) return;
+  var second=parseFloat(inputStr);
+  var r=compute(firstOp,second,operator);
+  var exprText=fmt(String(firstOp))+' '+operator+' '+fmt(String(second))+' =';
+  inputStr=r===null?'Xato':r;
+  firstOp=null; operator=null; waitingSecond=false; justEvaled=true;
   hlOp(null);
-  exprEl.textContent = exprText; // to'g'ridan-to'g'ri o'rnatamiz
-  resEl.textContent = fmt(inputStr);
+  exprEl.textContent=exprText;
+  resEl.textContent=fmt(inputStr);
   setSize(fmt(inputStr));
-  clrBtn.textContent = 'C';
-  pop(resEl);
+  clrBtn.textContent='C';
+  pop();
 });
 
-/* TOZALASH AC/C */
 document.getElementById('btn-clear').addEventListener('click', function() {
   inputStr='0'; firstOp=null; operator=null;
   waitingSecond=false; justEvaled=false;
   exprEl.textContent=''; hlOp(null); update();
 });
 
-/* BUG FIX #4: +/- refreshExpr chaqiriladi (update() orqali) */
 document.getElementById('btn-pm').addEventListener('click', function() {
   if (inputStr==='0'||inputStr==='Xato') return;
-  inputStr = inputStr.startsWith('-') ? inputStr.slice(1) : '-'+inputStr;
+  inputStr=inputStr.startsWith('-')?inputStr.slice(1):'-'+inputStr;
   update();
 });
 
 update();
 
-/* PERCENT */
+/* ── FOIZ ── */
 var pctMode = 'tip';
 function setPctMode(mode) {
-  pctMode = mode;
+  pctMode=mode;
   ['tip','disc','mark','tax'].forEach(function(m){ document.getElementById('pbt-'+m).classList.remove('pct-active'); });
-  var map = {tip:'pbt-tip', disc:'pbt-disc', markup:'pbt-mark', tax:'pbt-tax'};
+  var map={tip:'pbt-tip',disc:'pbt-disc',markup:'pbt-mark',tax:'pbt-tax'};
   if (map[mode]) document.getElementById(map[mode]).classList.add('pct-active');
-  var labels = {tip:'Foiz miqdori', disc:'Chegirma hisoblash', markup:'Ustama narx', tax:"Soliq qo'shish"};
-  document.getElementById('pct-expr').textContent = labels[mode]||'';
+  var labels={tip:'Foiz miqdori',disc:'Chegirma hisoblash',markup:'Ustama narx',tax:"Soliq qo'shish"};
+  document.getElementById('pct-expr').textContent=labels[mode]||'';
   pctUpdate();
 }
+
 function pctUpdate() {
-  var base = parseFloat(document.getElementById('pct-base').value)||0;
-  var rate = parseFloat(document.getElementById('pct-rate').value)||0;
-  var rv=document.getElementById('pct-res-val'), rl=document.getElementById('pct-res-label');
-  var rs=document.getElementById('pct-res-sub'), pd=document.getElementById('pct-display');
+  var base=parseFloat(document.getElementById('pct-base').value)||0;
+  var rate=parseFloat(document.getElementById('pct-rate').value)||0;
+  var rv=document.getElementById('pct-res-val');
+  var rl=document.getElementById('pct-res-label');
+  var rs=document.getElementById('pct-res-sub');
+  var pd=document.getElementById('pct-display');
   if (!base||!rate) { rv.textContent='—'; rs.textContent=''; pd.textContent='—'; return; }
   var amt=base*rate/100;
-  if (pctMode==='disc')        { rv.textContent=fmtM(base-amt)+" so'm"; rl.textContent='Chegirmali narx';    rs.textContent='Chegirma: −'+fmtM(amt)+" so'm"; pd.textContent='-'+rate+'%'; }
-  else if (pctMode==='markup') { rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Ustama bilan narx';  rs.textContent='Ustama: +'+fmtM(amt)+" so'm";   pd.textContent='+'+rate+'%'; }
-  else if (pctMode==='tax')    { rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Soliq bilan jami';   rs.textContent='Soliq: +'+fmtM(amt)+" so'm";    pd.textContent='+'+rate+'%'; }
-  else                         { rv.textContent=fmtM(amt)+" so'm";       rl.textContent='Foiz miqdori';       rs.textContent=base+' × '+rate+'% = '+fmtM(amt); pd.textContent=fmtM(amt); }
+  if (pctMode==='disc') {
+    rv.textContent=fmtM(base-amt)+" so'm"; rl.textContent='Chegirmali narx';
+    rs.textContent='Chegirma: −'+fmtM(amt)+" so'm"; pd.textContent='-'+rate+'%';
+  } else if (pctMode==='markup') {
+    rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Ustama bilan narx';
+    rs.textContent='Ustama: +'+fmtM(amt)+" so'm"; pd.textContent='+'+rate+'%';
+  } else if (pctMode==='tax') {
+    rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Soliq bilan jami';
+    rs.textContent='Soliq: +'+fmtM(amt)+" so'm"; pd.textContent='+'+rate+'%';
+  } else {
+    rv.textContent=fmtM(amt)+" so'm"; rl.textContent='Foiz miqdori';
+    rs.textContent=base+' × '+rate+'% = '+fmtM(amt); pd.textContent=fmtM(amt);
+  }
 }
-function fmtM(n) { return parseFloat(n.toFixed(2)).toLocaleString('uz-UZ'); }
+function fmtM(n) { return parseFloat(n.toFixed(0)).toLocaleString('uz-UZ'); }
 
-/* CURRENCY — CBU LIVE */
+/* ── VALYUTA — CBU LIVE ── */
+/* UZS bazasida: RATES[CCY] = 1 CCY necha so'm */
 var RATES = {};
 var ratesLoaded = false;
-
-/* Fallback (agar internet bo'lmasa) */
-var FALLBACK = { USD:12700, EUR:13850, RUB:139, AED:3458, GBP:16200, CNY:1752, KZT:27.8, TRY:390 };
+var ratesDate = '';
+var FALLBACK = {USD:12700,EUR:13850,RUB:139,AED:3458,GBP:16200,CNY:1752,KZT:28.1,TRY:390};
 
 function setStatus(msg, cls) {
-  var el = document.getElementById('cur-status');
-  el.textContent = msg;
-  el.className = 'cur-status ' + cls;
+  var el=document.getElementById('cur-status');
+  el.textContent=msg; el.className='cur-status '+cls;
 }
 
 function loadRates() {
-  setStatus('⏳ CBU dan kurslar yuklanmoqda...', 'loading');
+  setStatus('⏳ Kurslar yuklanmoqda...','loading');
+  var refBtn=document.getElementById('refresh-btn');
+  if (refBtn) { refBtn.disabled=true; refBtn.textContent='⏳ Yangilanmoqda...'; }
 
-  // CBU rasmiy JSON API — CORS proxy orqali
-  var url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://cbu.uz/ru/arkhiv-kursov-valyut/json/');
+  /* CBU API to'g'ridan-to'g'ri — CORS xatoligi bo'lsa proxy ishlatamiz */
+  var PROXY = 'https://api.allorigins.win/get?url=';
+  var CBU   = 'https://cbu.uz/ru/arkhiv-kursov-valyut/json/';
 
-  fetch(url)
-    .then(function(r) { return r.json(); })
+  fetch(PROXY + encodeURIComponent(CBU), { cache: 'no-store' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('proxy xatosi');
+      return r.json();
+    })
     .then(function(data) {
       var arr = JSON.parse(data.contents);
+      if (!Array.isArray(arr) || arr.length === 0) throw new Error('bo\'sh massiv');
       var need = ['USD','EUR','RUB','AED','GBP','CNY','KZT','TRY'];
-      var dateStr = '';
       arr.forEach(function(item) {
         if (need.indexOf(item.Ccy) !== -1) {
-          // nominal = 1 bo'lmasa bo'lib olamiz (masalan KZT=100 nominal)
-          RATES[item.Ccy] = parseFloat(item.Rate) / parseFloat(item.Nominal);
-          dateStr = item.Date;
+          /* Nominal: KZT uchun 100, boshqalar uchun 1 */
+          var rate   = parseFloat(item.Rate);
+          var nominal= parseFloat(item.Nominal) || 1;
+          RATES[item.Ccy] = rate / nominal; /* 1 CCY = ? UZS */
+          ratesDate = item.Date;
         }
       });
+      /* Tekshiruv: USD bo'lishi shart */
+      if (!RATES['USD']) throw new Error('USD topilmadi');
       ratesLoaded = true;
-      // sana formati: dd.mm.yyyy
-      setStatus('✅ CBU rasmiy kurs — ' + dateStr, 'ok');
+      setStatus('✅ Markaziy bank kursi — ' + ratesDate, 'ok');
       curConvert();
     })
-    .catch(function() {
-      // Fallback
-      Object.assign(RATES, FALLBACK);
-      ratesLoaded = true;
-      setStatus('⚠️ Internet yo\'q — taxminiy kurslar', 'warn');
+    .catch(function(e) {
+      /* Fallback: oxirgi marta muvaffaqiyatli yuklangan ma'lumotlar bor bo'lsa ishlatamiz */
+      if (ratesLoaded) {
+        setStatus('⚠️ Internet yo\'q — oxirgi kurs: ' + ratesDate, 'warn');
+      } else {
+        Object.assign(RATES, FALLBACK);
+        ratesLoaded = true;
+        setStatus('⚠️ Internet yo\'q — taxminiy kurslar', 'warn');
+      }
       curConvert();
+    })
+    .finally(function() {
+      var rb=document.getElementById('refresh-btn');
+      if (rb) { rb.disabled=false; rb.textContent='🔄 Kurslarni yangilash'; }
     });
+}
+
+function manualRefresh() {
+  ratesLoaded = false;
+  loadRates();
 }
 
 function curConvert() {
   if (!ratesLoaded) return;
-  var from   = document.getElementById('from-cur').value;
-  var to     = document.getElementById('to-cur').value;
-  var amount = parseFloat(document.getElementById('cur-amount').value) || 0;
+  var from  = document.getElementById('from-cur').value;
+  var to    = document.getElementById('to-cur').value;
+  var amount= parseFloat(document.getElementById('cur-amount').value)||0;
 
-  // Baza: UZS. fromRate = 1 [from] = X so'm
-  var fromRate = (from==='UZS') ? 1 : (RATES[from] || 1);
-  var toRate   = (to==='UZS')   ? 1 : (RATES[to]   || 1);
-
-  var inUZS  = amount * fromRate;
-  var result = inUZS / toRate;
-  var rate   = fromRate / toRate;
+  /* Hamma narsa UZS orqali: amount * fromRate / toRate */
+  var fromRate = (from==='UZS') ? 1 : (RATES[from]||1);
+  var toRate   = (to==='UZS')   ? 1 : (RATES[to]  ||1);
+  var result   = (amount * fromRate) / toRate;
+  var rate     = fromRate / toRate;
 
   var dec = (to==='UZS'||to==='KZT') ? 0 : (to==='RUB'?1:4);
   document.getElementById('cur-res-display').textContent =
-    amount > 0 ? result.toLocaleString('uz-UZ',{maximumFractionDigits:dec}) : '—';
+    amount>0 ? result.toLocaleString('uz-UZ',{maximumFractionDigits:dec}) : '—';
 
+  var rDec = (to==='UZS'||to==='KZT') ? 0 : 4;
   document.getElementById('cur-rate-txt').textContent =
-    '1 '+from+' = '+rate.toLocaleString('uz-UZ',{maximumFractionDigits:4})+' '+to;
+    '1 '+from+' = '+rate.toLocaleString('uz-UZ',{maximumFractionDigits:rDec})+' '+to;
   document.getElementById('cur-extra').textContent =
     '1 '+to+' = '+(1/rate).toLocaleString('uz-UZ',{maximumFractionDigits:4})+' '+from;
 }
@@ -627,10 +729,10 @@ function swapCurrency() {
   curConvert();
 }
 
-/* Sahifa ochilganda fon yuklab oladi */
+/* Sahifa ochilganda kurslarni yuklaydi */
 loadRates();
 
-/* Service Worker ro'yxatdan o'tkazish */
+/* ── SERVICE WORKER ── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/sw.js').catch(function(){});
