@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Kalkulyator</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kalkulyator">
+  <meta name="theme-color" content="#1a1a2e">
+
+  <!-- Apple ikonkalar -->
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+
+  <!-- Android / Chrome -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <meta name="application-name" content="Kalkulyator">
+  <meta name="msapplication-TileColor" content="#1a1a2e">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      font-family: -apple-system, 'Helvetica Neue', sans-serif;
+      transition: background 0.4s ease;
+    }
+    body.dark {
+      background: linear-gradient(135deg,#1a1a2e 0%,#16213e 40%,#0f3460 70%,#1a1a2e 100%);
+      --calc-bg: rgba(28,28,30,0.92);
+      --btn-dark: #333;
+      --btn-gray: #a5a5a5;
+      --text-main: #fff;
+      --expr-color: rgba(255,255,255,0.4);
+      --tab-text: rgba(255,255,255,0.65);
+      --tab-active-text: #fff;
+      --mode-bar-bg: rgba(255,255,255,0.07);
+      --tab-active-bg: rgba(255,255,255,0.15);
+      --shine: rgba(255,255,255,0.06);
+      --border-col: rgba(255,255,255,0.12);
+      --box-bg: rgba(255,255,255,0.05);
+      --box-border: rgba(255,255,255,0.08);
+      --input-bg: rgba(255,255,255,0.08);
+      --input-border: rgba(255,255,255,0.15);
+      --input-text: #fff;
+      --label-color: rgba(255,255,255,0.45);
+      --shadow: 0 32px 80px rgba(0,0,0,0.6);
+    }
+    body.light {
+      background: linear-gradient(135deg,#e8eaf6 0%,#c5cae9 40%,#9fa8da 70%,#e8eaf6 100%);
+      --calc-bg: rgba(245,245,247,0.96);
+      --btn-dark: #e0e0e2;
+      --btn-gray: #c8c8cb;
+      --text-main: #1c1c1e;
+      --expr-color: rgba(0,0,0,0.35);
+      --tab-text: rgba(0,0,0,0.5);
+      --tab-active-text: #1c1c1e;
+      --mode-bar-bg: rgba(0,0,0,0.06);
+      --tab-active-bg: rgba(0,0,0,0.12);
+      --shine: rgba(255,255,255,0.55);
+      --border-col: rgba(0,0,0,0.1);
+      --box-bg: rgba(0,0,0,0.04);
+      --box-border: rgba(0,0,0,0.08);
+      --input-bg: rgba(0,0,0,0.06);
+      --input-border: rgba(0,0,0,0.15);
+      --input-text: #1c1c1e;
+      --label-color: rgba(0,0,0,0.4);
+      --shadow: 0 32px 80px rgba(0,0,0,0.18);
+    }
+    body::before {
+      content:''; position:fixed; width:400px; height:400px; border-radius:50%;
+      background:radial-gradient(circle,rgba(100,180,255,0.15) 0%,transparent 70%);
+      top:-100px; left:-100px; pointer-events:none;
+    }
+    body::after {
+      content:''; position:fixed; width:300px; height:300px; border-radius:50%;
+      background:radial-gradient(circle,rgba(180,100,255,0.12) 0%,transparent 70%);
+      bottom:-80px; right:-80px; pointer-events:none;
+    }
+    .calculator {
+      width:340px;
+      background: var(--calc-bg);
+      backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
+      border-radius:44px; border:1px solid var(--border-col);
+      padding:20px 18px 32px;
+      box-shadow: var(--shadow), inset 0 1px 0 var(--shine);
+      position:relative; z-index:1;
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+    .glass-shine {
+      position:absolute; top:0; left:0; right:0; height:50%;
+      border-radius:44px 44px 0 0;
+      background:linear-gradient(180deg, var(--shine) 0%, transparent 100%);
+      pointer-events:none;
+    }
+    .author {
+      position:absolute;
+      bottom:10px; left:0; right:0;
+      text-align:center;
+      font-size:10px; font-weight:400;
+      letter-spacing:0.5px;
+      opacity:0.22;
+      color:var(--text-main);
+      pointer-events:none;
+      transition:color 0.3s;
+    }
+    .top-bar { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+    .mode-bar { display:flex; background:var(--mode-bar-bg); border-radius:20px; padding:3px; flex:1; }
+    .tab {
+      flex:1; padding:6px 0; border:none; cursor:pointer;
+      border-radius:16px; font-size:12px; font-weight:500;
+      color:var(--tab-text); background:transparent; transition:all 0.2s;
+    }
+    .tab.active { background:var(--tab-active-bg); color:var(--tab-active-text); }
+    .theme-btn {
+      width:34px; height:34px; border-radius:50%; border:none; cursor:pointer;
+      font-size:16px; display:flex; align-items:center; justify-content:center;
+      background:var(--mode-bar-bg); color:var(--tab-active-text);
+      transition:transform 0.3s, background 0.3s; flex-shrink:0;
+    }
+    .theme-btn:active { transform:scale(0.85) rotate(20deg); }
+    .display {
+      padding:4px 10px 16px; text-align:right;
+      min-height:110px; display:flex; flex-direction:column;
+      justify-content:flex-end; gap:2px; overflow:hidden;
+    }
+    .expr {
+      font-size:17px; font-weight:300; color:var(--expr-color);
+      min-height:22px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .result {
+      font-weight:200; color:var(--text-main); line-height:1;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-size:72px; transition:font-size 0.1s, color 0.3s;
+    }
+    @keyframes popIn {
+      0%{transform:scale(0.92);opacity:0.5;} 60%{transform:scale(1.04);} 100%{transform:scale(1);opacity:1;}
+    }
+    .pop { animation:popIn 0.22s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    .buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .btn {
+      height:70px; border-radius:50%; border:none; cursor:pointer;
+      font-size:28px; font-weight:400;
+      display:flex; align-items:center; justify-content:center;
+      transition:filter 0.07s, transform 0.07s;
+      user-select:none; outline:none; -webkit-tap-highlight-color:transparent;
+    }
+    .btn:active { filter:brightness(0.7); transform:scale(0.93); }
+    .btn-zero { border-radius:35px; grid-column:span 2; justify-content:flex-start; padding-left:24px; }
+    .btn-gray  { background:var(--btn-gray); color:#000; }
+    .btn-dark  { background:var(--btn-dark); color:var(--text-main); transition:background 0.3s,color 0.3s,filter 0.07s,transform 0.07s; }
+    .btn-orange { background:#ff9500; color:#fff; }
+    .btn-orange.op-active { background:#fff; color:#ff9500; }
+    .btn-special { font-size:20px; }
+    .btn-dot { font-size:38px; line-height:1; padding-bottom:4px; }
+    @keyframes fadeSlide { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
+    .panel { animation:fadeSlide 0.2s ease forwards; }
+    .s-input, .s-select {
+      padding:8px 10px; border-radius:12px;
+      border:1px solid var(--input-border);
+      background:var(--input-bg); color:var(--input-text);
+      font-size:14px; outline:none;
+      transition:background 0.3s,color 0.3s,border-color 0.2s;
+      -webkit-appearance:none;
+    }
+    .s-input:focus { border-color:#ff9500; }
+    .s-select { flex:0 0 95px; font-size:13px; cursor:pointer; }
+    .s-label { font-size:11px; color:var(--label-color); margin-bottom:5px; }
+    .s-box {
+      background:var(--box-bg); border-radius:14px;
+      padding:10px 14px; margin-top:6px;
+      border:1px solid var(--box-border);
+    }
+    .s-box-label { font-size:11px; color:var(--label-color); margin-bottom:2px; }
+    .s-box-val { font-size:20px; font-weight:300; color:var(--text-main); transition:color 0.3s; }
+    .row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .swap-btn {
+      display:block; width:100%; margin:0 0 8px; padding:7px;
+      border-radius:10px; border:none; cursor:pointer;
+      background:var(--mode-bar-bg); color:var(--tab-active-text);
+      font-size:13px; transition:filter 0.1s;
+    }
+    .swap-btn:active { filter:brightness(0.8); }
+    .pct-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+    .pct-btn {
+      padding:10px 0; border-radius:12px; border:none; cursor:pointer;
+      font-size:13px; font-weight:500;
+      background:var(--mode-bar-bg); color:var(--tab-active-text);
+      transition:filter 0.1s,transform 0.1s;
+    }
+    .pct-btn:active { filter:brightness(0.8); transform:scale(0.96); }
+    .pct-btn.pct-active { background:#ff9500; color:#fff; }
+    .pct-display {
+      font-weight:200; color:var(--text-main); font-size:42px;
+      text-align:right; padding:0 10px 10px; min-height:60px; transition:color 0.3s;
+    }
+    .cur-status {
+      font-size:11px; text-align:center; padding:4px 0 8px; color:var(--label-color); transition:color 0.3s;
+    }
+    .cur-status.loading { color:#ff9500; }
+    .cur-status.ok      { color:#34c759; }
+    .cur-status.warn    { color:#ff9500; }
+    .cur-res-display {
+      flex:1; display:flex; align-items:center;
+      font-size:17px; font-weight:300; pointer-events:none;
+      padding:8px 10px; border-radius:12px;
+      border:1px solid var(--box-border);
+      background:var(--box-bg); color:var(--text-main); min-height:38px;
+    }
+    @media(max-width:380px){ .calculator{width:95vw;border-radius:32px;} .btn{height:60px;font-size:24px;} }
+  </style>
+</head>
+<body class="dark">
+
+<div class="calculator">
+  <div class="glass-shine"></div>
+  <div class="top-bar">
+    <div class="mode-bar">
+      <button class="tab active" id="tab-calc" onclick="switchTab('calc')">Hisob</button>
+      <button class="tab"        id="tab-pct"  onclick="switchTab('pct')">Foiz %</button>
+      <button class="tab"        id="tab-cur"  onclick="switchTab('cur')">Valyuta</button>
+    </div>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
+  </div>
+
+  <div id="panel-calc" class="panel">
+    <div class="display">
+      <div class="expr" id="expr"></div>
+      <div class="result" id="result">0</div>
+    </div>
+    <div class="buttons">
+      <button class="btn btn-gray btn-special" id="btn-clear">AC</button>
+      <button class="btn btn-gray btn-special" id="btn-pm">+/−</button>
+      <button class="btn btn-gray btn-special" id="btn-pctq">%</button>
+      <button class="btn btn-orange" id="btn-div">÷</button>
+      <button class="btn btn-dark" data-n="7">7</button>
+      <button class="btn btn-dark" data-n="8">8</button>
+      <button class="btn btn-dark" data-n="9">9</button>
+      <button class="btn btn-orange" id="btn-mul">×</button>
+      <button class="btn btn-dark" data-n="4">4</button>
+      <button class="btn btn-dark" data-n="5">5</button>
+      <button class="btn btn-dark" data-n="6">6</button>
+      <button class="btn btn-orange" id="btn-sub">−</button>
+      <button class="btn btn-dark" data-n="1">1</button>
+      <button class="btn btn-dark" data-n="2">2</button>
+      <button class="btn btn-dark" data-n="3">3</button>
+      <button class="btn btn-orange" id="btn-add">+</button>
+      <button class="btn btn-dark btn-zero" data-n="0">0</button>
+      <button class="btn btn-dark btn-dot" id="btn-dot">.</button>
+      <button class="btn btn-orange" id="btn-eq">=</button>
+    </div>
+  </div>
+
+  <div id="panel-pct" style="display:none;" class="panel">
+    <div style="padding:4px 10px 6px;text-align:right;">
+      <div class="expr" id="pct-expr">Foiz miqdori</div>
+      <div class="pct-display" id="pct-display">—</div>
+    </div>
+    <div class="pct-grid">
+      <button class="pct-btn pct-active" id="pbt-tip"  onclick="setPctMode('tip')">💡 Foiz miqdori</button>
+      <button class="pct-btn"            id="pbt-disc" onclick="setPctMode('disc')">🏷 Chegirma</button>
+      <button class="pct-btn"            id="pbt-mark" onclick="setPctMode('markup')">📈 Ustama</button>
+      <button class="pct-btn"            id="pbt-tax"  onclick="setPctMode('tax')">🧾 Soliq</button>
+    </div>
+    <div class="row">
+      <div style="flex:1;">
+        <div class="s-label">Asosiy summa</div>
+        <input class="s-input" style="width:100%;" id="pct-base" type="number" placeholder="100 000" oninput="pctUpdate()">
+      </div>
+      <div style="flex:0 0 80px;">
+        <div class="s-label">Foiz %</div>
+        <input class="s-input" style="width:100%;padding:8px 6px;" id="pct-rate" type="number" placeholder="15" oninput="pctUpdate()">
+      </div>
+    </div>
+    <div class="s-box">
+      <div class="s-box-label" id="pct-res-label">Natija</div>
+      <div class="s-box-val"   id="pct-res-val">—</div>
+      <div class="s-box-label" id="pct-res-sub" style="margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <div id="panel-cur" style="display:none;" class="panel">
+    <div class="cur-status loading" id="cur-status">⏳ Kurslar yuklanmoqda...</div>
+    <div class="row">
+      <select class="s-select" id="from-cur" onchange="curConvert()">
+        <option value="USD" selected>🇺🇸 USD</option>
+        <option value="UZS">🇺🇿 UZS</option>
+        <option value="EUR">🇪🇺 EUR</option>
+        <option value="RUB">🇷🇺 RUB</option>
+        <option value="AED">🇦🇪 AED</option>
+        <option value="GBP">🇬🇧 GBP</option>
+        <option value="CNY">🇨🇳 CNY</option>
+        <option value="KZT">🇰🇿 KZT</option>
+        <option value="TRY">🇹🇷 TRY</option>
+      </select>
+      <input class="s-input" style="flex:1;" id="cur-amount" type="number" placeholder="1" value="1" oninput="curConvert()">
+    </div>
+    <button class="swap-btn" onclick="swapCurrency()">⇅ Almashish</button>
+    <div class="row">
+      <select class="s-select" id="to-cur" onchange="curConvert()">
+        <option value="UZS" selected>🇺🇿 UZS</option>
+        <option value="USD">🇺🇸 USD</option>
+        <option value="EUR">🇪🇺 EUR</option>
+        <option value="RUB">🇷🇺 RUB</option>
+        <option value="AED">🇦🇪 AED</option>
+        <option value="GBP">🇬🇧 GBP</option>
+        <option value="CNY">🇨🇳 CNY</option>
+        <option value="KZT">🇰🇿 KZT</option>
+        <option value="TRY">🇹🇷 TRY</option>
+      </select>
+      <div class="cur-res-display" id="cur-res-display">—</div>
+    </div>
+    <div class="s-box">
+      <div class="s-box-label">Kurs (CBU rasmiy)</div>
+      <div class="s-box-val" id="cur-rate-txt" style="font-size:15px;">—</div>
+      <div class="s-box-label" id="cur-extra" style="margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <div class="author">Shahriyor Umaraliyev</div>
+</div>
+
+<script>
+/* THEME */
+var isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.className = isDark ? 'dark' : 'light';
+  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+}
+
+/* TABS */
+function switchTab(t) {
+  ['calc','pct','cur'].forEach(function(id) {
+    document.getElementById('tab-'+id).classList.remove('active');
+    document.getElementById('panel-'+id).style.display = 'none';
+  });
+  document.getElementById('tab-'+t).classList.add('active');
+  var p = document.getElementById('panel-'+t);
+  p.style.display = 'block';
+  p.classList.remove('panel'); void p.offsetWidth; p.classList.add('panel');
+  if (t === 'cur' && !ratesLoaded) loadRates();
+}
+
+/* CALCULATOR */
+var firstOp=null, operator=null, inputStr='0', justEvaled=false, waitingSecond=false;
+var resEl  = document.getElementById('result');
+var exprEl = document.getElementById('expr');
+var clrBtn = document.getElementById('btn-clear');
+var opBtns = {
+  '+': document.getElementById('btn-add'),
+  '−': document.getElementById('btn-sub'),
+  '×': document.getElementById('btn-mul'),
+  '÷': document.getElementById('btn-div')
+};
+
+function pop(el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+function setSize(s) {
+  var l = s.replace(/[,.\-]/g,'').length;
+  resEl.style.fontSize = l<=6?'72px':l<=8?'58px':l<=10?'44px':'34px';
+}
+function fmt(s) {
+  if (s==='Xato') return 'Xato';
+  var p = s.split('.');
+  p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return p.join('.');
+}
+function update() {
+  resEl.textContent = fmt(inputStr);
+  setSize(fmt(inputStr));
+  clrBtn.textContent = (inputStr==='0' && firstOp===null) ? 'AC' : 'C';
+}
+function hlOp(op) {
+  Object.values(opBtns).forEach(function(b){ b.classList.remove('op-active'); });
+  if (op && opBtns[op]) opBtns[op].classList.add('op-active');
+}
+function compute(a, b, op) {
+  var r;
+  if      (op==='+') r=a+b;
+  else if (op==='−') r=a-b;
+  else if (op==='×') r=a*b;
+  else if (op==='÷') { if(b===0) return null; r=a/b; }
+  else return String(b);
+  return parseFloat(r.toPrecision(10)).toString();
+}
+document.querySelectorAll('[data-n]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var n = btn.getAttribute('data-n');
+    if (waitingSecond||justEvaled) { inputStr=n==='0'?'0':n; waitingSecond=false; justEvaled=false; }
+    else { if(inputStr==='0') inputStr=n==='0'?'0':n; else if(inputStr.replace(/[,.\-]/g,'').length<9) inputStr+=n; }
+    hlOp(null); exprEl.textContent=''; update(); pop(resEl);
+  });
+});
+document.getElementById('btn-dot').addEventListener('click', function() {
+  if (waitingSecond||justEvaled) { inputStr='0.'; waitingSecond=false; justEvaled=false; }
+  else if (inputStr.indexOf('.')===-1) inputStr+='.';
+  update();
+});
+function handleOp(newOp) {
+  hlOp(newOp);
+  if (firstOp!==null && !waitingSecond && !justEvaled) {
+    var r = compute(firstOp, parseFloat(inputStr), operator);
+    if (r===null) { inputStr='Xato'; firstOp=null; operator=null; hlOp(null); update(); return; }
+    firstOp=parseFloat(r); inputStr=r; exprEl.textContent=fmt(r)+' '+newOp;
+  } else { firstOp=parseFloat(inputStr); exprEl.textContent=fmt(inputStr)+' '+newOp; }
+  operator=newOp; waitingSecond=true; justEvaled=false; update();
+}
+document.getElementById('btn-add').addEventListener('click', function(){ handleOp('+'); });
+document.getElementById('btn-sub').addEventListener('click', function(){ handleOp('−'); });
+document.getElementById('btn-mul').addEventListener('click', function(){ handleOp('×'); });
+document.getElementById('btn-div').addEventListener('click', function(){ handleOp('÷'); });
+document.getElementById('btn-eq').addEventListener('click', function() {
+  if (firstOp===null||operator===null) return;
+  var second = parseFloat(inputStr);
+  exprEl.textContent = fmt(String(firstOp))+' '+operator+' '+fmt(String(second))+' =';
+  var r = compute(firstOp, second, operator);
+  inputStr = r===null ? 'Xato' : r;
+  firstOp=null; operator=null; waitingSecond=false; justEvaled=true;
+  hlOp(null); pop(resEl); update();
+});
+document.getElementById('btn-clear').addEventListener('click', function() {
+  if (inputStr!=='0'&&!justEvaled) inputStr='0';
+  else { inputStr='0'; firstOp=null; operator=null; waitingSecond=false; justEvaled=false; exprEl.textContent=''; hlOp(null); }
+  update();
+});
+document.getElementById('btn-pm').addEventListener('click', function() {
+  if (inputStr==='0'||inputStr==='Xato') return;
+  inputStr = inputStr.startsWith('-') ? inputStr.slice(1) : '-'+inputStr;
+  update();
+});
+document.getElementById('btn-pctq').addEventListener('click', function() {
+  if (inputStr==='Xato') return;
+  inputStr = parseFloat((parseFloat(inputStr)/100).toPrecision(10)).toString();
+  update();
+});
+update();
+
+/* PERCENT */
+var pctMode = 'tip';
+function setPctMode(mode) {
+  pctMode = mode;
+  ['tip','disc','mark','tax'].forEach(function(m){ document.getElementById('pbt-'+m).classList.remove('pct-active'); });
+  var map = {tip:'pbt-tip', disc:'pbt-disc', markup:'pbt-mark', tax:'pbt-tax'};
+  if (map[mode]) document.getElementById(map[mode]).classList.add('pct-active');
+  var labels = {tip:'Foiz miqdori', disc:'Chegirma hisoblash', markup:'Ustama narx', tax:"Soliq qo'shish"};
+  document.getElementById('pct-expr').textContent = labels[mode]||'';
+  pctUpdate();
+}
+function pctUpdate() {
+  var base = parseFloat(document.getElementById('pct-base').value)||0;
+  var rate = parseFloat(document.getElementById('pct-rate').value)||0;
+  var rv=document.getElementById('pct-res-val'), rl=document.getElementById('pct-res-label');
+  var rs=document.getElementById('pct-res-sub'), pd=document.getElementById('pct-display');
+  if (!base||!rate) { rv.textContent='—'; rs.textContent=''; pd.textContent='—'; return; }
+  var amt=base*rate/100;
+  if (pctMode==='disc')        { rv.textContent=fmtM(base-amt)+" so'm"; rl.textContent='Chegirmali narx';    rs.textContent='Chegirma: −'+fmtM(amt)+" so'm"; pd.textContent='-'+rate+'%'; }
+  else if (pctMode==='markup') { rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Ustama bilan narx';  rs.textContent='Ustama: +'+fmtM(amt)+" so'm";   pd.textContent='+'+rate+'%'; }
+  else if (pctMode==='tax')    { rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Soliq bilan jami';   rs.textContent='Soliq: +'+fmtM(amt)+" so'm";    pd.textContent='+'+rate+'%'; }
+  else                         { rv.textContent=fmtM(amt)+" so'm";       rl.textContent='Foiz miqdori';       rs.textContent=base+' × '+rate+'% = '+fmtM(amt); pd.textContent=fmtM(amt); }
+}
+function fmtM(n) { return parseFloat(n.toFixed(2)).toLocaleString('uz-UZ'); }
+
+/* CURRENCY — CBU LIVE */
+var RATES = {};
+var ratesLoaded = false;
+
+/* Fallback (agar internet bo'lmasa) */
+var FALLBACK = { USD:12700, EUR:13850, RUB:139, AED:3458, GBP:16200, CNY:1752, KZT:27.8, TRY:390 };
+
+function setStatus(msg, cls) {
+  var el = document.getElementById('cur-status');
+  el.textContent = msg;
+  el.className = 'cur-status ' + cls;
+}
+
+function loadRates() {
+  setStatus('⏳ CBU dan kurslar yuklanmoqda...', 'loading');
+
+  // CBU rasmiy JSON API — CORS proxy orqali
+  var url = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://cbu.uz/ru/arkhiv-kursov-valyut/json/');
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var arr = JSON.parse(data.contents);
+      var need = ['USD','EUR','RUB','AED','GBP','CNY','KZT','TRY'];
+      var dateStr = '';
+      arr.forEach(function(item) {
+        if (need.indexOf(item.Ccy) !== -1) {
+          // nominal = 1 bo'lmasa bo'lib olamiz (masalan KZT=100 nominal)
+          RATES[item.Ccy] = parseFloat(item.Rate) / parseFloat(item.Nominal);
+          dateStr = item.Date;
+        }
+      });
+      ratesLoaded = true;
+      // sana formati: dd.mm.yyyy
+      setStatus('✅ CBU rasmiy kurs — ' + dateStr, 'ok');
+      curConvert();
+    })
+    .catch(function() {
+      // Fallback
+      Object.assign(RATES, FALLBACK);
+      ratesLoaded = true;
+      setStatus('⚠️ Internet yo\'q — taxminiy kurslar', 'warn');
+      curConvert();
+    });
+}
+
+function curConvert() {
+  if (!ratesLoaded) return;
+  var from   = document.getElementById('from-cur').value;
+  var to     = document.getElementById('to-cur').value;
+  var amount = parseFloat(document.getElementById('cur-amount').value) || 0;
+
+  // Baza: UZS. fromRate = 1 [from] = X so'm
+  var fromRate = (from==='UZS') ? 1 : (RATES[from] || 1);
+  var toRate   = (to==='UZS')   ? 1 : (RATES[to]   || 1);
+
+  var inUZS  = amount * fromRate;
+  var result = inUZS / toRate;
+  var rate   = fromRate / toRate;
+
+  var dec = (to==='UZS'||to==='KZT') ? 0 : (to==='RUB'?1:4);
+  document.getElementById('cur-res-display').textContent =
+    amount > 0 ? result.toLocaleString('uz-UZ',{maximumFractionDigits:dec}) : '—';
+
+  document.getElementById('cur-rate-txt').textContent =
+    '1 '+from+' = '+rate.toLocaleString('uz-UZ',{maximumFractionDigits:4})+' '+to;
+  document.getElementById('cur-extra').textContent =
+    '1 '+to+' = '+(1/rate).toLocaleString('uz-UZ',{maximumFractionDigits:4})+' '+from;
+}
+
+function swapCurrency() {
+  var f=document.getElementById('from-cur'), t=document.getElementById('to-cur');
+  var tmp=f.value; f.value=t.value; t.value=tmp;
+  curConvert();
+}
+
+/* Sahifa ochilganda fon yuklab oladi */
+loadRates();
+
+/* Service Worker ro'yxatdan o'tkazish */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
