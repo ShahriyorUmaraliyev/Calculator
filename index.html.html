@@ -236,9 +236,15 @@
       <div class="result" id="result">0</div>
     </div>
     <div class="buttons">
+      <button class="btn btn-gray btn-special" id="btn-back">
+        <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+          <line x1="13" y1="7" x2="21" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="21" y1="7" x2="13" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
       <button class="btn btn-gray btn-special" id="btn-clear">AC</button>
       <button class="btn btn-gray btn-special" id="btn-pm">+/−</button>
-      <button class="btn btn-gray btn-special" id="btn-pctq">%</button>
       <button class="btn btn-orange" id="btn-div">÷</button>
       <button class="btn btn-dark" data-n="7">7</button>
       <button class="btn btn-dark" data-n="8">8</button>
@@ -362,25 +368,24 @@ var opBtns = {
 };
 
 function pop(el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
 function setSize(s) {
   var l = s.replace(/[,.\-]/g,'').length;
   resEl.style.fontSize = l<=6?'72px':l<=8?'58px':l<=10?'44px':'34px';
 }
+
 function fmt(s) {
   if (s==='Xato') return 'Xato';
   var p = s.split('.');
   p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
   return p.join('.');
 }
-function update() {
-  resEl.textContent = fmt(inputStr);
-  setSize(fmt(inputStr));
-  clrBtn.textContent = (inputStr==='0' && firstOp===null) ? 'AC' : 'C';
-}
+
 function hlOp(op) {
   Object.values(opBtns).forEach(function(b){ b.classList.remove('op-active'); });
   if (op && opBtns[op]) opBtns[op].classList.add('op-active');
 }
+
 function compute(a, b, op) {
   var r;
   if      (op==='+') r=a+b;
@@ -390,54 +395,129 @@ function compute(a, b, op) {
   else return String(b);
   return parseFloat(r.toPrecision(10)).toString();
 }
+
+// Yuqori expr — har doim hisob jarayonini ko'rsatadi
+function refreshExpr() {
+  if (justEvaled) return; // = bosilgan — expr o'zgarmaydi
+  if (firstOp !== null && operator !== null) {
+    if (waitingSecond) {
+      // "5 ×" — ikkinchi raqam hali kiritilmagan
+      exprEl.textContent = fmt(String(firstOp)) + ' ' + operator;
+    } else {
+      // "5 × 3" — ikkinchi raqam kiritilmoqda
+      exprEl.textContent = fmt(String(firstOp)) + ' ' + operator + ' ' + fmt(inputStr);
+    }
+  } else {
+    exprEl.textContent = '';
+  }
+}
+
+// Pastki result
+function update() {
+  resEl.textContent = fmt(inputStr);
+  setSize(fmt(inputStr));
+  clrBtn.textContent = (inputStr==='0' && firstOp===null && !operator) ? 'AC' : 'C';
+  refreshExpr();
+}
+
+/* RAQAM */
 document.querySelectorAll('[data-n]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var n = btn.getAttribute('data-n');
-    if (waitingSecond||justEvaled) { inputStr=n==='0'?'0':n; waitingSecond=false; justEvaled=false; }
-    else { if(inputStr==='0') inputStr=n==='0'?'0':n; else if(inputStr.replace(/[,.\-]/g,'').length<9) inputStr+=n; }
-    hlOp(null); exprEl.textContent=''; update(); pop(resEl);
+    if (justEvaled) {
+      inputStr = n==='0' ? '0' : n;
+      firstOp=null; operator=null;
+      justEvaled=false; waitingSecond=false;
+    } else if (waitingSecond) {
+      inputStr = n==='0' ? '0' : n;
+      waitingSecond = false;
+    } else {
+      if (inputStr==='0') inputStr = n==='0' ? '0' : n;
+      else if (inputStr.replace(/[,.\-]/g,'').length < 9) inputStr += n;
+    }
+    hlOp(operator);
+    update(); pop(resEl);
   });
 });
+
+/* NUQTA */
 document.getElementById('btn-dot').addEventListener('click', function() {
-  if (waitingSecond||justEvaled) { inputStr='0.'; waitingSecond=false; justEvaled=false; }
-  else if (inputStr.indexOf('.')===-1) inputStr+='.';
+  if (justEvaled) {
+    inputStr='0.'; firstOp=null; operator=null;
+    justEvaled=false; waitingSecond=false;
+  } else if (waitingSecond) {
+    inputStr='0.'; waitingSecond=false;
+  } else if (inputStr.indexOf('.')===-1) {
+    inputStr+='.';
+  }
   update();
 });
+
+/* BACKSPACE ⌫ */
+document.getElementById('btn-back').addEventListener('click', function() {
+  if (justEvaled || inputStr==='Xato') {
+    inputStr='0'; firstOp=null; operator=null;
+    justEvaled=false; waitingSecond=false; hlOp(null);
+  } else if (waitingSecond) {
+    // Operator bosilgandan keyin ⌫ → operatorni bekor qiladi
+    operator=null; waitingSecond=false; hlOp(null);
+  } else if (inputStr.length > 1) {
+    inputStr = inputStr.slice(0, -1);
+    if (inputStr === '-') inputStr = '0';
+  } else {
+    inputStr = '0';
+  }
+  update();
+});
+
+/* OPERATOR */
 function handleOp(newOp) {
-  hlOp(newOp);
-  if (firstOp!==null && !waitingSecond && !justEvaled) {
+  if (inputStr==='Xato') return;
+  if (firstOp!==null && !waitingSecond) {
     var r = compute(firstOp, parseFloat(inputStr), operator);
-    if (r===null) { inputStr='Xato'; firstOp=null; operator=null; hlOp(null); update(); return; }
-    firstOp=parseFloat(r); inputStr=r; exprEl.textContent=fmt(r)+' '+newOp;
-  } else { firstOp=parseFloat(inputStr); exprEl.textContent=fmt(inputStr)+' '+newOp; }
-  operator=newOp; waitingSecond=true; justEvaled=false; update();
+    if (r===null) {
+      inputStr='Xato'; firstOp=null; operator=null;
+      hlOp(null); update(); return;
+    }
+    firstOp = parseFloat(r);
+    inputStr = r;
+    pop(resEl);
+  } else {
+    firstOp = parseFloat(inputStr);
+  }
+  operator=newOp; waitingSecond=true; justEvaled=false;
+  hlOp(newOp); update();
 }
+
 document.getElementById('btn-add').addEventListener('click', function(){ handleOp('+'); });
 document.getElementById('btn-sub').addEventListener('click', function(){ handleOp('−'); });
 document.getElementById('btn-mul').addEventListener('click', function(){ handleOp('×'); });
 document.getElementById('btn-div').addEventListener('click', function(){ handleOp('÷'); });
+
+/* TENG = */
 document.getElementById('btn-eq').addEventListener('click', function() {
-  if (firstOp===null||operator===null) return;
+  if (firstOp===null || operator===null) return;
   var second = parseFloat(inputStr);
-  exprEl.textContent = fmt(String(firstOp))+' '+operator+' '+fmt(String(second))+' =';
   var r = compute(firstOp, second, operator);
+  // Yuqoriga to'liq ifoda
+  exprEl.textContent = fmt(String(firstOp)) + ' ' + operator + ' ' + fmt(String(second)) + ' =';
   inputStr = r===null ? 'Xato' : r;
   firstOp=null; operator=null; waitingSecond=false; justEvaled=true;
   hlOp(null); pop(resEl); update();
+  // = bosilgandan keyin refreshExpr ishlamasligi uchun update() ichida justEvaled=true
 });
+
+/* TOZALASH AC/C */
 document.getElementById('btn-clear').addEventListener('click', function() {
-  if (inputStr!=='0'&&!justEvaled) inputStr='0';
-  else { inputStr='0'; firstOp=null; operator=null; waitingSecond=false; justEvaled=false; exprEl.textContent=''; hlOp(null); }
-  update();
+  inputStr='0'; firstOp=null; operator=null;
+  waitingSecond=false; justEvaled=false;
+  exprEl.textContent=''; hlOp(null); update();
 });
+
+/* +/- */
 document.getElementById('btn-pm').addEventListener('click', function() {
   if (inputStr==='0'||inputStr==='Xato') return;
   inputStr = inputStr.startsWith('-') ? inputStr.slice(1) : '-'+inputStr;
-  update();
-});
-document.getElementById('btn-pctq').addEventListener('click', function() {
-  if (inputStr==='Xato') return;
-  inputStr = parseFloat((parseFloat(inputStr)/100).toPrecision(10)).toString();
   update();
 });
 update();
