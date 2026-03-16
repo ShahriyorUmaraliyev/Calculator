@@ -1,11 +1,11 @@
-var CACHE = 'kalkulyator-v2';
-var FILES = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png', '/sw.js'];
+var CACHE = 'kalkulyator-v4';
+var FILES = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE).then(function(cache) {
       return cache.addAll(FILES);
-    })
+    }).catch(function(){})
   );
   self.skipWaiting();
 });
@@ -23,22 +23,27 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
-  /* Valyuta API so'rovlarini cache qilmaymiz — har doim yangi */
-  if (e.request.url.indexOf('cbu.uz') !== -1 ||
-      e.request.url.indexOf('allorigins') !== -1) {
-    return;
-  }
+  var url = e.request.url;
+  /* Tashqi API lar — cache qilmaymiz */
+  if (url.indexOf('cbu.uz')!==-1 || url.indexOf('allorigins.win')!==-1) return;
+  if (e.request.method !== 'GET') return;
 
   e.respondWith(
     caches.match(e.request).then(function(cached) {
-      if (cached) return cached;
-      return fetch(e.request).then(function(response) {
-        var clone = response.clone();
-        caches.open(CACHE).then(function(cache) {
-          cache.put(e.request, clone);
-        });
-        return response;
-      }).catch(function() {
+      if (cached) {
+        /* Fon da yangilash */
+        fetch(e.request).then(function(r) {
+          if (r && r.status===200) {
+            caches.open(CACHE).then(function(c){ c.put(e.request, r); });
+          }
+        }).catch(function(){});
+        return cached;
+      }
+      return fetch(e.request).then(function(r) {
+        if (!r || r.status!==200) return r;
+        caches.open(CACHE).then(function(c){ c.put(e.request, r.clone()); });
+        return r;
+      }).catch(function(){
         return caches.match('/index.html');
       });
     })
