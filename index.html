@@ -46,54 +46,82 @@
       font-family: -apple-system, 'Helvetica Neue', sans-serif;
     }
     body.dark {
-      background: linear-gradient(145deg, #0d1117 0%, #0f1d2e 50%, #0a1628 100%);
-      --calc-bg: rgba(12,16,22,0.6);
-      --btn-num: rgba(50,52,62,0.82);
-      --btn-gray: rgba(165,165,175,0.9);
+      --calc-bg: rgba(14,18,28,0.52);
+      --btn-num: rgba(48,52,66,0.88);
+      --btn-gray: rgba(162,162,172,0.92);
       --btn-orange: #ff9500;
       --text-main: #ffffff;
       --text-dim: rgba(255,255,255,0.36);
       --mode-bg: rgba(255,255,255,0.07);
       --mode-active: rgba(255,255,255,0.16);
-      --shine: rgba(255,255,255,0.035);
-      --border: rgba(255,255,255,0.07);
-      --box-bg: rgba(255,255,255,0.045);
+      --shine: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.1);
+      --box-bg: rgba(255,255,255,0.055);
       --input-bg: rgba(255,255,255,0.07);
-      --input-border: rgba(255,255,255,0.11);
+      --input-border: rgba(255,255,255,0.12);
       --label: rgba(255,255,255,0.36);
-      --nav-bg: rgba(10,14,20,0.85);
+      --nav-bg: rgba(10,14,22,0.82);
     }
     body.light {
-      background: linear-gradient(145deg, #e8eaf6 0%, #c5cae9 50%, #9fa8da 100%);
-      --calc-bg: rgba(240,242,248,0.75);
-      --btn-num: rgba(215,217,225,0.92);
-      --btn-gray: rgba(195,197,202,0.95);
+      --calc-bg: rgba(248,250,255,0.62);
+      --btn-num: rgba(210,213,224,0.94);
+      --btn-gray: rgba(190,193,200,0.96);
       --btn-orange: #ff9500;
       --text-main: #1c1c1e;
       --text-dim: rgba(0,0,0,0.32);
       --mode-bg: rgba(0,0,0,0.055);
       --mode-active: rgba(0,0,0,0.11);
-      --shine: rgba(255,255,255,0.5);
-      --border: rgba(0,0,0,0.07);
-      --box-bg: rgba(0,0,0,0.038);
+      --shine: rgba(255,255,255,0.55);
+      --border: rgba(0,0,0,0.1);
+      --box-bg: rgba(0,0,0,0.04);
       --input-bg: rgba(0,0,0,0.055);
       --input-border: rgba(0,0,0,0.12);
       --label: rgba(0,0,0,0.36);
-      --nav-bg: rgba(230,232,242,0.9);
+      --nav-bg: rgba(225,228,240,0.88);
     }
 
     /* ── CALCULATOR SHELL ── */
     .calc {
       width: 100%;
       height: 100%;
-      background: var(--calc-bg);
-      backdrop-filter: blur(48px);
-      -webkit-backdrop-filter: blur(48px);
+      background: transparent;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
     }
+
+    /* Orqa fon — doim ko'rinib turadi */
+    .calc-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+    body.dark .calc-bg {
+      background: linear-gradient(145deg, #0d1117 0%, #0f1d2e 50%, #0a1628 100%);
+    }
+    body.light .calc-bg {
+      background: linear-gradient(145deg, #e8eaf6 0%, #c5cae9 50%, #9fa8da 100%);
+    }
+
+    /* Orqa fon dekor nurlari */
+    .calc-bg::before {
+      content: '';
+      position: absolute;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(80,160,255,0.18) 0%, transparent 70%);
+      top: -80px; left: -80px;
+    }
+    .calc-bg::after {
+      content: '';
+      position: absolute;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(160,80,255,0.14) 0%, transparent 70%);
+      bottom: -60px; right: -60px;
+    }
+
     .shine {
       position: absolute;
       inset: 0 0 60% 0;
@@ -110,13 +138,61 @@
       flex-direction: column;
       position: relative;
       z-index: 1;
+      padding: 10px 12px 6px;
     }
     .panel.active { display: flex; }
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
     }
-    .panel.anim { animation: slideUp 0.18s ease forwards; }
+    .panel.anim { animation: slideUp 0.2s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
+
+    /* Glass karta — panel ichidagi asosiy quti */
+    .glass-card {
+      background: var(--calc-bg);
+      backdrop-filter: blur(52px) saturate(1.6);
+      -webkit-backdrop-filter: blur(52px) saturate(1.6);
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      box-shadow:
+        0 0 0 0.5px var(--shine),
+        inset 0 1px 0 var(--shine);
+      overflow: hidden;
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Glass karta yuqori yaltiroq chizig'i */
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 16px; right: 16px;
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--shine) 30%,
+        rgba(255,255,255,0.18) 50%,
+        var(--shine) 70%,
+        transparent 100%);
+      z-index: 2;
+    }
+
+    /* Glass karta ichki yuqori parlash */
+    .glass-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 45%;
+      border-radius: 28px 28px 0 0;
+      background: linear-gradient(180deg,
+        rgba(255,255,255,0.055) 0%,
+        transparent 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
 
     /* ── DISPLAY ── */
     .display {
@@ -251,7 +327,7 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      padding: 16px 16px 0;
+      padding: 18px 18px 16px;
     }
     .pct-num {
       font-size: clamp(46px, 13vw, 70px);
@@ -295,7 +371,7 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      padding: 12px 16px 0;
+      padding: 18px 18px 16px;
     }
     .cur-status {
       font-size: 12px;
@@ -351,7 +427,8 @@
       padding-bottom: env(safe-area-inset-bottom, 0px);
       z-index: 10;
     }
-    .nav-btn {
+    .nav-pills { display: contents; }
+    .pill {
       flex: 1;
       border: none;
       cursor: pointer;
@@ -362,16 +439,34 @@
       align-items: center;
       justify-content: center;
       gap: 3px;
-      padding: 10px 4px 12px;
+      padding: 8px 4px 10px;
       transition: color 0.18s;
       font-family: inherit;
+      position: relative;
     }
-    .nav-btn span {
-      font-size: 10px;
-      font-weight: 500;
+    .pill-icon { width: 22px; height: 22px; flex-shrink: 0; }
+    .pill-label { font-size: 10px; font-weight: 500; }
+    .pill:active { opacity: 0.55; }
+
+    /* Aktiv tab — juda nozik, dumaloq sof glass */
+    .pill.active { color: var(--btn-orange); }
+    .pill.active::before {
+      content: '';
+      position: absolute;
+      top: 4px; left: 4px; right: 4px; bottom: 4px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(20px) saturate(1.5);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      border: 0.5px solid rgba(255,255,255,0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.22);
+      z-index: -1;
     }
-    .nav-btn.active { color: var(--btn-orange); }
-    .nav-btn:active { opacity: 0.55; }
+    body.light .pill.active::before {
+      background: rgba(255,255,255,0.32);
+      border: 0.5px solid rgba(255,255,255,0.55);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
 
     .author {
       text-align: center;
@@ -384,153 +479,162 @@
   </style>
 </head>
 <body class="dark">
+<div class="calc-bg"></div>
 <div class="calc">
   <div class="shine"></div>
 
   <!-- HISOB -->
   <div id="p-calc" class="panel active">
-    <div class="display">
-      <div class="expr" id="expr"></div>
-      <div class="result" id="result"><span id="rspan">0</span></div>
-    </div>
-    <div class="buttons">
-      <button class="btn btn-gray btn-sm" id="btn-back">
-        <svg width="26" height="18" viewBox="0 0 28 20" fill="none">
-          <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <line x1="13" y1="7" x2="21" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <line x1="21" y1="7" x2="13" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="btn btn-gray btn-sm" id="btn-ac">AC</button>
-      <button class="btn btn-gray btn-sm" id="btn-pm">+/−</button>
-      <button class="btn btn-org" id="btn-div">÷</button>
-      <button class="btn btn-num" data-n="7">7</button>
-      <button class="btn btn-num" data-n="8">8</button>
-      <button class="btn btn-num" data-n="9">9</button>
-      <button class="btn btn-org" id="btn-mul">×</button>
-      <button class="btn btn-num" data-n="4">4</button>
-      <button class="btn btn-num" data-n="5">5</button>
-      <button class="btn btn-num" data-n="6">6</button>
-      <button class="btn btn-org" id="btn-sub">−</button>
-      <button class="btn btn-num" data-n="1">1</button>
-      <button class="btn btn-num" data-n="2">2</button>
-      <button class="btn btn-num" data-n="3">3</button>
-      <button class="btn btn-org" id="btn-add">+</button>
-      <button class="btn btn-num btn-wide" data-n="0">0</button>
-      <button class="btn btn-num btn-dot" id="btn-dot">.</button>
-      <button class="btn btn-org" id="btn-eq">=</button>
+    <div class="glass-card">
+      <div class="display">
+        <div class="expr" id="expr"></div>
+        <div class="result" id="result"><span id="rspan">0</span></div>
+      </div>
+      <div class="buttons">
+        <button class="btn btn-gray btn-sm" id="btn-back">
+          <svg width="26" height="18" viewBox="0 0 28 20" fill="none">
+            <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <line x1="13" y1="7" x2="21" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="21" y1="7" x2="13" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="btn btn-gray btn-sm" id="btn-ac">AC</button>
+        <button class="btn btn-gray btn-sm" id="btn-pm">+/−</button>
+        <button class="btn btn-org" id="btn-div">÷</button>
+        <button class="btn btn-num" data-n="7">7</button>
+        <button class="btn btn-num" data-n="8">8</button>
+        <button class="btn btn-num" data-n="9">9</button>
+        <button class="btn btn-org" id="btn-mul">×</button>
+        <button class="btn btn-num" data-n="4">4</button>
+        <button class="btn btn-num" data-n="5">5</button>
+        <button class="btn btn-num" data-n="6">6</button>
+        <button class="btn btn-org" id="btn-sub">−</button>
+        <button class="btn btn-num" data-n="1">1</button>
+        <button class="btn btn-num" data-n="2">2</button>
+        <button class="btn btn-num" data-n="3">3</button>
+        <button class="btn btn-org" id="btn-add">+</button>
+        <button class="btn btn-num btn-wide" data-n="0">0</button>
+        <button class="btn btn-num btn-dot" id="btn-dot">.</button>
+        <button class="btn btn-org" id="btn-eq">=</button>
+      </div>
     </div>
   </div>
 
   <!-- FOIZ -->
   <div id="p-pct" class="panel">
-    <div class="pct-wrap">
-      <div class="pct-expr" id="pct-expr">Foiz miqdori</div>
-      <div class="pct-num" id="pct-num">—</div>
-      <div class="pct-grid">
-        <button class="pct-btn on" id="pb-tip"  onclick="setPct('tip')">💡 Foiz miqdori</button>
-        <button class="pct-btn"    id="pb-disc" onclick="setPct('disc')">🏷 Chegirma</button>
-        <button class="pct-btn"    id="pb-mark" onclick="setPct('markup')">📈 Ustama</button>
-        <button class="pct-btn"    id="pb-tax"  onclick="setPct('tax')">🧾 Soliq</button>
-      </div>
-      <div class="pct-inputs">
-        <div style="flex:1">
-          <div class="s-label">Asosiy summa</div>
-          <input class="s-input" style="width:100%" id="pct-base"
-            type="number" inputmode="decimal" placeholder="100000" oninput="calcPct()">
+    <div class="glass-card">
+      <div class="pct-wrap">
+        <div class="pct-expr" id="pct-expr">Foiz miqdori</div>
+        <div class="pct-num" id="pct-num">—</div>
+        <div class="pct-grid">
+          <button class="pct-btn on" id="pb-tip"  onclick="setPct('tip')">💡 Foiz miqdori</button>
+          <button class="pct-btn"    id="pb-disc" onclick="setPct('disc')">🏷 Chegirma</button>
+          <button class="pct-btn"    id="pb-mark" onclick="setPct('markup')">📈 Ustama</button>
+          <button class="pct-btn"    id="pb-tax"  onclick="setPct('tax')">🧾 Soliq</button>
         </div>
-        <div style="flex:0 0 88px">
-          <div class="s-label">Foiz %</div>
-          <input class="s-input" style="width:100%;padding:12px 8px" id="pct-rate"
-            type="number" inputmode="decimal" placeholder="15" oninput="calcPct()">
+        <div class="pct-inputs">
+          <div style="flex:1">
+            <div class="s-label">Asosiy summa</div>
+            <input class="s-input" style="width:100%" id="pct-base"
+              type="number" inputmode="decimal" placeholder="100000" oninput="calcPct()">
+          </div>
+          <div style="flex:0 0 88px">
+            <div class="s-label">Foiz %</div>
+            <input class="s-input" style="width:100%;padding:12px 8px" id="pct-rate"
+              type="number" inputmode="decimal" placeholder="15" oninput="calcPct()">
+          </div>
         </div>
-      </div>
-      <div class="s-box">
-        <div class="s-box-lbl" id="pct-lbl">Natija</div>
-        <div class="s-box-val" id="pct-val">—</div>
-        <div class="s-box-lbl" id="pct-sub" style="margin-top:5px"></div>
+        <div class="s-box">
+          <div class="s-box-lbl" id="pct-lbl">Natija</div>
+          <div class="s-box-val" id="pct-val">—</div>
+          <div class="s-box-lbl" id="pct-sub" style="margin-top:5px"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- VALYUTA -->
   <div id="p-cur" class="panel">
-    <div class="cur-wrap">
-      <div class="cur-status loading" id="cur-st">⏳ Kurslar yuklanmoqda...</div>
-      <div class="s-row">
-        <select class="s-select" id="from-c" onchange="convert()">
-          <option value="USD" selected>🇺🇸 USD</option>
-          <option value="UZS">🇺🇿 UZS</option>
-          <option value="EUR">🇪🇺 EUR</option>
-          <option value="RUB">🇷🇺 RUB</option>
-          <option value="AED">🇦🇪 AED</option>
-          <option value="GBP">🇬🇧 GBP</option>
-          <option value="CNY">🇨🇳 CNY</option>
-          <option value="KZT">🇰🇿 KZT</option>
-          <option value="TRY">🇹🇷 TRY</option>
-        </select>
-        <input class="s-input" style="flex:1" id="cur-amt"
-          type="number" inputmode="decimal" placeholder="1" value="1" oninput="convert()">
+    <div class="glass-card">
+      <div class="cur-wrap">
+        <div class="cur-status loading" id="cur-st">⏳ Kurslar yuklanmoqda...</div>
+        <div class="s-row">
+          <select class="s-select" id="from-c" onchange="convert()">
+            <option value="USD" selected>🇺🇸 USD</option>
+            <option value="UZS">🇺🇿 UZS</option>
+            <option value="EUR">🇪🇺 EUR</option>
+            <option value="RUB">🇷🇺 RUB</option>
+            <option value="AED">🇦🇪 AED</option>
+            <option value="GBP">🇬🇧 GBP</option>
+            <option value="CNY">🇨🇳 CNY</option>
+            <option value="KZT">🇰🇿 KZT</option>
+            <option value="TRY">🇹🇷 TRY</option>
+          </select>
+          <input class="s-input" style="flex:1" id="cur-amt"
+            type="number" inputmode="decimal" placeholder="1" value="1" oninput="convert()">
+        </div>
+        <button class="swap-btn" onclick="swapCur()">⇅ Almashish</button>
+        <div class="s-row">
+          <select class="s-select" id="to-c" onchange="convert()">
+            <option value="UZS" selected>🇺🇿 UZS</option>
+            <option value="USD">🇺🇸 USD</option>
+            <option value="EUR">🇪🇺 EUR</option>
+            <option value="RUB">🇷🇺 RUB</option>
+            <option value="AED">🇦🇪 AED</option>
+            <option value="GBP">🇬🇧 GBP</option>
+            <option value="CNY">🇨🇳 CNY</option>
+            <option value="KZT">🇰🇿 KZT</option>
+            <option value="TRY">🇹🇷 TRY</option>
+          </select>
+          <div class="cur-result" id="cur-res">—</div>
+        </div>
+        <div class="s-box">
+          <div class="s-box-lbl">Kurs (Markaziy bank)</div>
+          <div class="s-box-val" id="cur-rate" style="font-size:15px">—</div>
+          <div class="s-box-lbl" id="cur-inv" style="margin-top:5px"></div>
+        </div>
+        <button class="refresh-btn" id="ref-btn" onclick="loadRates()">🔄 Kurslarni yangilash</button>
       </div>
-      <button class="swap-btn" onclick="swapCur()">⇅ Almashish</button>
-      <div class="s-row">
-        <select class="s-select" id="to-c" onchange="convert()">
-          <option value="UZS" selected>🇺🇿 UZS</option>
-          <option value="USD">🇺🇸 USD</option>
-          <option value="EUR">🇪🇺 EUR</option>
-          <option value="RUB">🇷🇺 RUB</option>
-          <option value="AED">🇦🇪 AED</option>
-          <option value="GBP">🇬🇧 GBP</option>
-          <option value="CNY">🇨🇳 CNY</option>
-          <option value="KZT">🇰🇿 KZT</option>
-          <option value="TRY">🇹🇷 TRY</option>
-        </select>
-        <div class="cur-result" id="cur-res">—</div>
-      </div>
-      <div class="s-box">
-        <div class="s-box-lbl">Kurs (Markaziy bank)</div>
-        <div class="s-box-val" id="cur-rate" style="font-size:15px">—</div>
-        <div class="s-box-lbl" id="cur-inv" style="margin-top:5px"></div>
-      </div>
-      <button class="refresh-btn" id="ref-btn" onclick="loadRates()">🔄 Kurslarni yangilash</button>
     </div>
   </div>
 
-  <!-- PASTKI NAV -->
+  <!-- PASTKI NAV — iOS glass pill tabs -->
   <div class="nav">
-    <button class="nav-btn active" id="nb-calc" onclick="switchTab('calc')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="3" width="8" height="5" rx="1.5" fill="currentColor" opacity="0.85"/>
-        <rect x="3" y="11" width="3.5" height="3.5" rx="1" fill="currentColor"/>
-        <rect x="3" y="17" width="3.5" height="3.5" rx="1" fill="currentColor"/>
-        <rect x="8.5" y="11" width="3.5" height="3.5" rx="1" fill="currentColor"/>
-        <rect x="8.5" y="17" width="3.5" height="3.5" rx="1" fill="currentColor"/>
-        <rect x="14" y="11" width="7" height="9.5" rx="1" fill="currentColor"/>
-        <rect x="14" y="3" width="7" height="5" rx="1.5" fill="currentColor" opacity="0.85"/>
-      </svg>
-      <span>Hisob</span>
-    </button>
-    <button class="nav-btn" id="nb-pct" onclick="switchTab('pct')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.8"/>
-        <circle cx="17" cy="17" r="3" stroke="currentColor" stroke-width="1.8"/>
-        <line x1="5" y1="19" x2="19" y2="5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <span>Foiz</span>
-    </button>
-    <button class="nav-btn" id="nb-cur" onclick="switchTab('cur')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-        <path d="M8 9h2c1.1 0 2 .9 2 2s-.9 2-2 2H8m0-4v8m0-4h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <span>Valyuta</span>
-    </button>
-    <button class="nav-btn" id="nb-theme" onclick="toggleTheme()">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" id="theme-svg">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
-      </svg>
-      <span id="theme-lbl">Tungi</span>
-    </button>
+    <div class="nav-pills">
+      <button class="pill active" id="nb-calc" onclick="switchTab('calc')">
+        <svg class="pill-icon" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="8" height="5" rx="1.5" fill="currentColor" opacity="0.9"/>
+          <rect x="3" y="11" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+          <rect x="3" y="17" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+          <rect x="8.5" y="11" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+          <rect x="8.5" y="17" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+          <rect x="14" y="11" width="7" height="9.5" rx="1" fill="currentColor"/>
+          <rect x="14" y="3" width="7" height="5" rx="1.5" fill="currentColor" opacity="0.9"/>
+        </svg>
+        <span class="pill-label">Hisob</span>
+      </button>
+      <button class="pill" id="nb-pct" onclick="switchTab('pct')">
+        <svg class="pill-icon" viewBox="0 0 24 24" fill="none">
+          <circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="17" cy="17" r="3" stroke="currentColor" stroke-width="1.8"/>
+          <line x1="5" y1="19" x2="19" y2="5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="pill-label">Foiz</span>
+      </button>
+      <button class="pill" id="nb-cur" onclick="switchTab('cur')">
+        <svg class="pill-icon" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M8 9h2c1.1 0 2 .9 2 2s-.9 2-2 2H8m0-4v8m0-4h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="pill-label">Valyuta</span>
+      </button>
+      <button class="pill" id="nb-theme" onclick="toggleTheme()">
+        <svg class="pill-icon" viewBox="0 0 24 24" fill="none" id="theme-svg">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+        </svg>
+        <span class="pill-label" id="theme-lbl">Tungi</span>
+      </button>
+    </div>
   </div>
   <div class="author">Shahriyor Umaraliyev</div>
 </div>
@@ -612,9 +716,9 @@ function setFontSize(disp) {
   var L = disp.replace(/[,.\-]/g, '').length;
   resultEl.style.fontSize =
     L <= 6  ? 'clamp(60px,17vw,92px)'  :
-    L <= 8  ? 'clamp(48px,14vw,74px)'  :
-    L <= 10 ? 'clamp(38px,11vw,58px)'  :
-              'clamp(28px, 8vw,42px)';
+    L <= 9  ? 'clamp(46px,13vw,72px)'  :
+    L <= 12 ? 'clamp(34px,10vw,54px)'  :
+              'clamp(24px, 7vw,38px)';
 }
 
 function animPop() {
@@ -670,7 +774,7 @@ document.querySelectorAll('[data-n]').forEach(function(btn) {
     } else {
       if (input === '0') {
         input = (n === '0') ? '0' : n;
-      } else if (input.replace(/\./g,'').replace('-','').length < 10) {
+      } else if (input.replace(/[.\-]/g,'').length < 15) {
         input += n;
       }
     }
