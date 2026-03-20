@@ -9,451 +9,583 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Kalkulyator">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#0d1117">
   <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icon-512.png">
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
   <meta name="application-name" content="Kalkulyator">
-  <meta name="msapplication-TileColor" content="#1a1a2e">
+  <meta name="msapplication-TileColor" content="#0d1117">
   <meta name="msapplication-TileImage" content="/icon-192.png">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    input, select { -webkit-user-select: text; user-select: text; }
+    button { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
 
     html {
       height: 100%;
       height: -webkit-fill-available;
       overflow: hidden;
-      background: #1a1a2e;
+      background: #0d1117;
     }
-    html.light-html { background: #e8eaf6; }
+    html.light { background: #e8eaf6; }
 
     body {
-      /* dvh — iOS Safari toolbar ni hisobga oladi */
       height: 100vh;
       height: 100dvh;
       height: -webkit-fill-available;
       overflow: hidden;
       overscroll-behavior: none;
-      -webkit-overflow-scrolling: auto;
       position: fixed;
-      width: 100%;
-      top: 0; left: 0; right: 0; bottom: 0;
+      inset: 0;
       font-family: -apple-system, 'Helvetica Neue', sans-serif;
-      transition: background 0.4s ease;
     }
     body.dark {
-      background: linear-gradient(135deg,#1a1a2e 0%,#16213e 40%,#0f3460 70%,#1a1a2e 100%);
-      --calc-bg: rgba(28,28,30,0.92);
-      --btn-dark: #333;
-      --btn-gray: #a5a5a5;
-      --text-main: #fff;
-      --expr-color: rgba(255,255,255,0.4);
-      --tab-text: rgba(255,255,255,0.65);
-      --tab-active-text: #fff;
-      --mode-bar-bg: rgba(255,255,255,0.07);
-      --tab-active-bg: rgba(255,255,255,0.15);
-      --shine: rgba(255,255,255,0.06);
-      --border-col: rgba(255,255,255,0.12);
-      --box-bg: rgba(255,255,255,0.05);
-      --box-border: rgba(255,255,255,0.08);
-      --input-bg: rgba(255,255,255,0.08);
-      --input-border: rgba(255,255,255,0.15);
-      --input-text: #fff;
-      --label-color: rgba(255,255,255,0.45);
-      --shadow: 0 32px 80px rgba(0,0,0,0.6);
+      background: linear-gradient(145deg, #0d1117 0%, #0f1d2e 50%, #0a1628 100%);
+      --calc-bg: rgba(12,16,22,0.6);
+      --btn-num: rgba(50,52,62,0.82);
+      --btn-gray: rgba(165,165,175,0.9);
+      --btn-orange: #ff9500;
+      --text-main: #ffffff;
+      --text-dim: rgba(255,255,255,0.36);
+      --mode-bg: rgba(255,255,255,0.07);
+      --mode-active: rgba(255,255,255,0.16);
+      --shine: rgba(255,255,255,0.035);
+      --border: rgba(255,255,255,0.07);
+      --box-bg: rgba(255,255,255,0.045);
+      --input-bg: rgba(255,255,255,0.07);
+      --input-border: rgba(255,255,255,0.11);
+      --label: rgba(255,255,255,0.36);
+      --nav-bg: rgba(10,14,20,0.85);
     }
     body.light {
-      background: linear-gradient(135deg,#e8eaf6 0%,#c5cae9 40%,#9fa8da 70%,#e8eaf6 100%);
-      --calc-bg: rgba(245,245,247,0.96);
-      --btn-dark: #e0e0e2;
-      --btn-gray: #c8c8cb;
+      background: linear-gradient(145deg, #e8eaf6 0%, #c5cae9 50%, #9fa8da 100%);
+      --calc-bg: rgba(240,242,248,0.75);
+      --btn-num: rgba(215,217,225,0.92);
+      --btn-gray: rgba(195,197,202,0.95);
+      --btn-orange: #ff9500;
       --text-main: #1c1c1e;
-      --expr-color: rgba(0,0,0,0.35);
-      --tab-text: rgba(0,0,0,0.5);
-      --tab-active-text: #1c1c1e;
-      --mode-bar-bg: rgba(0,0,0,0.06);
-      --tab-active-bg: rgba(0,0,0,0.12);
-      --shine: rgba(255,255,255,0.55);
-      --border-col: rgba(0,0,0,0.1);
-      --box-bg: rgba(0,0,0,0.04);
-      --box-border: rgba(0,0,0,0.08);
-      --input-bg: rgba(0,0,0,0.06);
-      --input-border: rgba(0,0,0,0.15);
-      --input-text: #1c1c1e;
-      --label-color: rgba(0,0,0,0.4);
-      --shadow: 0 32px 80px rgba(0,0,0,0.18);
+      --text-dim: rgba(0,0,0,0.32);
+      --mode-bg: rgba(0,0,0,0.055);
+      --mode-active: rgba(0,0,0,0.11);
+      --shine: rgba(255,255,255,0.5);
+      --border: rgba(0,0,0,0.07);
+      --box-bg: rgba(0,0,0,0.038);
+      --input-bg: rgba(0,0,0,0.055);
+      --input-border: rgba(0,0,0,0.12);
+      --label: rgba(0,0,0,0.36);
+      --nav-bg: rgba(230,232,242,0.9);
     }
-    body::before {
-      content:''; position:fixed; width:400px; height:400px; border-radius:50%;
-      background:radial-gradient(circle,rgba(100,180,255,0.15) 0%,transparent 70%);
-      top:-100px; left:-100px; pointer-events:none;
-    }
-    body::after {
-      content:''; position:fixed; width:300px; height:300px; border-radius:50%;
-      background:radial-gradient(circle,rgba(180,100,255,0.12) 0%,transparent 70%);
-      bottom:-80px; right:-80px; pointer-events:none;
-    }
-    .calculator {
-      width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      height: -webkit-fill-available;
-      max-height: 100%;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      background: var(--calc-bg);
-      backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-      border-radius: 0;
-      border: none;
-      padding: env(safe-area-inset-top, 20px) 18px env(safe-area-inset-bottom, 20px);
-      box-shadow: none;
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-      transition: background 0.4s, box-shadow 0.4s;
-    }
-    .glass-shine {
-      position:absolute; top:0; left:0; right:0; height: 30%;
-      background:linear-gradient(180deg,var(--shine) 0%,transparent 100%);
-      pointer-events:none;
-    }
-    .author {
-      text-align:center; font-size:10px; font-weight:400;
-      letter-spacing:0.5px; opacity:0.22; color:var(--text-main);
-      pointer-events:none; transition:color 0.3s;
-      padding-bottom: 6px;
-    }
-    .top-bar {
-      display:flex; align-items:center; gap:8px;
-      margin-bottom: 8px;
-      padding-top: 8px;
-      flex-shrink: 0;
-    }
-    .mode-bar { display:flex; background:var(--mode-bar-bg); border-radius:20px; padding:3px; flex:1; }
-    .tab {
-      flex:1; padding:7px 0; border:none; cursor:pointer;
-      border-radius:16px; font-size:13px; font-weight:500;
-      color:var(--tab-text); background:transparent; transition:all 0.2s;
-    }
-    .tab.active { background:var(--tab-active-bg); color:var(--tab-active-text); }
-    .theme-btn {
-      width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
-      font-size:17px; display:flex; align-items:center; justify-content:center;
-      background:var(--mode-bar-bg); color:var(--tab-active-text);
-      transition:transform 0.3s, background 0.3s; flex-shrink:0;
-    }
-    .theme-btn:active { transform:scale(0.85) rotate(20deg); }
 
-    /* DISPLAY — qolgan bo'sh joyni oladi, lekin tugmalarga joy qoldiradi */
+    /* ── CALCULATOR SHELL ── */
+    .calc {
+      width: 100%;
+      height: 100%;
+      background: var(--calc-bg);
+      backdrop-filter: blur(48px);
+      -webkit-backdrop-filter: blur(48px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .shine {
+      position: absolute;
+      inset: 0 0 60% 0;
+      background: linear-gradient(180deg, var(--shine) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      flex: 1;
+      min-height: 0;
+      display: none;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+    .panel.active { display: flex; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .panel.anim { animation: slideUp 0.18s ease forwards; }
+
+    /* ── DISPLAY ── */
     .display {
       flex: 1;
       min-height: 0;
-      padding: 8px 16px 16px; text-align: right;
-      display: flex; flex-direction: column;
-      justify-content: flex-end; gap: 4px; overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 12px 20px 14px;
+      text-align: right;
+      overflow: hidden;
     }
     .expr {
-      font-size: clamp(15px, 4vw, 20px);
-      font-weight: 300; color: var(--expr-color);
-      min-height: 24px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      flex-shrink: 0;
+      font-size: clamp(14px, 3.8vw, 19px);
+      font-weight: 300;
+      color: var(--text-dim);
+      min-height: 22px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 2px;
     }
     .result {
-      font-weight: 200; color: var(--text-main); line-height: 1;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      font-size: clamp(58px, 16vw, 88px);
-      transition: font-size 0.15s ease, color 0.3s;
-      flex-shrink: 0;
-      text-align: right;
+      font-size: clamp(60px, 17vw, 92px);
+      font-weight: 200;
+      color: var(--text-main);
+      line-height: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition: font-size 0.12s ease;
     }
-    /* Animatsiya faqat span ga — div qimirlamaydi */
     .result span {
       display: inline-block;
       transform-origin: right center;
     }
-    @keyframes popIn {
-      0%   { opacity: 0.6; transform: scale(0.94); }
-      55%  { opacity: 1;   transform: scale(1.02); }
-      100% { opacity: 1;   transform: scale(1); }
+    @keyframes pop {
+      0%   { opacity: 0.55; transform: scale(0.93); }
+      55%  { transform: scale(1.025); }
+      100% { opacity: 1; transform: scale(1); }
     }
-    .pop {
-      animation: popIn 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-      transform-origin: right center;
-      display: inline-block;
-      width: 100%;
-      text-align: right;
-    }
+    .popping { animation: pop 0.17s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
 
-    /* TUGMALAR — flex-shrink:0 bilan siqilmaydi, o'z joyini oladi */
+    /* ── BUTTONS ── */
     .buttons {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: clamp(8px, 2.2vw, 12px);
-      padding: 0 0 env(safe-area-inset-bottom, 12px);
-      flex-shrink: 0;
+      gap: clamp(7px, 2vw, 11px);
+      padding: 0 14px 10px;
       flex-shrink: 0;
     }
     .btn {
-      height: clamp(60px, 22vw, 90px);
-      width: 100%;
-      border-radius: 50%; border: none; cursor: pointer;
+      height: clamp(58px, 21vw, 86px);
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
       font-size: clamp(22px, 6.5vw, 34px);
       font-weight: 400;
-      display: flex; align-items: center; justify-content: center;
-      transition: filter 0.07s, transform 0.07s;
-      user-select: none; outline: none; -webkit-tap-highlight-color: transparent;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: filter 0.06s, transform 0.06s;
+      outline: none;
+      position: relative;
+      overflow: hidden;
     }
-    .btn:active { filter: brightness(0.7); transform: scale(0.93); }
-    .btn-zero {
-      border-radius: 999px;
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: rgba(255,255,255,0);
+      transition: background 0.08s;
+    }
+    .btn:active::after { background: rgba(255,255,255,0.18); }
+    .btn:active { transform: scale(0.91); filter: brightness(0.8); }
+
+    .btn-num  { background: var(--btn-num); }
+    .btn-gray { background: var(--btn-gray); color: #111; }
+    .btn-org  { background: var(--btn-orange); color: #fff; }
+    .btn-org.lit { background: #fff; color: var(--btn-orange); }
+
+    .btn-wide {
       grid-column: span 2;
+      border-radius: 999px;
       justify-content: flex-start;
-      padding-left: clamp(20px, 7vw, 32px);
+      padding-left: clamp(22px, 8vw, 36px);
     }
-    .btn-gray  { background:var(--btn-gray); color:#000; }
-    .btn-dark  { background:var(--btn-dark); color:var(--text-main); transition:background 0.3s,color 0.3s,filter 0.07s,transform 0.07s; }
-    .btn-orange { background:#ff9500; color:#fff; }
-    .btn-orange.op-active { background:#fff; color:#ff9500; }
-    .btn-special { font-size: clamp(16px, 4.5vw, 22px); }
-    .btn-dot { font-size: clamp(30px, 9vw, 44px); line-height:1; padding-bottom:4px; }
-    @keyframes fadeSlide { from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);} }
-    .panel { animation:fadeSlide 0.2s ease forwards; }
+    .btn-sm  { font-size: clamp(16px, 4.5vw, 22px); }
+    .btn-dot { font-size: clamp(32px, 9vw, 46px); line-height: 1; padding-bottom: 3px; }
 
-    /* Hisob paneli flex column */
-    #panel-calc {
-      display: flex; flex-direction: column; flex: 1; min-height: 0;
+    /* ── FORM ELEMENTS ── */
+    .s-label {
+      font-size: 12px;
+      color: var(--label);
+      margin-bottom: 6px;
     }
+    .s-input, .s-select {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.18s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .s-input:focus { border-color: var(--btn-orange); }
+    .s-select { flex: 0 0 108px; font-size: 14px; cursor: pointer; }
+    .s-box {
+      background: var(--box-bg);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+    }
+    .s-box-lbl { font-size: 12px; color: var(--label); margin-bottom: 4px; }
+    .s-box-val {
+      font-size: clamp(20px, 5.5vw, 30px);
+      font-weight: 300;
+      color: var(--text-main);
+    }
+    .s-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 
-    /* Foiz va valyuta paneli scroll */
-    #panel-pct, #panel-cur {
+    /* ── PERCENT PANEL ── */
+    .pct-wrap {
+      flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      flex: 1;
-      padding-bottom: 16px;
+      padding: 16px 16px 0;
     }
-    .s-input, .s-select {
-      padding:8px 10px; border-radius:12px;
-      border:1px solid var(--input-border);
-      background:var(--input-bg); color:var(--input-text);
-      font-size:14px; outline:none;
-      transition:background 0.3s,color 0.3s,border-color 0.2s;
-      -webkit-appearance:none; appearance:none;
+    .pct-num {
+      font-size: clamp(46px, 13vw, 70px);
+      font-weight: 200;
+      color: var(--text-main);
+      text-align: right;
+      padding-bottom: 10px;
+      min-height: 68px;
     }
-    .s-input:focus { border-color:#ff9500; }
-    .s-select { flex:0 0 95px; font-size:13px; cursor:pointer; }
-    .s-label { font-size:11px; color:var(--label-color); margin-bottom:5px; }
-    .s-box {
-      background:var(--box-bg); border-radius:14px;
-      padding:10px 14px; margin-top:6px;
-      border:1px solid var(--box-border);
+    .pct-expr {
+      font-size: 14px;
+      color: var(--text-dim);
+      text-align: right;
+      margin-bottom: 14px;
     }
-    .s-box-label { font-size:11px; color:var(--label-color); margin-bottom:2px; }
-    .s-box-val { font-size:20px; font-weight:300; color:var(--text-main); transition:color 0.3s; }
-    .row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    .swap-btn {
-      display:block; width:100%; margin:0 0 8px; padding:7px;
-      border-radius:10px; border:none; cursor:pointer;
-      background:var(--mode-bar-bg); color:var(--tab-active-text);
-      font-size:13px; transition:filter 0.1s;
+    .pct-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
     }
-    .swap-btn:active { filter:brightness(0.8); }
-    .pct-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
     .pct-btn {
-      padding:10px 0; border-radius:12px; border:none; cursor:pointer;
-      font-size:13px; font-weight:500;
-      background:var(--mode-bar-bg); color:var(--tab-active-text);
-      transition:filter 0.1s,transform 0.1s;
+      padding: 14px 4px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      background: var(--mode-bg);
+      color: var(--text-main);
+      transition: filter 0.1s, transform 0.1s;
     }
-    .pct-btn:active { filter:brightness(0.8); transform:scale(0.96); }
-    .pct-btn.pct-active { background:#ff9500; color:#fff; }
-    .pct-display {
-      font-weight:200; color:var(--text-main); font-size:42px;
-      text-align:right; padding:0 10px 10px; min-height:60px; transition:color 0.3s;
+    .pct-btn:active { filter: brightness(0.78); transform: scale(0.96); }
+    .pct-btn.on { background: var(--btn-orange); color: #fff; }
+    .pct-inputs { display: flex; gap: 10px; margin-bottom: 0; }
+
+    /* ── CURRENCY PANEL ── */
+    .cur-wrap {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: 12px 16px 0;
     }
     .cur-status {
-      font-size:11px; text-align:center; padding:4px 0 6px;
-      color:var(--label-color); transition:color 0.3s;
+      font-size: 12px;
+      text-align: center;
+      padding: 0 0 10px;
+      color: var(--label);
     }
-    .cur-status.loading { color:#ff9500; }
-    .cur-status.ok      { color:#34c759; }
-    .cur-status.warn    { color:#ff9500; }
-    .cur-status.error   { color:#ff3b30; }
-    .cur-res-display {
-      flex:1; display:flex; align-items:center;
-      font-size:17px; font-weight:300; pointer-events:none;
-      padding:8px 10px; border-radius:12px;
-      border:1px solid var(--box-border);
-      background:var(--box-bg); color:var(--text-main); min-height:38px;
+    .cur-status.loading { color: #ff9500; }
+    .cur-status.ok      { color: #34c759; }
+    .cur-status.warn    { color: #ff9a00; }
+    .cur-status.error   { color: #ff3b30; }
+    .cur-result {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      font-size: clamp(18px, 5vw, 24px);
+      font-weight: 300;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--box-bg);
+      color: var(--text-main);
+      min-height: 46px;
+      pointer-events: none;
     }
-    .refresh-btn {
-      display:block; width:100%; margin:6px 0 0; padding:8px;
-      border-radius:10px; border:none; cursor:pointer;
-      background:var(--mode-bar-bg); color:var(--tab-active-text);
-      font-size:12px; font-weight:500; transition:filter 0.1s;
+    .swap-btn, .refresh-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      background: var(--mode-bg);
+      color: var(--text-main);
+      transition: filter 0.1s;
+      margin-bottom: 10px;
     }
-    .refresh-btn:active { filter:brightness(0.8); }
-    .refresh-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .swap-btn:active, .refresh-btn:active { filter: brightness(0.78); }
+    .refresh-btn { margin-top: 10px; margin-bottom: 0; }
+    .refresh-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    /* ── BOTTOM NAV ── */
+    .nav {
+      flex-shrink: 0;
+      display: flex;
+      background: var(--nav-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      z-index: 10;
+    }
+    .nav-btn {
+      flex: 1;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--label);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 4px 12px;
+      transition: color 0.18s;
+      font-family: inherit;
+    }
+    .nav-btn span {
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .nav-btn.active { color: var(--btn-orange); }
+    .nav-btn:active { opacity: 0.55; }
+
+    .author {
+      text-align: center;
+      font-size: 10px;
+      color: var(--label);
+      opacity: 0.55;
+      padding: 3px 0 2px;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body class="dark">
+<div class="calc">
+  <div class="shine"></div>
 
-<div class="calculator">
-  <div class="glass-shine"></div>
-  <div class="top-bar">
-    <div class="mode-bar">
-      <button class="tab active" id="tab-calc" onclick="switchTab('calc')">Hisob</button>
-      <button class="tab"        id="tab-pct"  onclick="switchTab('pct')">Foiz %</button>
-      <button class="tab"        id="tab-cur"  onclick="switchTab('cur')">Valyuta</button>
-    </div>
-    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">🌙</button>
-  </div>
-
-  <!-- HISOB PANELI -->
-  <div id="panel-calc" class="panel" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+  <!-- HISOB -->
+  <div id="p-calc" class="panel active">
     <div class="display">
       <div class="expr" id="expr"></div>
-      <div class="result" id="result"><span id="result-text">0</span></div>
+      <div class="result" id="result"><span id="rspan">0</span></div>
     </div>
     <div class="buttons">
-      <button class="btn btn-gray btn-special" id="btn-back">
-        <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
-          <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+      <button class="btn btn-gray btn-sm" id="btn-back">
+        <svg width="26" height="18" viewBox="0 0 28 20" fill="none">
+          <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
           <line x1="13" y1="7" x2="21" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           <line x1="21" y1="7" x2="13" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </button>
-      <button class="btn btn-gray btn-special" id="btn-clear">AC</button>
-      <button class="btn btn-gray btn-special" id="btn-pm">+/−</button>
-      <button class="btn btn-orange" id="btn-div">÷</button>
-      <button class="btn btn-dark" data-n="7">7</button>
-      <button class="btn btn-dark" data-n="8">8</button>
-      <button class="btn btn-dark" data-n="9">9</button>
-      <button class="btn btn-orange" id="btn-mul">×</button>
-      <button class="btn btn-dark" data-n="4">4</button>
-      <button class="btn btn-dark" data-n="5">5</button>
-      <button class="btn btn-dark" data-n="6">6</button>
-      <button class="btn btn-orange" id="btn-sub">−</button>
-      <button class="btn btn-dark" data-n="1">1</button>
-      <button class="btn btn-dark" data-n="2">2</button>
-      <button class="btn btn-dark" data-n="3">3</button>
-      <button class="btn btn-orange" id="btn-add">+</button>
-      <button class="btn btn-dark btn-zero" data-n="0">0</button>
-      <button class="btn btn-dark btn-dot" id="btn-dot">.</button>
-      <button class="btn btn-orange" id="btn-eq">=</button>
+      <button class="btn btn-gray btn-sm" id="btn-ac">AC</button>
+      <button class="btn btn-gray btn-sm" id="btn-pm">+/−</button>
+      <button class="btn btn-org" id="btn-div">÷</button>
+      <button class="btn btn-num" data-n="7">7</button>
+      <button class="btn btn-num" data-n="8">8</button>
+      <button class="btn btn-num" data-n="9">9</button>
+      <button class="btn btn-org" id="btn-mul">×</button>
+      <button class="btn btn-num" data-n="4">4</button>
+      <button class="btn btn-num" data-n="5">5</button>
+      <button class="btn btn-num" data-n="6">6</button>
+      <button class="btn btn-org" id="btn-sub">−</button>
+      <button class="btn btn-num" data-n="1">1</button>
+      <button class="btn btn-num" data-n="2">2</button>
+      <button class="btn btn-num" data-n="3">3</button>
+      <button class="btn btn-org" id="btn-add">+</button>
+      <button class="btn btn-num btn-wide" data-n="0">0</button>
+      <button class="btn btn-num btn-dot" id="btn-dot">.</button>
+      <button class="btn btn-org" id="btn-eq">=</button>
     </div>
   </div>
 
-  <!-- FOIZ PANELI -->
-  <div id="panel-pct" style="display:none;" class="panel">
-    <div style="padding:4px 10px 6px;text-align:right;">
-      <div class="expr" id="pct-expr">Foiz miqdori</div>
-      <div class="pct-display" id="pct-display">—</div>
-    </div>
-    <div class="pct-grid">
-      <button class="pct-btn pct-active" id="pbt-tip"  onclick="setPctMode('tip')">💡 Foiz miqdori</button>
-      <button class="pct-btn"            id="pbt-disc" onclick="setPctMode('disc')">🏷 Chegirma</button>
-      <button class="pct-btn"            id="pbt-mark" onclick="setPctMode('markup')">📈 Ustama</button>
-      <button class="pct-btn"            id="pbt-tax"  onclick="setPctMode('tax')">🧾 Soliq</button>
-    </div>
-    <div class="row">
-      <div style="flex:1;">
-        <div class="s-label">Asosiy summa</div>
-        <input class="s-input" style="width:100%;" id="pct-base"
-          type="number" inputmode="numeric" pattern="[0-9]*"
-          placeholder="100000" oninput="pctUpdate()">
+  <!-- FOIZ -->
+  <div id="p-pct" class="panel">
+    <div class="pct-wrap">
+      <div class="pct-expr" id="pct-expr">Foiz miqdori</div>
+      <div class="pct-num" id="pct-num">—</div>
+      <div class="pct-grid">
+        <button class="pct-btn on" id="pb-tip"  onclick="setPct('tip')">💡 Foiz miqdori</button>
+        <button class="pct-btn"    id="pb-disc" onclick="setPct('disc')">🏷 Chegirma</button>
+        <button class="pct-btn"    id="pb-mark" onclick="setPct('markup')">📈 Ustama</button>
+        <button class="pct-btn"    id="pb-tax"  onclick="setPct('tax')">🧾 Soliq</button>
       </div>
-      <div style="flex:0 0 80px;">
-        <div class="s-label">Foiz %</div>
-        <input class="s-input" style="width:100%;padding:8px 6px;" id="pct-rate"
-          type="number" inputmode="numeric" pattern="[0-9]*"
-          placeholder="15" oninput="pctUpdate()">
+      <div class="pct-inputs">
+        <div style="flex:1">
+          <div class="s-label">Asosiy summa</div>
+          <input class="s-input" style="width:100%" id="pct-base"
+            type="number" inputmode="decimal" placeholder="100000" oninput="calcPct()">
+        </div>
+        <div style="flex:0 0 88px">
+          <div class="s-label">Foiz %</div>
+          <input class="s-input" style="width:100%;padding:12px 8px" id="pct-rate"
+            type="number" inputmode="decimal" placeholder="15" oninput="calcPct()">
+        </div>
+      </div>
+      <div class="s-box">
+        <div class="s-box-lbl" id="pct-lbl">Natija</div>
+        <div class="s-box-val" id="pct-val">—</div>
+        <div class="s-box-lbl" id="pct-sub" style="margin-top:5px"></div>
       </div>
     </div>
-    <div class="s-box">
-      <div class="s-box-label" id="pct-res-label">Natija</div>
-      <div class="s-box-val"   id="pct-res-val">—</div>
-      <div class="s-box-label" id="pct-res-sub" style="margin-top:4px;"></div>
+  </div>
+
+  <!-- VALYUTA -->
+  <div id="p-cur" class="panel">
+    <div class="cur-wrap">
+      <div class="cur-status loading" id="cur-st">⏳ Kurslar yuklanmoqda...</div>
+      <div class="s-row">
+        <select class="s-select" id="from-c" onchange="convert()">
+          <option value="USD" selected>🇺🇸 USD</option>
+          <option value="UZS">🇺🇿 UZS</option>
+          <option value="EUR">🇪🇺 EUR</option>
+          <option value="RUB">🇷🇺 RUB</option>
+          <option value="AED">🇦🇪 AED</option>
+          <option value="GBP">🇬🇧 GBP</option>
+          <option value="CNY">🇨🇳 CNY</option>
+          <option value="KZT">🇰🇿 KZT</option>
+          <option value="TRY">🇹🇷 TRY</option>
+        </select>
+        <input class="s-input" style="flex:1" id="cur-amt"
+          type="number" inputmode="decimal" placeholder="1" value="1" oninput="convert()">
+      </div>
+      <button class="swap-btn" onclick="swapCur()">⇅ Almashish</button>
+      <div class="s-row">
+        <select class="s-select" id="to-c" onchange="convert()">
+          <option value="UZS" selected>🇺🇿 UZS</option>
+          <option value="USD">🇺🇸 USD</option>
+          <option value="EUR">🇪🇺 EUR</option>
+          <option value="RUB">🇷🇺 RUB</option>
+          <option value="AED">🇦🇪 AED</option>
+          <option value="GBP">🇬🇧 GBP</option>
+          <option value="CNY">🇨🇳 CNY</option>
+          <option value="KZT">🇰🇿 KZT</option>
+          <option value="TRY">🇹🇷 TRY</option>
+        </select>
+        <div class="cur-result" id="cur-res">—</div>
+      </div>
+      <div class="s-box">
+        <div class="s-box-lbl">Kurs (Markaziy bank)</div>
+        <div class="s-box-val" id="cur-rate" style="font-size:15px">—</div>
+        <div class="s-box-lbl" id="cur-inv" style="margin-top:5px"></div>
+      </div>
+      <button class="refresh-btn" id="ref-btn" onclick="loadRates()">🔄 Kurslarni yangilash</button>
     </div>
   </div>
 
-  <!-- VALYUTA PANELI -->
-  <div id="panel-cur" style="display:none;" class="panel">
-    <div class="cur-status loading" id="cur-status">⏳ Kurslar yuklanmoqda...</div>
-    <div class="row">
-      <select class="s-select" id="from-cur" onchange="curConvert()">
-        <option value="USD" selected>🇺🇸 USD</option>
-        <option value="UZS">🇺🇿 UZS</option>
-        <option value="EUR">🇪🇺 EUR</option>
-        <option value="RUB">🇷🇺 RUB</option>
-        <option value="AED">🇦🇪 AED</option>
-        <option value="GBP">🇬🇧 GBP</option>
-        <option value="CNY">🇨🇳 CNY</option>
-        <option value="KZT">🇰🇿 KZT</option>
-        <option value="TRY">🇹🇷 TRY</option>
-      </select>
-      <input class="s-input" style="flex:1;" id="cur-amount"
-        type="number" inputmode="numeric" pattern="[0-9]*"
-        placeholder="1" value="1" oninput="curConvert()">
-    </div>
-    <button class="swap-btn" onclick="swapCurrency()">⇅ Almashish</button>
-    <div class="row">
-      <select class="s-select" id="to-cur" onchange="curConvert()">
-        <option value="UZS" selected>🇺🇿 UZS</option>
-        <option value="USD">🇺🇸 USD</option>
-        <option value="EUR">🇪🇺 EUR</option>
-        <option value="RUB">🇷🇺 RUB</option>
-        <option value="AED">🇦🇪 AED</option>
-        <option value="GBP">🇬🇧 GBP</option>
-        <option value="CNY">🇨🇳 CNY</option>
-        <option value="KZT">🇰🇿 KZT</option>
-        <option value="TRY">🇹🇷 TRY</option>
-      </select>
-      <div class="cur-res-display" id="cur-res-display">—</div>
-    </div>
-    <div class="s-box">
-      <div class="s-box-label">Kurs (Markaziy bank)</div>
-      <div class="s-box-val" id="cur-rate-txt" style="font-size:15px;">—</div>
-      <div class="s-box-label" id="cur-extra" style="margin-top:4px;"></div>
-    </div>
-    <button class="refresh-btn" id="refresh-btn" onclick="manualRefresh()">🔄 Kurslarni yangilash</button>
-
+  <!-- PASTKI NAV -->
+  <div class="nav">
+    <button class="nav-btn active" id="nb-calc" onclick="switchTab('calc')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="8" height="5" rx="1.5" fill="currentColor" opacity="0.85"/>
+        <rect x="3" y="11" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+        <rect x="3" y="17" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+        <rect x="8.5" y="11" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+        <rect x="8.5" y="17" width="3.5" height="3.5" rx="1" fill="currentColor"/>
+        <rect x="14" y="11" width="7" height="9.5" rx="1" fill="currentColor"/>
+        <rect x="14" y="3" width="7" height="5" rx="1.5" fill="currentColor" opacity="0.85"/>
+      </svg>
+      <span>Hisob</span>
+    </button>
+    <button class="nav-btn" id="nb-pct" onclick="switchTab('pct')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="17" cy="17" r="3" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="5" y1="19" x2="19" y2="5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span>Foiz</span>
+    </button>
+    <button class="nav-btn" id="nb-cur" onclick="switchTab('cur')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M8 9h2c1.1 0 2 .9 2 2s-.9 2-2 2H8m0-4v8m0-4h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span>Valyuta</span>
+    </button>
+    <button class="nav-btn" id="nb-theme" onclick="toggleTheme()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" id="theme-svg">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+      </svg>
+      <span id="theme-lbl">Tungi</span>
+    </button>
   </div>
-
   <div class="author">Shahriyor Umaraliyev</div>
 </div>
 
 <script>
-/* ── TEMA ── */
-var isDark = true;
+'use strict';
+
+/* ─── TEMA ─────────────────────────────────────────── */
+var dark = true;
 function toggleTheme() {
-  isDark = !isDark;
-  document.body.className = isDark ? 'dark' : 'light';
-  document.documentElement.className = isDark ? '' : 'light-html';
-  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', isDark ? '#1a1a2e' : '#e8eaf6');
+  dark = !dark;
+  document.body.className = dark ? 'dark' : 'light';
+  document.documentElement.className = dark ? '' : 'light';
+  document.querySelector('meta[name="theme-color"]')
+    .setAttribute('content', dark ? '#0d1117' : '#e8eaf6');
+  document.getElementById('theme-svg').innerHTML = dark
+    ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>'
+    : '<circle cx="12" cy="12" r="5" fill="currentColor"/>'
+      + '<g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">'
+      + '<line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>'
+      + '<line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>'
+      + '<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>'
+      + '<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+      + '</g>';
+  document.getElementById('theme-lbl').textContent = dark ? 'Tungi' : 'Kunduz';
 }
 
-/* ── TABLAR ── */
+/* ─── TABS ──────────────────────────────────────────── */
+var TABS = { calc:'p-calc', pct:'p-pct', cur:'p-cur' };
+var curTab = 'calc';
 function switchTab(t) {
-  ['calc','pct','cur'].forEach(function(id) {
-    document.getElementById('tab-'+id).classList.remove('active');
-    document.getElementById('panel-'+id).style.display = 'none';
-  });
-  document.getElementById('tab-'+t).classList.add('active');
-  var p = document.getElementById('panel-'+t);
-  p.style.display = 'block';
-  p.classList.remove('panel'); void p.offsetWidth; p.classList.add('panel');
+  if (curTab === t) return;
+  document.getElementById(TABS[curTab]).classList.remove('active');
+  document.getElementById('nb-' + curTab).classList.remove('active');
+  curTab = t;
+  var panel = document.getElementById(TABS[t]);
+  panel.classList.add('active');
+  panel.classList.remove('anim');
+  void panel.offsetWidth;
+  panel.classList.add('anim');
+  document.getElementById('nb-' + t).classList.add('active');
   if (t === 'cur' && !ratesLoaded) loadRates();
 }
 
-/* ── KALKULYATOR ── */
-var firstOp=null, operator=null, inputStr='0', justEvaled=false, waitingSecond=false;
-var resEl    = document.getElementById('result-text');
+/* ─── CALCULATOR ────────────────────────────────────── */
+var first = null;       // birinchi operand (number)
+var op    = null;       // operator string
+var input = '0';        // joriy kiritilayotgan son (vergulsiz, sof raqam)
+var waited  = false;    // operator bosildi, ikkinchi raqam kutilmoqda
+var evaled  = false;    // = bosildi
+
+var rspanEl  = document.getElementById('rspan');
 var resultEl = document.getElementById('result');
 var exprEl   = document.getElementById('expr');
-var clrBtn   = document.getElementById('btn-clear');
+var acBtn    = document.getElementById('btn-ac');
 var opBtns   = {
   '+': document.getElementById('btn-add'),
   '−': document.getElementById('btn-sub'),
@@ -461,105 +593,151 @@ var opBtns   = {
   '÷': document.getElementById('btn-div')
 };
 
-/* Faqat result-text span qimirlaydi — expr QIMIRLAMAYDI */
-function pop() {
-  resEl.classList.remove('pop');
-  void resEl.offsetWidth;
-  resEl.classList.add('pop');
+/* Raqamni chiroyli formatlash (vergul bilan) */
+function fmtDisp(s) {
+  if (s === 'Xato') return 'Xato';
+  var neg  = s.charAt(0) === '-';
+  var body = neg ? s.slice(1) : s;
+  var parts = body.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (neg ? '-' : '') + parts.join('.');
 }
 
-function setSize(s) {
-  var l = s.replace(/[,.\-]/g,'').length;
-  resultEl.style.fontSize = l<=6?'clamp(58px,16vw,88px)':l<=8?'clamp(46px,13vw,70px)':l<=10?'clamp(36px,10vw,54px)':'clamp(28px,8vw,42px)';
+/* input string ni hisob uchun xavfsiz float ga aylantirish */
+function toNum(s) {
+  return parseFloat(s);   // input hech qachon vergul tutmaydi
 }
 
-function fmt(s) {
-  if (s==='Xato') return 'Xato';
-  var p = s.split('.');
-  p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g,',');
-  return p.join('.');
+function setFontSize(disp) {
+  var L = disp.replace(/[,.\-]/g, '').length;
+  resultEl.style.fontSize =
+    L <= 6  ? 'clamp(60px,17vw,92px)'  :
+    L <= 8  ? 'clamp(48px,14vw,74px)'  :
+    L <= 10 ? 'clamp(38px,11vw,58px)'  :
+              'clamp(28px, 8vw,42px)';
 }
 
-function hlOp(op) {
-  Object.values(opBtns).forEach(function(b){ b.classList.remove('op-active'); });
-  if (op && opBtns[op]) opBtns[op].classList.add('op-active');
+function animPop() {
+  rspanEl.classList.remove('popping');
+  void rspanEl.offsetWidth;
+  rspanEl.classList.add('popping');
 }
 
-function compute(a, b, op) {
-  var r;
-  if      (op==='+') r=a+b;
-  else if (op==='−') r=a-b;
-  else if (op==='×') r=a*b;
-  else if (op==='÷') { if(b===0) return null; r=a/b; }
-  else return String(b);
-  return parseFloat(r.toPrecision(10)).toString();
+function hlOp(o) {
+  Object.values(opBtns).forEach(function(b){ b.classList.remove('lit'); });
+  if (o && opBtns[o]) opBtns[o].classList.add('lit');
 }
 
-function refreshExpr() {
-  if (justEvaled) return;
-  if (firstOp !== null && operator !== null) {
-    exprEl.textContent = waitingSecond
-      ? fmt(String(firstOp)) + ' ' + operator
-      : fmt(String(firstOp)) + ' ' + operator + ' ' + fmt(inputStr);
-  } else {
-    exprEl.textContent = '';
+function render() {
+  var d = fmtDisp(input);
+  rspanEl.textContent = d;
+  setFontSize(d);
+  acBtn.textContent = (input === '0' && first === null && !op) ? 'AC' : 'C';
+  /* expr refresh — faqat = bosilmagan bo'lsa */
+  if (!evaled) {
+    if (first !== null && op) {
+      exprEl.textContent = waited
+        ? fmtDisp(String(first)) + ' ' + op
+        : fmtDisp(String(first)) + ' ' + op + ' ' + fmtDisp(input);
+    } else {
+      exprEl.textContent = '';
+    }
   }
 }
 
-function update() {
-  resEl.textContent = fmt(inputStr);
-  setSize(fmt(inputStr));
-  clrBtn.textContent = (inputStr==='0' && firstOp===null && !operator) ? 'AC' : 'C';
-  refreshExpr();
+function compute(a, b, o) {
+  var r;
+  if      (o === '+') r = a + b;
+  else if (o === '−') r = a - b;
+  else if (o === '×') r = a * b;
+  else if (o === '÷') { if (b === 0) return null; r = a / b; }
+  else return b;
+  /* Float precision fix */
+  return parseFloat(r.toPrecision(12));
 }
 
+/* Raqam tugmalari */
 document.querySelectorAll('[data-n]').forEach(function(btn) {
   btn.addEventListener('click', function() {
-    var n = btn.getAttribute('data-n');
-    if (justEvaled) {
-      inputStr=n==='0'?'0':n; firstOp=null; operator=null;
-      justEvaled=false; waitingSecond=false;
-    } else if (waitingSecond) {
-      inputStr=n==='0'?'0':n; waitingSecond=false;
+    var n = btn.dataset.n;
+    if (evaled) {
+      input = (n === '0') ? '0' : n;
+      first = null; op = null; evaled = false; waited = false;
+      exprEl.textContent = '';
+    } else if (waited) {
+      input = (n === '0') ? '0' : n;
+      waited = false;
     } else {
-      if (inputStr==='0') inputStr=n==='0'?'0':n;
-      else if (inputStr.replace(/[,.\-]/g,'').length<9) inputStr+=n;
+      if (input === '0') {
+        input = (n === '0') ? '0' : n;
+      } else if (input.replace(/\./g,'').replace('-','').length < 10) {
+        input += n;
+      }
     }
-    hlOp(operator); update(); pop();
+    hlOp(op);
+    render();
+    animPop();
   });
 });
 
+/* Nuqta */
 document.getElementById('btn-dot').addEventListener('click', function() {
-  if (justEvaled) { inputStr='0.'; firstOp=null; operator=null; justEvaled=false; waitingSecond=false; }
-  else if (waitingSecond) { inputStr='0.'; waitingSecond=false; }
-  else if (inputStr.indexOf('.')===-1) inputStr+='.';
-  update();
+  if (evaled) {
+    input = '0.'; first = null; op = null; evaled = false; waited = false;
+    exprEl.textContent = '';
+  } else if (waited) {
+    input = '0.'; waited = false;
+  } else if (input.indexOf('.') === -1) {
+    input += '.';
+  }
+  render();
 });
 
+/* Backspace */
 document.getElementById('btn-back').addEventListener('click', function() {
-  if (justEvaled||inputStr==='Xato') {
-    inputStr='0'; firstOp=null; operator=null; justEvaled=false; waitingSecond=false; hlOp(null);
-  } else if (waitingSecond) {
-    operator=null; waitingSecond=false; hlOp(null);
-  } else if (inputStr.length>1) {
-    inputStr=inputStr.slice(0,-1);
-    if (inputStr==='-') inputStr='0';
+  if (evaled || input === 'Xato') {
+    input = '0'; first = null; op = null; evaled = false; waited = false;
+    exprEl.textContent = ''; hlOp(null);
+  } else if (waited) {
+    op = null; waited = false; hlOp(null);
   } else {
-    inputStr='0';
+    input = input.length > 1 ? input.slice(0, -1) : '0';
+    if (input === '-') input = '0';
   }
-  update();
+  render();
 });
 
+/* AC / C */
+document.getElementById('btn-ac').addEventListener('click', function() {
+  input = '0'; first = null; op = null; waited = false; evaled = false;
+  exprEl.textContent = ''; hlOp(null); render();
+});
+
+/* +/- */
+document.getElementById('btn-pm').addEventListener('click', function() {
+  if (input === '0' || input === 'Xato') return;
+  input = input.charAt(0) === '-' ? input.slice(1) : '-' + input;
+  render();
+});
+
+/* Operator */
 function handleOp(newOp) {
-  if (inputStr==='Xato') return;
-  if (firstOp!==null && !waitingSecond) {
-    var r=compute(firstOp,parseFloat(inputStr),operator);
-    if (r===null) { inputStr='Xato'; firstOp=null; operator=null; hlOp(null); update(); return; }
-    firstOp=parseFloat(r); inputStr=r; pop();
+  if (input === 'Xato') return;
+  hlOp(newOp);
+  if (first !== null && !waited && !evaled) {
+    var r = compute(first, toNum(input), op);
+    if (r === null) {
+      input = 'Xato'; first = null; op = null;
+      exprEl.textContent = ''; hlOp(null); render(); return;
+    }
+    first = r;
+    /* input ni r dan yangilaymiz — float string */
+    input = String(parseFloat(r.toPrecision(10)));
+    animPop();
   } else {
-    firstOp=parseFloat(inputStr);
+    first = toNum(input);
   }
-  operator=newOp; waitingSecond=true; justEvaled=false; hlOp(newOp); update();
+  op = newOp; waited = true; evaled = false; render();
 }
 
 document.getElementById('btn-add').addEventListener('click', function(){ handleOp('+'); });
@@ -567,172 +745,258 @@ document.getElementById('btn-sub').addEventListener('click', function(){ handleO
 document.getElementById('btn-mul').addEventListener('click', function(){ handleOp('×'); });
 document.getElementById('btn-div').addEventListener('click', function(){ handleOp('÷'); });
 
+/* Teng */
 document.getElementById('btn-eq').addEventListener('click', function() {
-  if (firstOp===null||operator===null) return;
-  var second=parseFloat(inputStr);
-  var r=compute(firstOp,second,operator);
-  var exprText=fmt(String(firstOp))+' '+operator+' '+fmt(String(second))+' =';
-  inputStr=r===null?'Xato':r;
-  firstOp=null; operator=null; waitingSecond=false; justEvaled=true;
+  if (first === null || op === null) return;
+  var second = toNum(input);
+  var r      = compute(first, second, op);
+  /* expr yuqoriga: "5 × 5 =" */
+  exprEl.textContent =
+    fmtDisp(String(first)) + ' ' + op + ' ' + fmtDisp(String(second)) + ' =';
+  if (r === null) {
+    input = 'Xato';
+  } else {
+    input = String(parseFloat(r.toPrecision(10)));
+  }
+  first = null; op = null; waited = false; evaled = true;
   hlOp(null);
-  exprEl.textContent=exprText;
-  resEl.textContent=fmt(inputStr);
-  setSize(fmt(inputStr));
-  clrBtn.textContent='C';
-  pop();
+  var d = fmtDisp(input);
+  rspanEl.textContent = d;
+  setFontSize(d);
+  acBtn.textContent = 'C';
+  animPop();
 });
 
-document.getElementById('btn-clear').addEventListener('click', function() {
-  inputStr='0'; firstOp=null; operator=null;
-  waitingSecond=false; justEvaled=false;
-  exprEl.textContent=''; hlOp(null); update();
-});
+render();
 
-document.getElementById('btn-pm').addEventListener('click', function() {
-  if (inputStr==='0'||inputStr==='Xato') return;
-  inputStr=inputStr.startsWith('-')?inputStr.slice(1):'-'+inputStr;
-  update();
-});
-
-update();
-
-/* ── FOIZ ── */
+/* ─── FOIZ ──────────────────────────────────────────── */
 var pctMode = 'tip';
-function setPctMode(mode) {
-  pctMode=mode;
-  ['tip','disc','mark','tax'].forEach(function(m){ document.getElementById('pbt-'+m).classList.remove('pct-active'); });
-  var map={tip:'pbt-tip',disc:'pbt-disc',markup:'pbt-mark',tax:'pbt-tax'};
-  if (map[mode]) document.getElementById(map[mode]).classList.add('pct-active');
-  var labels={tip:'Foiz miqdori',disc:'Chegirma hisoblash',markup:'Ustama narx',tax:"Soliq qo'shish"};
-  document.getElementById('pct-expr').textContent=labels[mode]||'';
-  pctUpdate();
+
+function setPct(mode) {
+  pctMode = mode;
+  ['tip','disc','mark','tax'].forEach(function(m){
+    document.getElementById('pb-' + m).classList.remove('on');
+  });
+  var map = { tip:'pb-tip', disc:'pb-disc', markup:'pb-mark', tax:'pb-tax' };
+  if (map[mode]) document.getElementById(map[mode]).classList.add('on');
+  var labels = {
+    tip:    'Foiz miqdori',
+    disc:   'Chegirma hisoblash',
+    markup: 'Ustama narx',
+    tax:    "Soliq qo'shish"
+  };
+  document.getElementById('pct-expr').textContent = labels[mode] || '';
+  calcPct();
 }
 
-function pctUpdate() {
-  var base=parseFloat(document.getElementById('pct-base').value)||0;
-  var rate=parseFloat(document.getElementById('pct-rate').value)||0;
-  var rv=document.getElementById('pct-res-val');
-  var rl=document.getElementById('pct-res-label');
-  var rs=document.getElementById('pct-res-sub');
-  var pd=document.getElementById('pct-display');
-  if (!base||!rate) { rv.textContent='—'; rs.textContent=''; pd.textContent='—'; return; }
-  var amt=base*rate/100;
-  if (pctMode==='disc') {
-    rv.textContent=fmtM(base-amt)+" so'm"; rl.textContent='Chegirmali narx';
-    rs.textContent='Chegirma: −'+fmtM(amt)+" so'm"; pd.textContent='-'+rate+'%';
-  } else if (pctMode==='markup') {
-    rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Ustama bilan narx';
-    rs.textContent='Ustama: +'+fmtM(amt)+" so'm"; pd.textContent='+'+rate+'%';
-  } else if (pctMode==='tax') {
-    rv.textContent=fmtM(base+amt)+" so'm"; rl.textContent='Soliq bilan jami';
-    rs.textContent='Soliq: +'+fmtM(amt)+" so'm"; pd.textContent='+'+rate+'%';
+function calcPct() {
+  var base = parseFloat(document.getElementById('pct-base').value);
+  var rate = parseFloat(document.getElementById('pct-rate').value);
+  var num  = document.getElementById('pct-num');
+  var lbl  = document.getElementById('pct-lbl');
+  var val  = document.getElementById('pct-val');
+  var sub  = document.getElementById('pct-sub');
+
+  if (!isFinite(base) || !isFinite(rate) || base <= 0 || rate <= 0) {
+    num.textContent = '—'; val.textContent = '—'; sub.textContent = ''; return;
+  }
+
+  var amt = base * rate / 100;
+
+  function money(n) {
+    return Math.round(n).toLocaleString('uz-UZ') + " so'm";
+  }
+
+  if (pctMode === 'disc') {
+    val.textContent = money(base - amt);
+    lbl.textContent = 'Chegirmali narx';
+    sub.textContent = 'Chegirma: −' + money(amt);
+    num.textContent = '−' + rate + '%';
+  } else if (pctMode === 'markup') {
+    val.textContent = money(base + amt);
+    lbl.textContent = 'Ustama bilan narx';
+    sub.textContent = 'Ustama: +' + money(amt);
+    num.textContent = '+' + rate + '%';
+  } else if (pctMode === 'tax') {
+    val.textContent = money(base + amt);
+    lbl.textContent = 'Soliq bilan jami';
+    sub.textContent = 'Soliq: +' + money(amt);
+    num.textContent = '+' + rate + '%';
   } else {
-    rv.textContent=fmtM(amt)+" so'm"; rl.textContent='Foiz miqdori';
-    rs.textContent=base+' × '+rate+'% = '+fmtM(amt); pd.textContent=fmtM(amt);
+    val.textContent = money(amt);
+    lbl.textContent = 'Foiz miqdori';
+    sub.textContent = base + ' × ' + rate + '% = ' + money(amt);
+    num.textContent = money(amt).replace(" so'm", '');
   }
 }
-function fmtM(n) { return parseFloat(n.toFixed(0)).toLocaleString('uz-UZ'); }
 
-/* ── VALYUTA — CBU LIVE ── */
-/* UZS bazasida: RATES[CCY] = 1 CCY necha so'm */
-var RATES = {};
+/* ─── VALYUTA ───────────────────────────────────────── */
+var RATES  = {};          /* 1 CCY = ? UZS */
 var ratesLoaded = false;
-var ratesDate = '';
-var FALLBACK = {USD:12700,EUR:13850,RUB:139,AED:3458,GBP:16200,CNY:1752,KZT:28.1,TRY:390};
+var ratesDate   = '';
+var FALLBACK = {
+  USD:12750, EUR:13900, RUB:140,
+  AED:3472,  GBP:16300, CNY:1758, KZT:28.2, TRY:392
+};
+var PROXIES = [
+  { url: 'https://api.allorigins.win/get?url=', wrap: true  },
+  { url: 'https://corsproxy.io/?',              wrap: false },
+  { url: 'https://api.codetabs.com/v1/proxy?quest=', wrap: false }
+];
+var CBU = 'https://cbu.uz/ru/arkhiv-kursov-valyut/json/';
 
-function setStatus(msg, cls) {
-  var el=document.getElementById('cur-status');
-  el.textContent=msg; el.className='cur-status '+cls;
+function setSt(msg, cls) {
+  var el = document.getElementById('cur-st');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'cur-status ' + cls;
+}
+function setRefBtn(loading) {
+  var rb = document.getElementById('ref-btn');
+  if (!rb) return;
+  rb.disabled = loading;
+  rb.textContent = loading ? '⏳ Yangilanmoqda...' : '🔄 Kurslarni yangilash';
 }
 
-function loadRates() {
-  setStatus('⏳ Kurslar yuklanmoqda...','loading');
-  var refBtn=document.getElementById('refresh-btn');
-  if (refBtn) { refBtn.disabled=true; refBtn.textContent='⏳ Yangilanmoqda...'; }
+function fetchTimed(url, ms) {
+  if (!window.AbortController) return fetch(url, { cache: 'no-store' });
+  var ctrl  = new AbortController();
+  var timer = setTimeout(function(){ ctrl.abort(); }, ms);
+  return fetch(url, { signal: ctrl.signal, cache: 'no-store' })
+    .finally(function(){ clearTimeout(timer); });
+}
 
-  /* CBU API to'g'ridan-to'g'ri — CORS xatoligi bo'lsa proxy ishlatamiz */
-  var PROXY = 'https://api.allorigins.win/get?url=';
-  var CBU   = 'https://cbu.uz/ru/arkhiv-kursov-valyut/json/';
+function parseArr(data, wrap) {
+  if (wrap) {
+    /* allorigins: { contents: "[...]" } */
+    if (typeof data.contents !== 'string') throw new Error('no contents');
+    return JSON.parse(data.contents);
+  }
+  /* to'g'ridan-to'g'ri JSON array */
+  return Array.isArray(data) ? data : JSON.parse(data);
+}
 
-  fetch(PROXY + encodeURIComponent(CBU), { cache: 'no-store' })
+function applyArr(arr) {
+  var need  = ['USD','EUR','RUB','AED','GBP','CNY','KZT','TRY'];
+  var found = 0;
+  arr.forEach(function(item) {
+    if (need.indexOf(item.Ccy) !== -1) {
+      var r = parseFloat(item.Rate);
+      var n = parseFloat(item.Nominal) || 1;
+      if (r > 0) { RATES[item.Ccy] = r / n; found++; }
+      ratesDate = item.Date || ratesDate;
+    }
+  });
+  return found >= 3;
+}
+
+function tryProxy(idx) {
+  if (idx >= PROXIES.length) {
+    if (ratesLoaded) {
+      setSt('⚠️ Yangilanmadi — ' + ratesDate, 'warn');
+    } else {
+      Object.assign(RATES, FALLBACK);
+      ratesLoaded = true;
+      setSt("⚠️ Internet yo'q — taxminiy kurslar", 'warn');
+      convert();
+    }
+    setRefBtn(false);
+    return;
+  }
+  var p   = PROXIES[idx];
+  var url = p.url + encodeURIComponent(CBU);
+  fetchTimed(url, 7000)
     .then(function(r) {
-      if (!r.ok) throw new Error('proxy xatosi');
+      if (!r.ok) throw new Error('http');
       return r.json();
     })
     .then(function(data) {
-      var arr = JSON.parse(data.contents);
-      if (!Array.isArray(arr) || arr.length === 0) throw new Error('bo\'sh massiv');
-      var need = ['USD','EUR','RUB','AED','GBP','CNY','KZT','TRY'];
-      arr.forEach(function(item) {
-        if (need.indexOf(item.Ccy) !== -1) {
-          /* Nominal: KZT uchun 100, boshqalar uchun 1 */
-          var rate   = parseFloat(item.Rate);
-          var nominal= parseFloat(item.Nominal) || 1;
-          RATES[item.Ccy] = rate / nominal; /* 1 CCY = ? UZS */
-          ratesDate = item.Date;
-        }
-      });
-      /* Tekshiruv: USD bo'lishi shart */
-      if (!RATES['USD']) throw new Error('USD topilmadi');
+      var arr = parseArr(data, p.wrap);
+      if (!Array.isArray(arr) || !applyArr(arr)) throw new Error('bad data');
       ratesLoaded = true;
-      setStatus('✅ Markaziy bank kursi — ' + ratesDate, 'ok');
-      curConvert();
+      setSt('✅ Markaziy bank — ' + ratesDate, 'ok');
+      setRefBtn(false);
+      convert();
     })
-    .catch(function(e) {
-      /* Fallback: oxirgi marta muvaffaqiyatli yuklangan ma'lumotlar bor bo'lsa ishlatamiz */
-      if (ratesLoaded) {
-        setStatus('⚠️ Internet yo\'q — oxirgi kurs: ' + ratesDate, 'warn');
-      } else {
-        Object.assign(RATES, FALLBACK);
-        ratesLoaded = true;
-        setStatus('⚠️ Internet yo\'q — taxminiy kurslar', 'warn');
-      }
-      curConvert();
-    })
-    .finally(function() {
-      var rb=document.getElementById('refresh-btn');
-      if (rb) { rb.disabled=false; rb.textContent='🔄 Kurslarni yangilash'; }
-    });
+    .catch(function() { tryProxy(idx + 1); });
 }
 
-function manualRefresh() {
-  ratesLoaded = false;
-  loadRates();
+function loadRates() {
+  setSt('⏳ Kurslar yuklanmoqda...', 'loading');
+  setRefBtn(true);
+  tryProxy(0);
 }
 
-function curConvert() {
+function getRate(ccy) {
+  if (ccy === 'UZS') return 1;
+  var r = RATES[ccy];
+  return (r !== undefined && r > 0) ? r : null;
+}
+
+function convert() {
   if (!ratesLoaded) return;
-  var from  = document.getElementById('from-cur').value;
-  var to    = document.getElementById('to-cur').value;
-  var amount= parseFloat(document.getElementById('cur-amount').value)||0;
+  var from   = document.getElementById('from-c').value;
+  var to     = document.getElementById('to-c').value;
+  var amt    = parseFloat(document.getElementById('cur-amt').value);
+  var fRate  = getRate(from);
+  var tRate  = getRate(to);
 
-  /* Hamma narsa UZS orqali: amount * fromRate / toRate */
-  var fromRate = (from==='UZS') ? 1 : (RATES[from]||1);
-  var toRate   = (to==='UZS')   ? 1 : (RATES[to]  ||1);
-  var result   = (amount * fromRate) / toRate;
-  var rate     = fromRate / toRate;
+  if (!fRate || !tRate) {
+    document.getElementById('cur-res').textContent  = '—';
+    document.getElementById('cur-rate').textContent = 'Kurs topilmadi';
+    document.getElementById('cur-inv').textContent  = '';
+    return;
+  }
 
-  var dec = (to==='UZS'||to==='KZT') ? 0 : (to==='RUB'?1:4);
-  document.getElementById('cur-res-display').textContent =
-    amount>0 ? result.toLocaleString('uz-UZ',{maximumFractionDigits:dec}) : '—';
+  var result = (amt * fRate) / tRate;
+  var rate   = fRate / tRate;
+  var isLarge = (to === 'UZS' || to === 'KZT');
+  var dec    = isLarge ? 0 : (to === 'RUB' ? 1 : 4);
 
-  var rDec = (to==='UZS'||to==='KZT') ? 0 : 4;
-  document.getElementById('cur-rate-txt').textContent =
-    '1 '+from+' = '+rate.toLocaleString('uz-UZ',{maximumFractionDigits:rDec})+' '+to;
-  document.getElementById('cur-extra').textContent =
-    '1 '+to+' = '+(1/rate).toLocaleString('uz-UZ',{maximumFractionDigits:4})+' '+from;
+  document.getElementById('cur-res').textContent =
+    isFinite(amt) && amt > 0
+      ? result.toLocaleString('uz-UZ', { maximumFractionDigits: dec })
+      : '—';
+
+  var rDec = isLarge ? 0 : 4;
+  document.getElementById('cur-rate').textContent =
+    '1 ' + from + ' = ' + rate.toLocaleString('uz-UZ', { maximumFractionDigits: rDec }) + ' ' + to;
+  document.getElementById('cur-inv').textContent =
+    '1 ' + to + ' = ' + (1/rate).toLocaleString('uz-UZ', { maximumFractionDigits: 4 }) + ' ' + from;
 }
 
-function swapCurrency() {
-  var f=document.getElementById('from-cur'), t=document.getElementById('to-cur');
-  var tmp=f.value; f.value=t.value; t.value=tmp;
-  curConvert();
+function swapCur() {
+  var f = document.getElementById('from-c');
+  var t = document.getElementById('to-c');
+  var tmp = f.value; f.value = t.value; t.value = tmp;
+  convert();
 }
 
-/* Sahifa ochilganda kurslarni yuklaydi */
+/* Sahifa ochilganda fon da yuklash */
 loadRates();
 
-/* ── SERVICE WORKER ── */
+/* ─── SCROLL LOCK ───────────────────────────────────── */
+document.addEventListener('touchmove', function(e) {
+  var el = e.target;
+  while (el && el !== document.documentElement) {
+    if (el.id === 'p-pct' || el.id === 'p-cur') return;
+    if (el.classList && (el.classList.contains('pct-wrap') || el.classList.contains('cur-wrap'))) return;
+    el = el.parentElement;
+  }
+  e.preventDefault();
+}, { passive: false });
+
+/* Double tap zoom o'chirish */
+var lastTap = 0;
+document.addEventListener('touchend', function(e) {
+  var now = Date.now();
+  if (now - lastTap < 280) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+
+document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+
+/* ─── SERVICE WORKER ────────────────────────────────── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/sw.js').catch(function(){});
