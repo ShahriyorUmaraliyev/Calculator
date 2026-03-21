@@ -304,6 +304,13 @@
       -webkit-appearance: none;
       appearance: none;
     }
+    /* Number input spinner o'chirish */
+    .s-input[type="number"]::-webkit-inner-spin-button,
+    .s-input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .s-input[type="number"] { -moz-appearance: textfield; }
     .s-input:focus { border-color: var(--btn-orange); }
     .s-select { flex: 0 0 108px; font-size: 14px; cursor: pointer; }
     .s-box {
@@ -320,6 +327,32 @@
       color: var(--text-main);
     }
     .s-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+
+    /* Input wrapper — clear tugmasi uchun */
+    .inp-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .inp-wrap .s-input { padding-right: 36px; width: 100%; }
+    .clear-btn {
+      position: absolute;
+      right: 10px;
+      width: 20px; height: 20px;
+      border: none; cursor: pointer;
+      background: var(--label);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+      padding: 0;
+    }
+    .clear-btn svg { display: block; }
+    .clear-btn:active { opacity: 0.45; }
+    .inp-wrap.has-val .clear-btn { display: flex; }
 
     /* ── PERCENT PANEL ── */
     .pct-wrap {
@@ -535,13 +568,31 @@
         <div class="pct-inputs">
           <div style="flex:1">
             <div class="s-label">Asosiy summa</div>
-            <input class="s-input" style="width:100%" id="pct-base"
-              type="number" inputmode="decimal" placeholder="100000" oninput="calcPct()">
+            <div class="inp-wrap" id="wrap-pct-base">
+              <input class="s-input" id="pct-base"
+                type="text" inputmode="decimal" placeholder="100 000"
+                oninput="fmtInp(this,'wrap-pct-base');calcPct()">
+              <button class="clear-btn" onclick="clearInp('pct-base','wrap-pct-base');calcPct()" tabindex="-1">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <line x1="1" y1="1" x2="9" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                  <line x1="9" y1="1" x2="1" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div style="flex:0 0 88px">
             <div class="s-label">Foiz %</div>
-            <input class="s-input" style="width:100%;padding:12px 8px" id="pct-rate"
-              type="number" inputmode="decimal" placeholder="15" oninput="calcPct()">
+            <div class="inp-wrap" id="wrap-pct-rate">
+              <input class="s-input" style="padding:12px 36px 12px 8px" id="pct-rate"
+                type="text" inputmode="decimal" placeholder="15"
+                oninput="fmtInp(this,'wrap-pct-rate');calcPct()">
+              <button class="clear-btn" onclick="clearInp('pct-rate','wrap-pct-rate');calcPct()" tabindex="-1">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <line x1="1" y1="1" x2="9" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                  <line x1="9" y1="1" x2="1" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
         <div class="s-box">
@@ -570,8 +621,17 @@
             <option value="KZT">🇰🇿 KZT</option>
             <option value="TRY">🇹🇷 TRY</option>
           </select>
-          <input class="s-input" style="flex:1" id="cur-amt"
-            type="number" inputmode="decimal" placeholder="1" value="1" oninput="convert()">
+          <div class="inp-wrap" id="wrap-cur-amt" style="flex:1">
+            <input class="s-input" id="cur-amt"
+              type="text" inputmode="decimal" placeholder="1"
+              oninput="fmtInp(this,'wrap-cur-amt');convert()">
+            <button class="clear-btn" onclick="clearInp('cur-amt','wrap-cur-amt');convert()" tabindex="-1">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <line x1="1" y1="1" x2="9" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                <line x1="9" y1="1" x2="1" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <button class="swap-btn" onclick="swapCur()">⇅ Almashish</button>
         <div class="s-row">
@@ -874,6 +934,60 @@ document.getElementById('btn-eq').addEventListener('click', function() {
 render();
 
 /* ─── FOIZ ──────────────────────────────────────────── */
+
+/* Formatlash yordamchilari */
+function stripFmt(s) {
+  /* Bo'sh joy va vergullarni olib tashlash, sof raqam qoldirish */
+  return (s || '').replace(/[\s,]/g, '');
+}
+
+function addSpaces(s) {
+  /* "1000000.5" → "1 000 000.5" bo'sh joy bilan ajratish */
+  if (!s) return '';
+  var parts = s.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return parts.join('.');
+}
+
+function fmtInp(el, wrapId) {
+  var raw   = stripFmt(el.value);
+  /* Faqat raqam va nuqtaga ruxsat */
+  raw = raw.replace(/[^0-9.]/g, '');
+  /* Bir nechta nuqtadan himoya */
+  var parts = raw.split('.');
+  if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('');
+
+  /* Kursor pozitsiyasini saqlash */
+  var selEnd = el.selectionEnd;
+  var oldLen = el.value.length;
+
+  el.value = addSpaces(raw);
+
+  /* Kursor pozitsiyasini tiklash */
+  var newLen = el.value.length;
+  var pos = Math.max(0, selEnd + (newLen - oldLen));
+  try { el.setSelectionRange(pos, pos); } catch(e) {}
+
+  /* Clear tugmasi */
+  var wrap = document.getElementById(wrapId);
+  if (wrap) {
+    if (raw) wrap.classList.add('has-val');
+    else wrap.classList.remove('has-val');
+  }
+}
+
+function clearInp(id, wrapId) {
+  var el = document.getElementById(id);
+  el.value = '';
+  var wrap = document.getElementById(wrapId);
+  if (wrap) wrap.classList.remove('has-val');
+  el.focus();
+}
+
+function getRawVal(id) {
+  /* Formatlangan inputdan sof float olish */
+  return parseFloat(stripFmt(document.getElementById(id).value)) || 0;
+}
 var pctMode = 'tip';
 
 function setPct(mode) {
@@ -894,8 +1008,8 @@ function setPct(mode) {
 }
 
 function calcPct() {
-  var base = parseFloat(document.getElementById('pct-base').value);
-  var rate = parseFloat(document.getElementById('pct-rate').value);
+  var base = getRawVal('pct-base');
+  var rate = getRawVal('pct-rate');
   var num  = document.getElementById('pct-num');
   var lbl  = document.getElementById('pct-lbl');
   var val  = document.getElementById('pct-val');
@@ -935,7 +1049,7 @@ function calcPct() {
 }
 
 /* ─── VALYUTA ───────────────────────────────────────── */
-var RATES  = {};          /* 1 CCY = ? UZS */
+var RATES  = {};
 var ratesLoaded = false;
 var ratesDate   = '';
 var FALLBACK = {
@@ -947,7 +1061,33 @@ var PROXIES = [
   { url: 'https://corsproxy.io/?',              wrap: false },
   { url: 'https://api.codetabs.com/v1/proxy?quest=', wrap: false }
 ];
-var CBU = 'https://cbu.uz/ru/arkhiv-kursov-valyut/json/';
+var CBU_BASE = 'https://cbu.uz/ru/arkhiv-kursov-valyut/json/';
+
+/* Bugungi sana — proxy keshini aldash uchun */
+function todayStr() {
+  var d = new Date();
+  return d.getFullYear() + '-'
+    + String(d.getMonth()+1).padStart(2,'0') + '-'
+    + String(d.getDate()).padStart(2,'0');
+}
+
+/* Bugungi kurs URL — sana parametr sifatida */
+function cbuUrl() {
+  return CBU_BASE + '?date=' + todayStr() + '&_=' + Date.now();
+}
+
+/* API dan kelgan sana bugunmi? */
+function isToday(dateStr) {
+  if (!dateStr) return false;
+  /* CBU format: "21.03.2026" yoki "2026-03-21" */
+  var today = new Date();
+  var d = String(today.getDate()).padStart(2,'0');
+  var m = String(today.getMonth()+1).padStart(2,'0');
+  var y = String(today.getFullYear());
+  return dateStr.indexOf(d) !== -1
+      && dateStr.indexOf(m) !== -1
+      && dateStr.indexOf(y) !== -1;
+}
 
 function setSt(msg, cls) {
   var el = document.getElementById('cur-st');
@@ -972,11 +1112,9 @@ function fetchTimed(url, ms) {
 
 function parseArr(data, wrap) {
   if (wrap) {
-    /* allorigins: { contents: "[...]" } */
     if (typeof data.contents !== 'string') throw new Error('no contents');
     return JSON.parse(data.contents);
   }
-  /* to'g'ridan-to'g'ri JSON array */
   return Array.isArray(data) ? data : JSON.parse(data);
 }
 
@@ -997,7 +1135,10 @@ function applyArr(arr) {
 function tryProxy(idx) {
   if (idx >= PROXIES.length) {
     if (ratesLoaded) {
-      setSt('⚠️ Yangilanmadi — ' + ratesDate, 'warn');
+      var warn = isToday(ratesDate)
+        ? '✅ Markaziy bank — ' + ratesDate
+        : '⚠️ Eskirgan kurs — ' + ratesDate + ' (yangilang)';
+      setSt(warn, isToday(ratesDate) ? 'ok' : 'warn');
     } else {
       Object.assign(RATES, FALLBACK);
       ratesLoaded = true;
@@ -1008,26 +1149,52 @@ function tryProxy(idx) {
     return;
   }
   var p   = PROXIES[idx];
-  var url = p.url + encodeURIComponent(CBU);
-  fetchTimed(url, 7000)
+  /* Har proxy uchun bugungi sana + timestamp — proxy va brauzer keshini o'tkazib yuboradi */
+  var target = p.wrap
+    ? p.url + encodeURIComponent(cbuUrl())
+    : p.url + encodeURIComponent(cbuUrl());
+
+  fetchTimed(target, 8000)
     .then(function(r) {
-      if (!r.ok) throw new Error('http');
+      if (!r.ok) throw new Error('http ' + r.status);
       return r.json();
     })
     .then(function(data) {
       var arr = parseArr(data, p.wrap);
-      if (!Array.isArray(arr) || !applyArr(arr)) throw new Error('bad data');
+      if (!Array.isArray(arr) || arr.length === 0) throw new Error('empty');
+      if (!applyArr(arr)) throw new Error('rates not found');
       ratesLoaded = true;
-      setSt('✅ Markaziy bank — ' + ratesDate, 'ok');
-      setRefBtn(false);
-      convert();
+      /* Sana tekshiruvi — bugungi kursmi? */
+      if (isToday(ratesDate)) {
+        setSt('✅ Markaziy bank — ' + ratesDate, 'ok');
+        setRefBtn(false);
+        convert();
+      } else {
+        /* Kecha kurs keldi — keyingi proxy sinab ko'r */
+        throw new Error('stale: ' + ratesDate);
+      }
     })
-    .catch(function() { tryProxy(idx + 1); });
+    .catch(function(err) {
+      /* Agar hech bo'lmasa bitta kurs yuklangan bo'lsa va oxirgi proxy — ishlatamiz */
+      if (idx === PROXIES.length - 1 && ratesLoaded) {
+        var warn = isToday(ratesDate)
+          ? '✅ Markaziy bank — ' + ratesDate
+          : '⚠️ Eskirgan kurs (' + ratesDate + ') — yangilang';
+        setSt(warn, isToday(ratesDate) ? 'ok' : 'warn');
+        setRefBtn(false);
+        convert();
+        return;
+      }
+      tryProxy(idx + 1);
+    });
 }
 
 function loadRates() {
-  setSt('⏳ Kurslar yuklanmoqda...', 'loading');
+  setSt('⏳ Bugungi kurslar yuklanmoqda...', 'loading');
   setRefBtn(true);
+  /* Har yangilashda RATES ni tozalab boshdan yuklaymiz */
+  RATES = {};
+  ratesLoaded = false;
   tryProxy(0);
 }
 
@@ -1041,7 +1208,7 @@ function convert() {
   if (!ratesLoaded) return;
   var from   = document.getElementById('from-c').value;
   var to     = document.getElementById('to-c').value;
-  var amt    = parseFloat(document.getElementById('cur-amt').value);
+  var amt    = getRawVal('cur-amt');
   var fRate  = getRate(from);
   var tRate  = getRate(to);
 
