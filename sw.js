@@ -1,25 +1,36 @@
-var CACHE = 'kalkulyator-v23';
-var FILES = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+'use strict';
 
-/* Tashqi so'rovlar — hech qachon cache qilinmaydi */
-function isExternal(url) {
-  return url.indexOf('cbu.uz')        !== -1
-      || url.indexOf('allorigins.win') !== -1
-      || url.indexOf('corsproxy.io')   !== -1
-      || url.indexOf('codetabs.com')   !== -1;
+var CACHE   = 'kalkulyator-v35';
+var STATIC  = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+
+/* Currency endpointlar — hech qachon cache qilinmaydi (network-only) */
+var CURRENCY_HOSTS = [
+  'cbu.uz',
+  'allorigins.win',
+  'corsproxy.io',
+  'jsdelivr.net',
+  'currency-api.pages.dev',
+  'open.er-api.com',
+  'codetabs.com'
+];
+
+function isCurrency(url) {
+  return CURRENCY_HOSTS.some(function(h){ return url.indexOf(h) !== -1; });
 }
 
+/* Install — static fayllarni yuklab olish */
 self.addEventListener('install', function(e) {
   e.waitUntil(
     caches.open(CACHE).then(function(cache) {
       return Promise.allSettled(
-        FILES.map(function(f){ return cache.add(f); })
+        STATIC.map(function(f){ return cache.add(f); })
       );
     })
   );
   self.skipWaiting();
 });
 
+/* Activate — eski keshlarni o'chirish */
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
@@ -32,14 +43,17 @@ self.addEventListener('activate', function(e) {
   self.clients.claim();
 });
 
+/* Fetch */
 self.addEventListener('fetch', function(e) {
   var req = e.request;
   if (req.method !== 'GET') return;
-  if (isExternal(req.url)) return; /* API lar — SW dan o'tkazmaymiz */
 
+  /* Currency — network-only, SW dan o'tkazmaymiz */
+  if (isCurrency(req.url)) return;
+
+  /* Static — cache-first + background update */
   e.respondWith(
     caches.match(req).then(function(cached) {
-      /* Har doim tarmoqdan ham yuklab, cache ni yangilaymiz */
       var networkFetch = fetch(req).then(function(r) {
         if (r && r.status === 200) {
           caches.open(CACHE).then(function(c){ c.put(req, r.clone()); });
@@ -47,15 +61,11 @@ self.addEventListener('fetch', function(e) {
         return r;
       }).catch(function(){});
 
-      /* Cache bor — darhol ber, fonda yangilash */
-      if (cached) {
-        networkFetch.catch(function(){});
-        return cached;
-      }
-      /* Cache yo'q — tarmoqdan yuk */
-      return networkFetch.then(function(r){
-        return r || caches.match('/index.html');
-      });
+      return cached
+        ? (networkFetch.catch(function(){}), cached)
+        : networkFetch.then(function(r){
+            return r || caches.match('/index.html');
+          });
     })
   );
 });
