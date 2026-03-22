@@ -1,0 +1,25 @@
+{
+  "crons": [
+    {
+      "path": "/api/update-rates?mode=official",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/update-rates?mode=live",
+      "schedule": "*/15 * * * *"
+    }
+  ],
+  "functions": {
+    "api/rates.js":        { "maxDuration": 10 },
+    "api/update-rates.js": { "maxDuration": 15 }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin",  "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET" }
+      ]
+    }
+  ]
+}
