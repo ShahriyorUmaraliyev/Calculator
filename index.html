@@ -53,7 +53,6 @@
       --text-main: #ffffff;
       --text-dim: rgba(255,255,255,0.36);
       --mode-bg: rgba(255,255,255,0.07);
-      --mode-active: rgba(255,255,255,0.16);
       --shine: rgba(255,255,255,0.07);
       --border: rgba(255,255,255,0.1);
       --box-bg: rgba(255,255,255,0.055);
@@ -70,7 +69,6 @@
       --text-main: #1c1c1e;
       --text-dim: rgba(0,0,0,0.32);
       --mode-bg: rgba(0,0,0,0.055);
-      --mode-active: rgba(0,0,0,0.11);
       --shine: rgba(255,255,255,0.55);
       --border: rgba(0,0,0,0.1);
       --box-bg: rgba(0,0,0,0.04);
@@ -333,11 +331,18 @@
       position: relative;
       display: flex;
       align-items: center;
+      overflow: hidden;
     }
-    .inp-wrap .s-input { padding-right: 36px; width: 100%; }
+    .inp-wrap .s-input {
+      padding-right: 36px;
+      width: 100%;
+      min-width: 0;
+    }
     .clear-btn {
       position: absolute;
-      right: 10px;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
       width: 20px; height: 20px;
       border: none; cursor: pointer;
       background: var(--label);
@@ -349,6 +354,7 @@
       opacity: 0.7;
       transition: opacity 0.15s;
       padding: 0;
+      z-index: 2;
     }
     .clear-btn svg { display: block; }
     .clear-btn:active { opacity: 0.45; }
@@ -397,6 +403,17 @@
     .pct-btn:active { filter: brightness(0.78); transform: scale(0.96); }
     .pct-btn.on { background: var(--btn-orange); color: #fff; }
     .pct-inputs { display: flex; gap: 10px; margin-bottom: 0; }
+    .pct-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 10px 0 4px;
+      display: none;
+    }
+    .pct-divider.show { display: block; }
+    .pct-rem-val {
+      font-size: clamp(18px, 5vw, 26px);
+      color: var(--text-dim);
+    }
 
     /* ── CURRENCY PANEL ── */
     .cur-wrap {
@@ -448,6 +465,50 @@
     .swap-btn:active, .refresh-btn:active { filter: brightness(0.78); }
     .refresh-btn { margin-top: 10px; margin-bottom: 0; }
     .refresh-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    /* ── DUAL RATE UI ── */
+    .cur-status-row {
+      display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .cur-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: var(--label);
+      background: var(--box-bg); border-radius: 20px;
+      padding: 4px 10px; border: 1px solid var(--border);
+      flex: 1; min-width: 0;
+    }
+    .cur-badge-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    }
+    .off-dot  { background: #34c759; }
+    .live-dot { background: #ff9500; }
+    .cur-badge.loading .off-dot,
+    .cur-badge.loading .live-dot { background: var(--label); animation: pulse 1.2s infinite; }
+    .cur-badge.error .off-dot,
+    .cur-badge.error .live-dot   { background: #ff3b30; }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+    }
+    .cur-rate-box { margin-top: 8px; }
+    .cur-rate-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 4px;
+    }
+    .cur-rate-type {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+      padding: 2px 8px; border-radius: 10px;
+    }
+    .off-type  { background: rgba(52,199,89,0.15);  color: #34c759; }
+    .live-type { background: rgba(255,149,0,0.15);  color: #ff9500; }
+    .cur-rate-src {
+      font-size: 11px; color: var(--label);
+    }
+    .cur-rate-meta {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--label); margin-top: 4px;
+      flex-wrap: wrap; gap: 4px;
+    }
+    .cur-rate-box.unavailable { opacity: 0.45; }
 
     /* ── BOTTOM NAV ── */
     .nav {
@@ -580,10 +641,10 @@
               </button>
             </div>
           </div>
-          <div style="flex:0 0 88px">
+          <div style="flex:0 0 100px">
             <div class="s-label">Foiz %</div>
             <div class="inp-wrap" id="wrap-pct-rate">
-              <input class="s-input" style="padding:12px 36px 12px 8px" id="pct-rate"
+              <input class="s-input" id="pct-rate"
                 type="text" inputmode="decimal" placeholder="15"
                 oninput="fmtInp(this,'wrap-pct-rate');calcPct()">
               <button class="clear-btn" onclick="clearInp('pct-rate','wrap-pct-rate');calcPct()" tabindex="-1">
@@ -599,6 +660,9 @@
           <div class="s-box-lbl" id="pct-lbl">Natija</div>
           <div class="s-box-val" id="pct-val">—</div>
           <div class="s-box-lbl" id="pct-sub" style="margin-top:5px"></div>
+          <div class="pct-divider" id="pct-divider"></div>
+          <div class="s-box-lbl" id="pct-rem-lbl" style="margin-top:6px"></div>
+          <div class="s-box-val pct-rem-val" id="pct-rem">—</div>
         </div>
       </div>
     </div>
@@ -608,7 +672,20 @@
   <div id="p-cur" class="panel">
     <div class="glass-card">
       <div class="cur-wrap">
-        <div class="cur-status loading" id="cur-st">⏳ Kurslar yuklanmoqda...</div>
+
+        <!-- Status qatori -->
+        <div class="cur-status-row">
+          <div class="cur-badge" id="off-badge">
+            <span class="cur-badge-dot off-dot"></span>
+            <span id="off-st-txt">Rasmiy kurs yuklanmoqda...</span>
+          </div>
+          <div class="cur-badge" id="live-badge">
+            <span class="cur-badge-dot live-dot"></span>
+            <span id="live-st-txt">Jonli kurs yuklanmoqda...</span>
+          </div>
+        </div>
+
+        <!-- Konvertatsiya qatori -->
         <div class="s-row">
           <select class="s-select" id="from-c" onchange="convert()">
             <option value="USD" selected>🇺🇸 USD</option>
@@ -617,9 +694,7 @@
             <option value="RUB">🇷🇺 RUB</option>
             <option value="AED">🇦🇪 AED</option>
             <option value="GBP">🇬🇧 GBP</option>
-            <option value="CNY">🇨🇳 CNY</option>
             <option value="KZT">🇰🇿 KZT</option>
-            <option value="TRY">🇹🇷 TRY</option>
           </select>
           <div class="inp-wrap" id="wrap-cur-amt" style="flex:1">
             <input class="s-input" id="cur-amt"
@@ -633,7 +708,9 @@
             </button>
           </div>
         </div>
+
         <button class="swap-btn" onclick="swapCur()">⇅ Almashish</button>
+
         <div class="s-row">
           <select class="s-select" id="to-c" onchange="convert()">
             <option value="UZS" selected>🇺🇿 UZS</option>
@@ -642,18 +719,38 @@
             <option value="RUB">🇷🇺 RUB</option>
             <option value="AED">🇦🇪 AED</option>
             <option value="GBP">🇬🇧 GBP</option>
-            <option value="CNY">🇨🇳 CNY</option>
             <option value="KZT">🇰🇿 KZT</option>
-            <option value="TRY">🇹🇷 TRY</option>
           </select>
           <div class="cur-result" id="cur-res">—</div>
         </div>
-        <div class="s-box">
-          <div class="s-box-lbl">Kurs (Markaziy bank)</div>
-          <div class="s-box-val" id="cur-rate" style="font-size:15px">—</div>
-          <div class="s-box-lbl" id="cur-inv" style="margin-top:5px"></div>
+
+        <!-- Rasmiy kurs qutisi -->
+        <div class="s-box cur-rate-box" id="off-box">
+          <div class="cur-rate-header">
+            <span class="cur-rate-type off-type">Rasmiy kurs</span>
+            <span class="cur-rate-src" id="off-src">CBU</span>
+          </div>
+          <div class="s-box-val" id="off-rate">—</div>
+          <div class="cur-rate-meta">
+            <span id="off-date"></span>
+            <span id="off-fetched"></span>
+          </div>
         </div>
-        <button class="refresh-btn" id="ref-btn" onclick="loadRates()">🔄 Kurslarni yangilash</button>
+
+        <!-- Jonli kurs qutisi -->
+        <div class="s-box cur-rate-box" id="live-box">
+          <div class="cur-rate-header">
+            <span class="cur-rate-type live-type">Jonli kurs</span>
+            <span class="cur-rate-src" id="live-src">Market</span>
+          </div>
+          <div class="s-box-val" id="live-rate">—</div>
+          <div class="cur-rate-meta">
+            <span id="live-date"></span>
+            <span id="live-fetched"></span>
+          </div>
+        </div>
+
+        <button class="refresh-btn" id="ref-btn" onclick="window.onRefreshRates()">🔄 Kurslarni yangilash</button>
       </div>
     </div>
   </div>
@@ -736,7 +833,7 @@ function switchTab(t) {
   void panel.offsetWidth;
   panel.classList.add('anim');
   document.getElementById('nb-' + t).classList.add('active');
-  if (t === 'cur' && !ratesLoaded) loadRates();
+  if (t === 'cur' && !curState.official && !curState.live) loadRates();
 }
 
 /* ─── CALCULATOR ────────────────────────────────────── */
@@ -942,31 +1039,51 @@ function stripFmt(s) {
 }
 
 function addSpaces(s) {
-  /* "1000000.5" → "1 000 000.5" bo'sh joy bilan ajratish */
+  /* "1000000.5" → "1 000 000.5", "2." → "2." (nuqta saqlanadi) */
   if (!s) return '';
-  var parts = s.split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  return parts.join('.');
+  var hasDot   = s.indexOf('.') !== -1;
+  var parts    = s.split('.');
+  parts[0]     = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  /* Bo'sh kasr qism ham saqlanadi: "2." → "2." */
+  return hasDot ? parts[0] + '.' + (parts[1] || '') : parts[0];
 }
 
 function fmtInp(el, wrapId) {
-  var raw   = stripFmt(el.value);
-  /* Faqat raqam va nuqtaga ruxsat */
-  raw = raw.replace(/[^0-9.]/g, '');
-  /* Bir nechta nuqtadan himoya */
+  var val    = el.value;
+  var cursor = el.selectionEnd || 0;
+
+  /* Sof raqam */
+  var raw   = stripFmt(val).replace(/[^0-9.]/g, '');
   var parts = raw.split('.');
   if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('');
 
-  /* Kursor pozitsiyasini saqlash */
-  var selEnd = el.selectionEnd;
-  var oldLen = el.value.length;
+  /* pct-rate uchun minglik ajratish shart emas */
+  var formatted = (wrapId === 'wrap-pct-rate') ? raw : addSpaces(raw);
 
-  el.value = addSpaces(raw);
+  if (el.value !== formatted) {
+    /* Kursordan oldin nechta raqam va nuqta bor edi */
+    var before     = val.slice(0, cursor);
+    var digsBefore = before.replace(/[^0-9]/g, '').length;
+    var hasDotBefore = before.indexOf('.') !== -1;
 
-  /* Kursor pozitsiyasini tiklash */
-  var newLen = el.value.length;
-  var pos = Math.max(0, selEnd + (newLen - oldLen));
-  try { el.setSelectionRange(pos, pos); } catch(e) {}
+    el.value = formatted;
+
+    /* Yangi pozitsiya: raqamlar soniga qarab topamiz */
+    var digs = 0;
+    var pos  = formatted.length;
+    for (var i = 0; i < formatted.length; i++) {
+      var ch = formatted[i];
+      if (/[0-9]/.test(ch)) {
+        digs++;
+        if (digs === digsBefore && !hasDotBefore) { pos = i + 1; break; }
+      } else if (ch === '.') {
+        if (hasDotBefore && digs === digsBefore) { pos = i + 1; break; }
+      }
+    }
+    /* Agar barcha raqamlar hisoblandiyam topilmasa — oxiriga */
+    if (digs < digsBefore) pos = formatted.length;
+    try { el.setSelectionRange(pos, pos); } catch(e) {}
+  }
 
   /* Clear tugmasi */
   var wrap = document.getElementById(wrapId);
@@ -985,8 +1102,10 @@ function clearInp(id, wrapId) {
 }
 
 function getRawVal(id) {
-  /* Formatlangan inputdan sof float olish */
-  return parseFloat(stripFmt(document.getElementById(id).value)) || 0;
+  var raw = stripFmt(document.getElementById(id).value);
+  /* Oxirida nuqta bo'lsa — hali yozilmagan, NaN qaytaramiz */
+  if (raw.slice(-1) === '.') return NaN;
+  return parseFloat(raw) || 0;
 }
 var pctMode = 'tip';
 
@@ -1007,6 +1126,10 @@ function setPct(mode) {
   calcPct();
 }
 
+function money(n) {
+  return Math.round(n).toLocaleString('uz-UZ') + " so'm";
+}
+
 function calcPct() {
   var base = getRawVal('pct-base');
   var rate = getRawVal('pct-rate');
@@ -1014,226 +1137,391 @@ function calcPct() {
   var lbl  = document.getElementById('pct-lbl');
   var val  = document.getElementById('pct-val');
   var sub  = document.getElementById('pct-sub');
+  var div  = document.getElementById('pct-divider');
+  var remLbl = document.getElementById('pct-rem-lbl');
+  var rem    = document.getElementById('pct-rem');
 
-  if (!isFinite(base) || !isFinite(rate) || base <= 0 || rate <= 0) {
-    num.textContent = '—'; val.textContent = '—'; sub.textContent = ''; return;
+  if (isNaN(base) || isNaN(rate) || !isFinite(base) || !isFinite(rate) || base <= 0 || rate <= 0) {
+    num.textContent    = '—';
+    val.textContent    = '—';
+    sub.textContent    = '';
+    rem.textContent    = '—';
+    remLbl.textContent = '';
+    div.className      = 'pct-divider';
+    return;
   }
 
-  var amt = base * rate / 100;
-
-  function money(n) {
-    return Math.round(n).toLocaleString('uz-UZ') + " so'm";
-  }
+  var amt     = base * rate / 100;
+  var fmtBase = addSpaces(String(Math.round(base)));
+  var formula = fmtBase + ' × ' + rate + '% = ' + money(amt);
+  div.className = 'pct-divider show';
 
   if (pctMode === 'disc') {
-    val.textContent = money(base - amt);
-    lbl.textContent = 'Chegirmali narx';
-    sub.textContent = 'Chegirma: −' + money(amt);
-    num.textContent = '−' + rate + '%';
+    var result = base - amt;
+    val.textContent    = money(result);
+    lbl.textContent    = 'Chegirmali narx';
+    sub.textContent    = formula;
+    num.textContent    = '−' + rate + '%';
+    remLbl.textContent = 'Qoldiq (chegirma miqdori)';
+    rem.textContent    = money(amt);
+
   } else if (pctMode === 'markup') {
-    val.textContent = money(base + amt);
-    lbl.textContent = 'Ustama bilan narx';
-    sub.textContent = 'Ustama: +' + money(amt);
-    num.textContent = '+' + rate + '%';
+    var result = base + amt;
+    val.textContent    = money(result);
+    lbl.textContent    = 'Ustama bilan narx';
+    sub.textContent    = formula;
+    num.textContent    = '+' + rate + '%';
+    remLbl.textContent = 'Asl narx (ustama siz)';
+    rem.textContent    = money(base);
+
   } else if (pctMode === 'tax') {
-    val.textContent = money(base + amt);
-    lbl.textContent = 'Soliq bilan jami';
-    sub.textContent = 'Soliq: +' + money(amt);
-    num.textContent = '+' + rate + '%';
+    var result = base + amt;
+    val.textContent    = money(result);
+    lbl.textContent    = 'Soliq bilan jami';
+    sub.textContent    = formula;
+    num.textContent    = '+' + rate + '%';
+    remLbl.textContent = 'Soliqqacha narx';
+    rem.textContent    = money(base);
+
   } else {
-    val.textContent = money(amt);
-    lbl.textContent = 'Foiz miqdori';
-    sub.textContent = base + ' × ' + rate + '% = ' + money(amt);
-    num.textContent = money(amt).replace(" so'm", '');
+    /* tip — foiz miqdori */
+    val.textContent    = money(amt);
+    lbl.textContent    = 'Foiz miqdori';
+    sub.textContent    = formula;
+    num.textContent    = money(amt).replace(" so'm", '');
+    remLbl.textContent = 'Qoldiq (foiz chiqarilgandan keyin)';
+    rem.textContent    = money(base - amt);
   }
 }
 
-/* ─── VALYUTA ───────────────────────────────────────── */
-var RATES  = {};
-var ratesLoaded = false;
-var ratesDate   = '';
-var FALLBACK = {
-  USD:12750, EUR:13900, RUB:140,
-  AED:3472,  GBP:16300, CNY:1758, KZT:28.2, TRY:392
+/* ═══════════════════════════════════════════════════════
+   VALYUTA MODULI — Backend-first arxitektura
+   ═══════════════════════════════════════════════════════
+   Asosiy manba: /api/rates (Vercel serverless)
+     - CBU rasmiy + Market jonli parallel qaytaradi
+     - Vercel Edge 15 daqiqa keshlaydi
+     - Barcha foydalanuvchilar keshdan o'qiydi
+   Fallback: tashqi API lar to'g'ridan (backend ishlamasa)
+   LocalStorage: oxirgi muvaffaqiyatli kurslar (TTL: 24h)
+   ═══════════════════════════════════════════════════════ */
+
+var CUR = {
+  LS_KEY:        'kalk_cur_v3',
+  BACKEND_URL:   '/api/rates',
+  LIVE_TTL:       15 * 60 * 1000,
+  OFF_TTL:        60 * 60 * 1000,
+  RETRY_ERROR:     5 * 60 * 1000,
+  FETCH_TIMEOUT:   8 * 1000,
+  LS_TTL:         24 * 60 * 60 * 1000,   /* 24 soat */
+  CURRENCIES:    ['USD','UZS','EUR','RUB','AED','GBP','KZT']
 };
-var PROXIES = [
-  { url: 'https://api.allorigins.win/get?url=', wrap: true  },
-  { url: 'https://corsproxy.io/?',              wrap: false },
-  { url: 'https://api.codetabs.com/v1/proxy?quest=', wrap: false }
-];
-var CBU_BASE = 'https://cbu.uz/ru/arkhiv-kursov-valyut/json/';
 
-/* Bugungi sana — proxy keshini aldash uchun */
-function todayStr() {
-  var d = new Date();
-  return d.getFullYear() + '-'
-    + String(d.getMonth()+1).padStart(2,'0') + '-'
-    + String(d.getDate()).padStart(2,'0');
+var curState = {
+  official: null,
+  live:     null,
+  timers:   { official: null, live: null, refresh: null },
+  loading:  { official: false, live: false }
+};
+
+/* ── LocalStorage — TTL bilan ── */
+var LS = {
+  save: function(official, live) {
+    try {
+      localStorage.setItem(CUR.LS_KEY, JSON.stringify({
+        official: official || null,
+        live:     live     || null,
+        savedAt:  Date.now()
+      }));
+    } catch(e) {}
+  },
+  load: function() {
+    try {
+      var raw = localStorage.getItem(CUR.LS_KEY);
+      if (!raw) return { official: null, live: null };
+      var data = JSON.parse(raw);
+      /* TTL tekshiruvi — 24 soatdan eski bo'lsa ishlatmaymiz */
+      if (Date.now() - (data.savedAt || 0) > CUR.LS_TTL) {
+        localStorage.removeItem(CUR.LS_KEY);
+        return { official: null, live: null };
+      }
+      return data;
+    } catch(e) { return { official: null, live: null }; }
+  }
+};
+
+/* ── Vaqt formatlash ── */
+function fmtTime(ts) {
+  if (!ts) return '';
+  var d = new Date(ts);
+  return String(d.getHours()).padStart(2,'0') + ':'
+       + String(d.getMinutes()).padStart(2,'0');
 }
 
-/* Bugungi kurs URL — sana parametr sifatida */
-function cbuUrl() {
-  return CBU_BASE + '?date=' + todayStr() + '&_=' + Date.now();
+/* ── Sana formatlash — har qanday formatdan M.DD.YYYY ga ── */
+function fmtDate(str) {
+  if (!str) return '';
+  var d;
+
+  /* "22.03.2026" — CBU formati */
+  var m1 = str.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (m1) {
+    d = new Date(parseInt(m1[3]), parseInt(m1[2])-1, parseInt(m1[1]));
+  }
+  /* "2026-03-22" — ISO formati */
+  else if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    d = new Date(str);
+  }
+  /* Boshqa formatlar — Date parse */
+  else {
+    d = new Date(str);
+  }
+
+  if (!d || isNaN(d.getTime())) return str;
+  return (d.getMonth()+1) + '.' + String(d.getDate()).padStart(2,'0') + '.' + d.getFullYear();
 }
 
-/* API dan kelgan sana bugunmi? */
-function isToday(dateStr) {
-  if (!dateStr) return false;
-  /* CBU format: "21.03.2026" yoki "2026-03-21" */
-  var today = new Date();
-  var d = String(today.getDate()).padStart(2,'0');
-  var m = String(today.getMonth()+1).padStart(2,'0');
-  var y = String(today.getFullYear());
-  return dateStr.indexOf(d) !== -1
-      && dateStr.indexOf(m) !== -1
-      && dateStr.indexOf(y) !== -1;
-}
-
-function setSt(msg, cls) {
-  var el = document.getElementById('cur-st');
-  if (!el) return;
-  el.textContent = msg;
-  el.className = 'cur-status ' + cls;
-}
-function setRefBtn(loading) {
-  var rb = document.getElementById('ref-btn');
-  if (!rb) return;
-  rb.disabled = loading;
-  rb.textContent = loading ? '⏳ Yangilanmoqda...' : '🔄 Kurslarni yangilash';
-}
-
-function fetchTimed(url, ms) {
+/* ── Timeout bilan fetch ── */
+function fetchT(url) {
   if (!window.AbortController) return fetch(url, { cache: 'no-store' });
   var ctrl  = new AbortController();
-  var timer = setTimeout(function(){ ctrl.abort(); }, ms);
+  var timer = setTimeout(function(){ ctrl.abort(); }, CUR.FETCH_TIMEOUT);
   return fetch(url, { signal: ctrl.signal, cache: 'no-store' })
     .finally(function(){ clearTimeout(timer); });
 }
 
-function parseArr(data, wrap) {
-  if (wrap) {
-    if (typeof data.contents !== 'string') throw new Error('no contents');
-    return JSON.parse(data.contents);
-  }
-  return Array.isArray(data) ? data : JSON.parse(data);
+/* ══════════════════════════════════════════════
+   BACKEND — asosiy manba
+   /api/rates → { official, live, serverTime }
+   ══════════════════════════════════════════════ */
+function fetchFromBackend() {
+  return fetchT(CUR.BACKEND_URL)
+    .then(function(r) {
+      if (!r.ok) throw new Error('backend http ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data.official && !data.live) throw new Error('backend empty');
+      /* fetchedAt ni frontend qo'yadi */
+      var now = Date.now();
+      if (data.official) data.official.fetchedAt = now;
+      if (data.live)     data.live.fetchedAt     = now;
+      /* Eski kurs bo'lsa badge da ko'rsatamiz */
+      data._isToday = data.isToday !== false;
+      return data;
+    });
 }
 
-function applyArr(arr) {
-  var need  = ['USD','EUR','RUB','AED','GBP','CNY','KZT','TRY'];
-  var found = 0;
+/* ══════════════════════════════════════════════
+   FALLBACK — backend ishlamasa to'g'ridan
+   ══════════════════════════════════════════════ */
+var CBU_PROXIES = [
+  {
+    url: 'https://api.allorigins.win/get?url=' +
+         encodeURIComponent('https://cbu.uz/ru/arkhiv-kursov-valyut/json/'),
+    parse: function(d) {
+      var arr = JSON.parse(d.contents);
+      return parseCbuArr(arr);
+    }
+  },
+  {
+    url: 'https://corsproxy.io/?' +
+         encodeURIComponent('https://cbu.uz/ru/arkhiv-kursov-valyut/json/'),
+    parse: function(d) {
+      var arr = Array.isArray(d) ? d : JSON.parse(d);
+      return parseCbuArr(arr);
+    }
+  }
+];
+
+function parseCbuArr(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) throw new Error('empty cbu');
+  var rates = { UZS: 1 };
   arr.forEach(function(item) {
-    if (need.indexOf(item.Ccy) !== -1) {
+    if (CUR.CURRENCIES.indexOf(item.Ccy) !== -1 && item.Ccy !== 'UZS') {
       var r = parseFloat(item.Rate);
       var n = parseFloat(item.Nominal) || 1;
-      if (r > 0) { RATES[item.Ccy] = r / n; found++; }
-      ratesDate = item.Date || ratesDate;
+      if (r > 0) rates[item.Ccy] = r / n;
     }
   });
-  return found >= 3;
+  if (!rates.USD) throw new Error('no USD');
+  return {
+    rates:         rates,
+    source:        'cbu (direct)',
+    effectiveDate: arr[0] ? (arr[0].Date || '') : '',
+    fetchedAt:     Date.now(),
+    type:          'official'
+  };
 }
 
-function tryProxy(idx) {
-  if (idx >= PROXIES.length) {
-    if (ratesLoaded) {
-      var warn = isToday(ratesDate)
-        ? '✅ Markaziy bank — ' + ratesDate
-        : '⚠️ Eskirgan kurs — ' + ratesDate + ' (yangilang)';
-      setSt(warn, isToday(ratesDate) ? 'ok' : 'warn');
-    } else {
-      Object.assign(RATES, FALLBACK);
-      ratesLoaded = true;
-      setSt("⚠️ Internet yo'q — taxminiy kurslar", 'warn');
-      convert();
-    }
-    setRefBtn(false);
-    return;
-  }
-  var p   = PROXIES[idx];
-  /* Har proxy uchun bugungi sana + timestamp — proxy va brauzer keshini o'tkazib yuboradi */
-  var target = p.wrap
-    ? p.url + encodeURIComponent(cbuUrl())
-    : p.url + encodeURIComponent(cbuUrl());
-
-  fetchTimed(target, 8000)
+function fetchOfficialDirect(idx) {
+  if (idx >= CBU_PROXIES.length) return Promise.reject(new Error('cbu failed'));
+  var p = CBU_PROXIES[idx];
+  return fetchT(p.url)
     .then(function(r) {
       if (!r.ok) throw new Error('http ' + r.status);
       return r.json();
     })
-    .then(function(data) {
-      var arr = parseArr(data, p.wrap);
-      if (!Array.isArray(arr) || arr.length === 0) throw new Error('empty');
-      if (!applyArr(arr)) throw new Error('rates not found');
-      ratesLoaded = true;
-      /* Sana tekshiruvi — bugungi kursmi? */
-      if (isToday(ratesDate)) {
-        setSt('✅ Markaziy bank — ' + ratesDate, 'ok');
-        setRefBtn(false);
-        convert();
-      } else {
-        /* Kecha kurs keldi — keyingi proxy sinab ko'r */
-        throw new Error('stale: ' + ratesDate);
-      }
+    .then(function(data) { return p.parse(data); })
+    .catch(function() { return fetchOfficialDirect(idx + 1); });
+}
+
+function parseFawaz(d) {
+  var usdData = d.usd || d.USD;
+  if (!usdData) throw new Error('no usd');
+  var uzsPerUsd = usdData['uzs'];
+  if (!uzsPerUsd || uzsPerUsd <= 0) throw new Error('no uzs');
+  var rates = { UZS: 1, USD: uzsPerUsd };
+  ['eur','rub','aed','gbp','kzt'].forEach(function(k) {
+    var v = usdData[k];
+    if (v && v > 0) rates[k.toUpperCase()] = uzsPerUsd / v;
+  });
+  return {
+    rates:         rates,
+    source:        'fawazahmed0',
+    effectiveDate: d.date || '',
+    fetchedAt:     Date.now(),
+    type:          'market'
+  };
+}
+
+var LIVE_PROVIDERS = [
+  {
+    url:   'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json',
+    parse: parseFawaz
+  },
+  {
+    url:   'https://latest.currency-api.pages.dev/v1/currencies/usd.min.json',
+    parse: parseFawaz
+  },
+  {
+    url: 'https://open.er-api.com/v6/latest/USD',
+    parse: function(d) {
+      if (!d.rates) throw new Error('no rates');
+      var uzsPerUsd = d.rates['UZS'];
+      if (!uzsPerUsd || uzsPerUsd <= 0) throw new Error('no uzs');
+      var rates = { UZS: 1, USD: uzsPerUsd };
+      ['EUR','RUB','AED','GBP','KZT'].forEach(function(k) {
+        var v = d.rates[k];
+        if (v && v > 0) rates[k] = uzsPerUsd / v;
+      });
+      return {
+        rates:         rates,
+        source:        'open.er-api',
+        effectiveDate: d.time_last_update_utc || '',
+        fetchedAt:     Date.now(),
+        type:          'market'
+      };
+    }
+  }
+];
+
+function fetchLiveDirect(idx) {
+  if (idx >= LIVE_PROVIDERS.length) return Promise.reject(new Error('live failed'));
+  var p = LIVE_PROVIDERS[idx];
+  return fetchT(p.url)
+    .then(function(r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
     })
-    .catch(function(err) {
-      /* Agar hech bo'lmasa bitta kurs yuklangan bo'lsa va oxirgi proxy — ishlatamiz */
-      if (idx === PROXIES.length - 1 && ratesLoaded) {
-        var warn = isToday(ratesDate)
-          ? '✅ Markaziy bank — ' + ratesDate
-          : '⚠️ Eskirgan kurs (' + ratesDate + ') — yangilang';
-        setSt(warn, isToday(ratesDate) ? 'ok' : 'warn');
-        setRefBtn(false);
-        convert();
-        return;
-      }
-      tryProxy(idx + 1);
-    });
+    .then(function(data) { return p.parse(data); })
+    .catch(function() { return fetchLiveDirect(idx + 1); });
 }
 
-function loadRates() {
-  setSt('⏳ Bugungi kurslar yuklanmoqda...', 'loading');
-  setRefBtn(true);
-  /* Har yangilashda RATES ni tozalab boshdan yuklaymiz */
-  RATES = {};
-  ratesLoaded = false;
-  tryProxy(0);
+/* ══════════════════════════════════════════════
+   UI yangilash
+   ══════════════════════════════════════════════ */
+function setBadge(type, state, text) {
+  var badge = document.getElementById(type + '-badge');
+  var txt   = document.getElementById(type + '-st-txt');
+  if (!badge || !txt) return;
+  badge.className = 'cur-badge ' + state;
+  txt.textContent = text;
 }
 
-function getRate(ccy) {
+function setRateBox(type, data, from, to) {
+  var box     = document.getElementById(type + '-box');
+  var rateEl  = document.getElementById(type + '-rate');
+  var srcEl   = document.getElementById(type + '-src');
+  var dateEl  = document.getElementById(type + '-date');
+  var fetchEl = document.getElementById(type + '-fetched');
+  if (!box) return;
+
+  if (!data) {
+    box.classList.add('unavailable');
+    rateEl.textContent  = "Ma'lumot yo'q";
+    srcEl.textContent   = '—';
+    dateEl.textContent  = '';
+    fetchEl.textContent = '';
+    return;
+  }
+  box.classList.remove('unavailable');
+
+  var fRate = getFromData(data, from);
+  var tRate = getFromData(data, to);
+  if (fRate && tRate) {
+    var rate    = fRate / tRate;
+    var isLarge = (to === 'UZS' || to === 'KZT');
+    rateEl.textContent = '1 ' + from + ' = '
+      + rate.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : 4 })
+      + ' ' + to;
+  } else {
+    rateEl.textContent = 'Kurs topilmadi';
+  }
+
+  srcEl.textContent   = data.source        || '—';
+  dateEl.textContent  = data.effectiveDate  ? (fmtDate(data.effectiveDate))         : '';
+  fetchEl.textContent = data.fetchedAt      ? ('Yangilandi: ' + fmtTime(data.fetchedAt)) : '';
+}
+
+function getFromData(data, ccy) {
+  if (!data || !data.rates) return null;
   if (ccy === 'UZS') return 1;
-  var r = RATES[ccy];
+  var r = data.rates[ccy];
   return (r !== undefined && r > 0) ? r : null;
 }
 
+/* ══════════════════════════════════════════════
+   Konvertatsiya
+   ══════════════════════════════════════════════ */
 function convert() {
-  if (!ratesLoaded) return;
-  var from   = document.getElementById('from-c').value;
-  var to     = document.getElementById('to-c').value;
-  var amt    = getRawVal('cur-amt');
-  var fRate  = getRate(from);
-  var tRate  = getRate(to);
+  var from  = document.getElementById('from-c').value;
+  var to    = document.getElementById('to-c').value;
+  var amt   = getRawVal('cur-amt');
+  var resEl = document.getElementById('cur-res');
 
-  if (!fRate || !tRate) {
-    document.getElementById('cur-res').textContent  = '—';
-    document.getElementById('cur-rate').textContent = 'Kurs topilmadi';
-    document.getElementById('cur-inv').textContent  = '';
+  /* Nuqta kiritilayotganda natijani tozalaymiz lekin kurs qutilari yangilansin */
+  if (isNaN(amt)) {
+    resEl.textContent = '—';
+    setRateBox('off',  curState.official, from, to);
+    setRateBox('live', curState.live,     from, to);
     return;
   }
 
-  var result = (amt * fRate) / tRate;
-  var rate   = fRate / tRate;
-  var isLarge = (to === 'UZS' || to === 'KZT');
-  var dec    = isLarge ? 0 : (to === 'RUB' ? 1 : 4);
+  /* Live ustunlik qiladi */
+  var data = curState.live || curState.official;
 
-  document.getElementById('cur-res').textContent =
-    isFinite(amt) && amt > 0
-      ? result.toLocaleString('uz-UZ', { maximumFractionDigits: dec })
+  if (!data) {
+    resEl.textContent = '—';
+    setRateBox('off',  curState.official, from, to);
+    setRateBox('live', curState.live,     from, to);
+    return;
+  }
+
+  var fRate = getFromData(data, from);
+  var tRate = getFromData(data, to);
+
+  if (!fRate || !tRate || !isFinite(amt) || amt <= 0) {
+    resEl.textContent = amt > 0 ? "Kurs yo'q" : '—';
+  } else {
+    var result  = (amt * fRate) / tRate;
+    var isLarge = (to === 'UZS' || to === 'KZT');
+    resEl.textContent = isFinite(result)
+      ? result.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : (to === 'RUB' ? 1 : 4) })
       : '—';
+  }
 
-  var rDec = isLarge ? 0 : 4;
-  document.getElementById('cur-rate').textContent =
-    '1 ' + from + ' = ' + rate.toLocaleString('uz-UZ', { maximumFractionDigits: rDec }) + ' ' + to;
-  document.getElementById('cur-inv').textContent =
-    '1 ' + to + ' = ' + (1/rate).toLocaleString('uz-UZ', { maximumFractionDigits: 4 }) + ' ' + from;
+  setRateBox('off',  curState.official, from, to);
+  setRateBox('live', curState.live,     from, to);
 }
 
 function swapCur() {
@@ -1243,8 +1531,103 @@ function swapCur() {
   convert();
 }
 
-/* Sahifa ochilganda fon da yuklash */
-loadRates();
+/* ══════════════════════════════════════════════
+   Asosiy yuklovchi
+   ══════════════════════════════════════════════ */
+function applyData(official, live) {
+  if (official) curState.official = official;
+  if (live)     curState.live     = live;
+  LS.save(curState.official, curState.live);
+  convert();
+}
+
+function scheduleRefresh(ms) {
+  if (curState.timers.refresh) clearTimeout(curState.timers.refresh);
+  curState.timers.refresh = setTimeout(function() { fetchAndApply(); }, ms);
+}
+
+function fetchAndApply() {
+  /* 1-urinish: backend */
+  fetchFromBackend()
+    .then(function(data) {
+      applyData(data.official, data.live);
+
+      var offLabel  = data.officialToday ? 'Rasmiy kurs — ' + fmtDate(data.official && data.official.effectiveDate) : '⚠️ Rasmiy kurs (kecha)';
+      var liveLabel = data.live
+        ? ('Jonli kurs' + (data.liveAgeMin !== null ? ' — ' + data.liveAgeMin + ' daq. oldin' : ''))
+        : null;
+
+      if (data.official) setBadge('off',  'ok',    offLabel);
+      else               setBadge('off',  'error', "Rasmiy kurs yo'q");
+      if (data.live)     setBadge('live', 'ok',    liveLabel);
+      else               setBadge('live', 'error', "Jonli kurs yo'q");
+
+      scheduleRefresh(CUR.LIVE_TTL);
+    })
+    .catch(function() {
+      /* 2-urinish: to'g'ridan */
+      setBadge('off',  'loading', 'Rasmiy kurs yuklanmoqda...');
+      setBadge('live', 'loading', 'Jonli kurs yuklanmoqda...');
+
+      Promise.allSettled([
+        fetchOfficialDirect(0),
+        fetchLiveDirect(0)
+      ]).then(function(results) {
+        var official = results[0].status === 'fulfilled' ? results[0].value : null;
+        var live     = results[1].status === 'fulfilled' ? results[1].value : null;
+
+        if (official) {
+          applyData(official, null);
+          setBadge('off', 'ok', 'Rasmiy kurs — ' + fmtDate(official.effectiveDate));
+        } else {
+          setBadge('off', 'error', curState.official
+            ? 'Rasmiy kurs (kesh) — ' + fmtDate(curState.official.effectiveDate)
+            : "Rasmiy kurs mavjud emas");
+        }
+
+        if (live) {
+          applyData(null, live);
+          setBadge('live', 'ok', 'Jonli kurs — ' + fmtTime(live.fetchedAt));
+        } else {
+          setBadge('live', 'error', curState.live
+            ? 'Jonli kurs (kesh) — ' + fmtTime(curState.live.fetchedAt)
+            : "Jonli kurs mavjud emas");
+        }
+
+        scheduleRefresh(official || live ? CUR.LIVE_TTL : CUR.RETRY_ERROR);
+      });
+    });
+}
+
+function loadRates() {
+  /* 1. LocalStorage dan tez ko'rsatamiz */
+  var cached = LS.load();
+  if (cached.official) {
+    curState.official = cached.official;
+    setBadge('off', 'cache', 'Rasmiy kurs (kesh) — ' + fmtDate(cached.official.effectiveDate));
+  }
+  if (cached.live) {
+    curState.live = cached.live;
+    setBadge('live', 'cache', 'Jonli kurs (kesh) — ' + fmtTime(cached.live.fetchedAt));
+  }
+  if (cached.official || cached.live) convert();
+
+  /* 2. Orqada yangilaymiz */
+  fetchAndApply();
+}
+
+/* Qo'lda yangilash — faqat KV dan o'qiydi, API ga urmaydi */
+var lastManualRefresh = 0;
+window.onRefreshRates = function() {
+  var now  = Date.now();
+  var wait = 10 * 1000; /* 10 soniya debounce */
+  if (now - lastManualRefresh < wait) return;
+  lastManualRefresh = now;
+  fetchAndApply();
+};
+
+/* Sahifa to'liq yuklangandan keyin kurslarni yuklash */
+window.addEventListener('load', function() { loadRates(); });
 
 /* ─── SCROLL LOCK ───────────────────────────────────── */
 document.addEventListener('touchmove', function(e) {
