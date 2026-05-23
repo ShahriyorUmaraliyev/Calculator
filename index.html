@@ -197,11 +197,11 @@
     /* ── DISPLAY ── */
     .display {
       flex: 1;
-      min-height: 0;
+      min-height: 90px; /* Guarantee ample height to prevent collapsing and clipping */
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 40px 24px 8px; /* Elegant iPhone display spacing */
+      padding: 30px 24px 8px; /* Elegant iPhone display spacing */
       text-align: right;
       overflow: hidden;
       z-index: 2;
@@ -217,10 +217,10 @@
       margin-bottom: 2px;
     }
     .result {
-      font-size: clamp(60px, 17vw, 92px);
+      font-size: clamp(44px, 12vw, 68px); /* Safe, gorgeous dynamic font size */
       font-weight: 200;
       color: var(--text-main);
-      line-height: 1;
+      line-height: 1.15; /* Prevents text clipping of top loops and tails */
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1088,10 +1088,10 @@ function fmtDisp(s) {
 function setFontSize(disp) {
   var L = disp.replace(/[,.\-]/g, '').length;
   resultEl.style.fontSize =
-    L <= 6  ? 'clamp(60px,17vw,92px)'  :
-    L <= 9  ? 'clamp(46px,13vw,72px)'  :
-    L <= 12 ? 'clamp(34px,10vw,54px)'  :
-              'clamp(24px, 7vw,38px)';
+    L <= 6  ? 'clamp(44px,12vw,68px)'  :
+    L <= 9  ? 'clamp(34px,9vw,52px)'   :
+    L <= 12 ? 'clamp(26px,7vw,40px)'   :
+              'clamp(18px,5vw,28px)';
 }
 
 function animPop() {
