@@ -44,38 +44,69 @@
       position: fixed;
       inset: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      transition: background 0.3s ease;
     }
     body.dark {
-      --calc-bg: rgba(14, 18, 28, 0.45);
-      --btn-num: rgba(255, 255, 255, 0.07);
-      --btn-gray: rgba(255, 255, 255, 0.22);
-      --btn-orange: rgba(255, 149, 0, 0.85);
+      --calc-bg: rgba(0, 0, 0, 0.9);
+      --btn-num: #333333;
+      --btn-gray: #a5a5a5;
+      --btn-orange: #ff9f0a;
       --text-main: #ffffff;
-      --text-dim: rgba(255, 255, 255, 0.45);
+      --text-dim: rgba(255, 255, 255, 0.6);
       --mode-bg: rgba(255, 255, 255, 0.05);
       --shine: rgba(255, 255, 255, 0.15);
-      --border: rgba(255, 255, 255, 0.12);
+      --border: rgba(255, 255, 255, 0.08);
       --box-bg: rgba(255, 255, 255, 0.03);
       --input-bg: rgba(0, 0, 0, 0.12);
       --input-border: rgba(255, 255, 255, 0.08);
       --label: rgba(255, 255, 255, 0.38);
-      --nav-bg: rgba(10, 14, 22, 0.65);
+      --nav-bg: rgba(0, 0, 0, 0.82);
     }
     body.light {
-      --calc-bg: rgba(248, 250, 255, 0.52);
-      --btn-num: rgba(255, 255, 255, 0.65);
-      --btn-gray: rgba(0, 0, 0, 0.08);
-      --btn-orange: rgba(255, 149, 0, 0.85);
-      --text-main: #1c1c1e;
-      --text-dim: rgba(0, 0, 0, 0.4);
+      --calc-bg: rgba(255, 255, 255, 0.94);
+      --btn-num: #e5e5e5;
+      --btn-gray: #d4d4d2;
+      --btn-orange: #ff9f0a;
+      --text-main: #000000;
+      --text-dim: rgba(0, 0, 0, 0.5);
       --mode-bg: rgba(0, 0, 0, 0.04);
       --shine: rgba(255, 255, 255, 0.6);
-      --border: rgba(0, 0, 0, 0.08);
+      --border: rgba(0, 0, 0, 0.06);
       --box-bg: rgba(0, 0, 0, 0.02);
       --input-bg: rgba(255, 255, 255, 0.5);
       --input-border: rgba(0, 0, 0, 0.06);
       --label: rgba(0, 0, 0, 0.4);
-      --nav-bg: rgba(225, 228, 240, 0.7);
+      --nav-bg: rgba(242, 242, 247, 0.85);
+    }
+
+    /* ── DESKTOP BEZEL CONTAINER (SENIOR LEVEL) ── */
+    @media (min-width: 480px) {
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: static;
+        height: 100vh;
+      }
+      body.dark {
+        background: #05070a;
+      }
+      body.light {
+        background: #e4e7eb;
+      }
+      .calc {
+        max-width: 412px;
+        height: 90vh;
+        max-height: 860px;
+        border-radius: 40px;
+        box-shadow: 0 30px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.12);
+        border: 8px solid #1c1c1e;
+        overflow: hidden;
+      }
+      body.light .calc {
+        border-color: #d1d1d6;
+        box-shadow: 0 30px 70px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05);
+      }
     }
 
     /* ── ORIGINAL CLASSIC GRADIENT BACKGROUND ── */
@@ -291,10 +322,7 @@
     }
     .btn-gray {
       background: var(--btn-gray);
-      color: var(--text-main);
-    }
-    body.light .btn-gray {
-      color: #111;
+      color: #000000;
     }
     
     /* Authentic iOS Orange Button */
@@ -314,7 +342,9 @@
       grid-column: span 2;
       border-radius: 999px;
       justify-self: stretch;
+      align-self: center;
       max-width: none;
+      max-height: 86px;
       aspect-ratio: auto;
       height: 100%;
       display: flex;
@@ -647,15 +677,15 @@
         <div class="result" id="result"><span id="rspan">0</span></div>
       </div>
       <div class="buttons">
-        <button class="btn btn-gray btn-sm" id="btn-back">
+        <button class="btn btn-gray" id="btn-ac">AC</button>
+        <button class="btn btn-gray" id="btn-pm">+/−</button>
+        <button class="btn btn-gray" id="btn-back">
           <svg width="26" height="18" viewBox="0 0 28 20" fill="none">
             <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
             <line x1="13" y1="7" x2="21" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
             <line x1="21" y1="7" x2="13" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </button>
-        <button class="btn btn-gray btn-sm" id="btn-ac">AC</button>
-        <button class="btn btn-gray btn-sm" id="btn-pm">+/−</button>
         <button class="btn btn-org" id="btn-div">÷</button>
         <button class="btn btn-num" data-n="7">7</button>
         <button class="btn btn-num" data-n="8">8</button>
@@ -871,7 +901,7 @@ function triggerFeedback(el) {
     }
   }
   
-  // 🔊 ULTRA-SOFT PHYSICAL MODELING AUDIO SYNTHESIZER
+  // 🔊 SENIOR-LEVEL PHYSICAL MODELING AUDIO SYNTHESIZER
   try {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -882,21 +912,21 @@ function triggerFeedback(el) {
     
     var now = audioCtx.currentTime;
     
-    // 1. Decaying warm sine wave (wooden hollow housing)
+    // 1. Decaying warm sine wave (wooden hollow chamber)
     var osc = audioCtx.createOscillator();
     var oscGain = audioCtx.createGain();
     osc.type = 'sine';
     
-    // 2. Soft plastic tap transient (bandpass white noise burst)
+    // 2. Soft plastic tap transient (lowpass white noise burst)
     var noiseGain = audioCtx.createGain();
     var filter = audioCtx.createBiquadFilter();
-    filter.type = 'bandpass';
+    filter.type = 'lowpass';
     
     osc.connect(oscGain);
     oscGain.connect(audioCtx.destination);
     
     // Generate organic white noise transient
-    var bufferSize = audioCtx.sampleRate * 0.01;
+    var bufferSize = audioCtx.sampleRate * 0.015; // 15ms buffer
     var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     var data = buffer.getChannelData(0);
     for (var i = 0; i < bufferSize; i++) {
@@ -909,103 +939,73 @@ function triggerFeedback(el) {
     filter.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
     
-    var duration = 0.008; // Super short decay (8ms)
+    var duration = 0.012; // Standard decay
     
     if (id === 'btn-back') {
       // iOS Delete: Gentle, woody, low "tock"
-      duration = 0.022;
-      
-      osc.frequency.setValueAtTime(220, now);
+      duration = 0.02;
+      osc.frequency.setValueAtTime(140, now);
       osc.frequency.exponentialRampToValueAtTime(50, now + duration);
-      oscGain.gain.setValueAtTime(0.035, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      oscGain.gain.setValueAtTime(0.015, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      filter.frequency.setValueAtTime(800, now);
-      filter.Q.setValueAtTime(1.5, now);
-      noiseGain.gain.setValueAtTime(0.025, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.006);
-      
-      osc.start(now);
-      osc.stop(now + duration);
-      noise.start(now);
-      noise.stop(now + 0.006);
+      filter.frequency.setValueAtTime(500, now);
+      noiseGain.gain.setValueAtTime(0.012, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.006);
       
     } else if (id === 'btn-eq' || id === 'btn-ac') {
       // iOS Confirm/Clear: Solid, soft mechanical click
-      duration = 0.02;
-      
-      osc.frequency.setValueAtTime(300, now);
+      duration = 0.018;
+      osc.frequency.setValueAtTime(200, now);
       osc.frequency.exponentialRampToValueAtTime(60, now + duration);
-      oscGain.gain.setValueAtTime(0.03, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      oscGain.gain.setValueAtTime(0.018, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      filter.frequency.setValueAtTime(1000, now);
-      filter.Q.setValueAtTime(1.8, now);
-      noiseGain.gain.setValueAtTime(0.02, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.005);
-      
-      osc.start(now);
-      osc.stop(now + duration);
-      noise.start(now);
-      noise.stop(now + 0.005);
+      filter.frequency.setValueAtTime(700, now);
+      noiseGain.gain.setValueAtTime(0.015, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.005);
       
     } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
-      // iOS Action: Soft warm operator toggle click
-      duration = 0.012;
+      // iOS Operator Action: Soft warm operator click
+      duration = 0.015;
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(70, now + duration);
+      oscGain.gain.setValueAtTime(0.014, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      osc.frequency.setValueAtTime(380, now);
-      osc.frequency.exponentialRampToValueAtTime(80, now + duration);
-      oscGain.gain.setValueAtTime(0.02, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      
-      filter.frequency.setValueAtTime(1400, now);
-      filter.Q.setValueAtTime(2.0, now);
-      noiseGain.gain.setValueAtTime(0.015, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.003);
-      
-      osc.start(now);
-      osc.stop(now + duration);
-      noise.start(now);
-      noise.stop(now + 0.003);
+      filter.frequency.setValueAtTime(800, now);
+      noiseGain.gain.setValueAtTime(0.01, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.004);
       
     } else if (isPill) {
       // iOS Tab Pop: Airy, extremely quiet bubble pop
-      duration = 0.006;
+      duration = 0.01;
+      osc.frequency.setValueAtTime(250, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + duration);
+      oscGain.gain.setValueAtTime(0.006, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      osc.frequency.setValueAtTime(550, now);
-      osc.frequency.exponentialRampToValueAtTime(150, now + duration);
-      oscGain.gain.setValueAtTime(0.008, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      
-      filter.frequency.setValueAtTime(2200, now);
-      filter.Q.setValueAtTime(2.5, now);
-      noiseGain.gain.setValueAtTime(0.005, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.0015);
-      
-      osc.start(now);
-      osc.stop(now + duration);
-      noise.start(now);
-      noise.stop(now + 0.0015);
+      filter.frequency.setValueAtTime(1200, now);
+      noiseGain.gain.setValueAtTime(0.004, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.003);
       
     } else {
       // iOS Standard: Extremely soft, subtle plastic tick (Woody tone with zero buzz/beep)
-      duration = 0.008; // 8ms (super quick transient)
+      duration = 0.014;
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + duration);
+      oscGain.gain.setValueAtTime(0.01, now); // Extremely soft 1% volume
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      osc.frequency.setValueAtTime(450, now); // lower frequency is much gentler on the ear
-      osc.frequency.exponentialRampToValueAtTime(100, now + duration);
-      oscGain.gain.setValueAtTime(0.012, now); // 1.2% volume (very subtle!)
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      
-      filter.frequency.setValueAtTime(1800, now);
-      filter.Q.setValueAtTime(1.5, now); // lower Q factor = softer, warmer sound
-      noiseGain.gain.setValueAtTime(0.008, now); // extremely soft contact noise
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.002);
-      
-      osc.start(now);
-      osc.stop(now + duration);
-      noise.start(now);
-      noise.stop(now + 0.002);
+      filter.frequency.setValueAtTime(600, now); // Warm lowpass cutoff
+      noiseGain.gain.setValueAtTime(0.008, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.004);
     }
+    
+    osc.start(now);
+    osc.stop(now + duration + 0.01); // Stop after it has fully faded to zero
+    noise.start(now);
+    noise.stop(now + duration + 0.01);
   } catch (e) {
     console.warn("Feedback audio failed to synthesize:", e);
   }
@@ -1068,11 +1068,13 @@ function switchTab(t) {
 }
 
 /* ─── CALCULATOR ────────────────────────────────────── */
-var first = null;       // birinchi operand (number)
-var op    = null;       // operator string
-var input = '0';        // joriy kiritilayotgan son (vergulsiz, sof raqam)
-var waited  = false;    // operator bosildi, ikkinchi raqam kutilmoqda
-var evaled  = false;    // = bosildi
+/* ─── IPHONE CALCULATOR STATE MACHINE (AUTHENTIC CLONE) ─── */
+var input = '0';            // current input string
+var storedValue = null;     // stored operand (number)
+var activeOperator = null;  // currently active operator (+, -, ×, ÷)
+var isResetOnNextDigit = false; // flag to replace input with next digit clicked
+var lastActiveOperator = null;  // for repeating operations on repeated '=' clicks
+var lastOperand = null;         // for repeating operations on repeated '=' clicks
 
 var rspanEl  = document.getElementById('rspan');
 var resultEl = document.getElementById('result');
@@ -1085,7 +1087,7 @@ var opBtns   = {
   '÷': document.getElementById('btn-div')
 };
 
-/* Raqamni chiroyli formatlash (vergul bilan) */
+/* Format display number (with commas) */
 function fmtDisp(s) {
   if (s === 'Xato') return 'Xato';
   var neg  = s.charAt(0) === '-';
@@ -1093,11 +1095,6 @@ function fmtDisp(s) {
   var parts = body.split('.');
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return (neg ? '-' : '') + parts.join('.');
-}
-
-/* input string ni hisob uchun xavfsiz float ga aylantirish */
-function toNum(s) {
-  return parseFloat(s);   // input hech qachon vergul tutmaydi
 }
 
 function setFontSize(disp) {
@@ -1124,17 +1121,10 @@ function render() {
   var d = fmtDisp(input);
   rspanEl.textContent = d;
   setFontSize(d);
-  acBtn.textContent = (input === '0' && first === null && !op) ? 'AC' : 'C';
-  /* expr refresh — faqat = bosilmagan bo'lsa */
-  if (!evaled) {
-    if (first !== null && op) {
-      exprEl.textContent = waited
-        ? fmtDisp(String(first)) + ' ' + op
-        : fmtDisp(String(first)) + ' ' + op + ' ' + fmtDisp(input);
-    } else {
-      exprEl.textContent = '';
-    }
-  }
+  // AC shows if input is '0'
+  acBtn.textContent = (input === '0') ? 'AC' : 'C';
+  // We keep expr hidden or empty to clone iPhone perfectly
+  exprEl.textContent = '';
 }
 
 function compute(a, b, o) {
@@ -1144,55 +1134,63 @@ function compute(a, b, o) {
   else if (o === '×') r = a * b;
   else if (o === '÷') { if (b === 0) return null; r = a / b; }
   else return b;
-  /* Float precision fix */
+  // Fix floating point precision bugs exactly like iPhone (limit to 12 digits)
   return parseFloat(r.toPrecision(12));
 }
 
-/* Raqam tugmalari */
+/* Number button clicks */
 document.querySelectorAll('[data-n]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var n = btn.dataset.n;
-    if (evaled) {
-      input = (n === '0') ? '0' : n;
-      first = null; op = null; evaled = false; waited = false;
-      exprEl.textContent = '';
-    } else if (waited) {
-      input = (n === '0') ? '0' : n;
-      waited = false;
+    if (input === 'Xato') {
+      input = n;
+      storedValue = null;
+      activeOperator = null;
+      isResetOnNextDigit = false;
+    } else if (isResetOnNextDigit) {
+      input = n;
+      isResetOnNextDigit = false;
+      hlOp(null); // Unhighlight operator once digit typing starts
     } else {
       if (input === '0') {
         input = (n === '0') ? '0' : n;
-      } else if (input.replace(/[.\-]/g,'').length < 15) {
+      } else if (input.replace(/[.\-]/g,'').length < 9) { // iOS limit is 9 digits!
         input += n;
       }
     }
-    hlOp(op);
     render();
     animPop();
   });
 });
 
-/* Nuqta */
+/* Decimal Dot Button */
 document.getElementById('btn-dot').addEventListener('click', function() {
-  if (evaled) {
-    input = '0.'; first = null; op = null; evaled = false; waited = false;
-    exprEl.textContent = '';
-  } else if (waited) {
-    input = '0.'; waited = false;
+  if (input === 'Xato') {
+    input = '0.';
+    storedValue = null;
+    activeOperator = null;
+    isResetOnNextDigit = false;
+  } else if (isResetOnNextDigit) {
+    input = '0.';
+    isResetOnNextDigit = false;
+    hlOp(null);
   } else if (input.indexOf('.') === -1) {
     input += '.';
   }
   render();
 });
 
+/* Reusable Delete Last Digit (Swipe or Backspace) */
 function deleteLastDigit() {
-  if (evaled || input === 'Xato') {
-    input = '0'; first = null; op = null; evaled = false; waited = false;
-    exprEl.textContent = ''; hlOp(null);
+  if (input === 'Xato') {
+    input = '0';
+    storedValue = null;
+    activeOperator = null;
+    isResetOnNextDigit = false;
+    hlOp(null);
     return true;
-  } else if (waited) {
-    op = null; waited = false; hlOp(null);
-    return true;
+  } else if (isResetOnNextDigit) {
+    return false; // can't delete digits when operator is kutilmoqda
   } else if (input !== '0') {
     input = input.length > 1 ? input.slice(0, -1) : '0';
     if (input === '-') input = '0';
@@ -1201,44 +1199,72 @@ function deleteLastDigit() {
   return false;
 }
 
-/* Backspace */
+/* Backspace Button click */
 document.getElementById('btn-back').addEventListener('click', function() {
   if (deleteLastDigit()) {
     render();
   }
 });
 
-/* AC / C */
+/* AC / C Button click */
 document.getElementById('btn-ac').addEventListener('click', function() {
-  input = '0'; first = null; op = null; waited = false; evaled = false;
-  exprEl.textContent = ''; hlOp(null); render();
+  if (acBtn.textContent === 'C') {
+    // iPhone C: Clears only current display input
+    input = '0';
+  } else {
+    // iPhone AC: Clears everything
+    input = '0';
+    storedValue = null;
+    activeOperator = null;
+    lastActiveOperator = null;
+    lastOperand = null;
+    isResetOnNextDigit = false;
+    hlOp(null);
+  }
+  render();
 });
 
-/* +/- */
+/* +/- Button click */
 document.getElementById('btn-pm').addEventListener('click', function() {
   if (input === '0' || input === 'Xato') return;
   input = input.charAt(0) === '-' ? input.slice(1) : '-' + input;
   render();
 });
 
-/* Operator */
+/* Operator clicks (+, -, *, /) */
 function handleOp(newOp) {
   if (input === 'Xato') return;
-  hlOp(newOp);
-  if (first !== null && !waited && !evaled) {
-    var r = compute(first, toNum(input), op);
+  
+  if (activeOperator && isResetOnNextDigit) {
+    // If operator clicked sequentially without typing digits (e.g. 5 + then -),
+    // we just swap the active operator
+    activeOperator = newOp;
+    hlOp(newOp);
+    return;
+  }
+  
+  if (storedValue !== null && activeOperator && !isResetOnNextDigit) {
+    // Calculate intermediate sequential operation (e.g. 5 + 3 + -> displays 8, stores 8)
+    var r = compute(storedValue, parseFloat(input), activeOperator);
     if (r === null) {
-      input = 'Xato'; first = null; op = null;
-      exprEl.textContent = ''; hlOp(null); render(); return;
+      input = 'Xato';
+      storedValue = null;
+      activeOperator = null;
+      hlOp(null);
+      render();
+      return;
     }
-    first = r;
-    /* input ni r dan yangilaymiz — float string */
-    input = String(parseFloat(r.toPrecision(10)));
+    input = String(r);
+    storedValue = r;
     animPop();
   } else {
-    first = toNum(input);
+    storedValue = parseFloat(input);
   }
-  op = newOp; waited = true; evaled = false; render();
+  
+  activeOperator = newOp;
+  isResetOnNextDigit = true;
+  hlOp(newOp);
+  render();
 }
 
 document.getElementById('btn-add').addEventListener('click', function(){ handleOp('+'); });
@@ -1246,25 +1272,37 @@ document.getElementById('btn-sub').addEventListener('click', function(){ handleO
 document.getElementById('btn-mul').addEventListener('click', function(){ handleOp('×'); });
 document.getElementById('btn-div').addEventListener('click', function(){ handleOp('÷'); });
 
-/* Teng */
+/* Equal Button click (=) */
 document.getElementById('btn-eq').addEventListener('click', function() {
-  if (first === null || op === null) return;
-  var second = toNum(input);
-  var r      = compute(first, second, op);
-  /* expr yuqoriga: "5 × 5 =" */
-  exprEl.textContent =
-    fmtDisp(String(first)) + ' ' + op + ' ' + fmtDisp(String(second)) + ' =';
+  if (input === 'Xato') return;
+  
+  var currentVal = parseFloat(input);
+  var r = null;
+  
+  if (activeOperator) {
+    // Standard operation
+    lastActiveOperator = activeOperator;
+    lastOperand = currentVal;
+    r = compute(storedValue, currentVal, activeOperator);
+    storedValue = null;
+    activeOperator = null;
+  } else if (lastActiveOperator && lastOperand !== null) {
+    // Repeated '=' click: repeat the last operation
+    r = compute(currentVal, lastOperand, lastActiveOperator);
+  } else {
+    // No operation, just return
+    return;
+  }
+  
   if (r === null) {
     input = 'Xato';
   } else {
-    input = String(parseFloat(r.toPrecision(10)));
+    input = String(r);
   }
-  first = null; op = null; waited = false; evaled = true;
+  
+  isResetOnNextDigit = true;
   hlOp(null);
-  var d = fmtDisp(input);
-  rspanEl.textContent = d;
-  setFontSize(d);
-  acBtn.textContent = 'C';
+  render();
   animPop();
 });
 
