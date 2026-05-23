@@ -647,8 +647,6 @@
         <div class="result" id="result"><span id="rspan">0</span></div>
       </div>
       <div class="buttons">
-        <button class="btn btn-gray" id="btn-ac">AC</button>
-        <button class="btn btn-gray" id="btn-pm">+/−</button>
         <button class="btn btn-gray" id="btn-back">
           <svg width="26" height="18" viewBox="0 0 28 20" fill="none">
             <path d="M10.5 1L1 10L10.5 19H27V1H10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -656,6 +654,8 @@
             <line x1="21" y1="7" x2="13" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </button>
+        <button class="btn btn-gray" id="btn-ac">AC</button>
+        <button class="btn btn-gray" id="btn-pct">%</button>
         <button class="btn btn-org" id="btn-div">÷</button>
         <button class="btn btn-num" data-n="7">7</button>
         <button class="btn btn-num" data-n="8">8</button>
@@ -669,7 +669,8 @@
         <button class="btn btn-num" data-n="2">2</button>
         <button class="btn btn-num" data-n="3">3</button>
         <button class="btn btn-org" id="btn-add">+</button>
-        <button class="btn btn-num btn-wide" data-n="0">0</button>
+        <button class="btn btn-num" id="btn-pm">+/−</button>
+        <button class="btn btn-num" data-n="0">0</button>
         <button class="btn btn-num btn-dot" id="btn-dot">.</button>
         <button class="btn btn-org" id="btn-eq">=</button>
       </div>
@@ -871,7 +872,7 @@ function triggerFeedback(el) {
       navigator.vibrate(8);
     } else if (id === 'btn-eq' || id === 'btn-ac') {
       navigator.vibrate(10);
-    } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
+    } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm' || id === 'btn-pct') {
       navigator.vibrate(6);
     } else if (isPill) {
       navigator.vibrate(4);
@@ -896,10 +897,10 @@ function triggerFeedback(el) {
     var oscGain = audioCtx.createGain();
     osc.type = 'sine';
     
-    // 2. Soft plastic tap transient (lowpass white noise burst)
+    // 2. Soft plastic tap transient (bandpass white noise burst)
     var noiseGain = audioCtx.createGain();
     var filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
+    filter.type = 'bandpass';
     
     osc.connect(oscGain);
     oscGain.connect(audioCtx.destination);
@@ -918,67 +919,72 @@ function triggerFeedback(el) {
     filter.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
     
-    var duration = 0.012; // Standard decay
+    var duration = 0.006; // Standard decay
     
     if (id === 'btn-back') {
-      // iOS Delete: Gentle, woody, low "tock"
-      duration = 0.02;
-      osc.frequency.setValueAtTime(140, now);
-      osc.frequency.exponentialRampToValueAtTime(50, now + duration);
+      // iOS Delete: Crisp mechanical "tock"
+      duration = 0.01;
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.exponentialRampToValueAtTime(300, now + duration);
       oscGain.gain.setValueAtTime(0.015, now);
       oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      filter.frequency.setValueAtTime(500, now);
-      noiseGain.gain.setValueAtTime(0.012, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.006);
+      filter.frequency.setValueAtTime(1200, now);
+      filter.Q.setValueAtTime(2.0, now);
+      noiseGain.gain.setValueAtTime(0.01, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.003);
       
     } else if (id === 'btn-eq' || id === 'btn-ac') {
-      // iOS Confirm/Clear: Solid, soft mechanical click
-      duration = 0.018;
-      osc.frequency.setValueAtTime(200, now);
-      osc.frequency.exponentialRampToValueAtTime(60, now + duration);
-      oscGain.gain.setValueAtTime(0.018, now);
+      // iOS Confirm/Clear: Crisp metallic switch click
+      duration = 0.008;
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + duration);
+      oscGain.gain.setValueAtTime(0.012, now);
       oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      filter.frequency.setValueAtTime(700, now);
-      noiseGain.gain.setValueAtTime(0.015, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.005);
+      filter.frequency.setValueAtTime(1600, now);
+      filter.Q.setValueAtTime(3.0, now);
+      noiseGain.gain.setValueAtTime(0.012, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.003);
       
-    } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
-      // iOS Operator Action: Soft warm operator click
-      duration = 0.015;
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.exponentialRampToValueAtTime(70, now + duration);
-      oscGain.gain.setValueAtTime(0.014, now);
+    } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm' || id === 'btn-pct') {
+      // iOS Operator Action: Quick light operator tick
+      duration = 0.007;
+      osc.frequency.setValueAtTime(950, now);
+      osc.frequency.exponentialRampToValueAtTime(500, now + duration);
+      oscGain.gain.setValueAtTime(0.01, now);
       oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      filter.frequency.setValueAtTime(800, now);
-      noiseGain.gain.setValueAtTime(0.01, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.004);
+      filter.frequency.setValueAtTime(1800, now);
+      filter.Q.setValueAtTime(3.0, now);
+      noiseGain.gain.setValueAtTime(0.008, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.002);
       
     } else if (isPill) {
       // iOS Tab Pop: Airy, extremely quiet bubble pop
       duration = 0.01;
-      osc.frequency.setValueAtTime(250, now);
-      osc.frequency.exponentialRampToValueAtTime(100, now + duration);
+      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.exponentialRampToValueAtTime(450, now + duration);
       oscGain.gain.setValueAtTime(0.006, now);
       oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      filter.frequency.setValueAtTime(1200, now);
+      filter.frequency.setValueAtTime(2000, now);
+      filter.Q.setValueAtTime(2.0, now);
       noiseGain.gain.setValueAtTime(0.004, now);
       noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.003);
       
     } else {
-      // iOS Standard: Extremely soft, subtle plastic tick (Woody tone with zero buzz/beep)
-      duration = 0.014;
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.exponentialRampToValueAtTime(60, now + duration);
-      oscGain.gain.setValueAtTime(0.01, now); // Extremely soft 1% volume
+      // iOS Standard: Extremely crisp, woody "tock" (perfect iPhone tap)
+      duration = 0.006; // extremely short 6ms click!
+      osc.frequency.setValueAtTime(750, now); // warm crisp snap
+      osc.frequency.exponentialRampToValueAtTime(350, now + duration);
+      oscGain.gain.setValueAtTime(0.012, now); // Extremely soft 1.2% volume
       oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
       
-      filter.frequency.setValueAtTime(600, now); // Warm lowpass cutoff
-      noiseGain.gain.setValueAtTime(0.008, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.004);
+      filter.frequency.setValueAtTime(1500, now); // Bandpass noise transient for plastic impact
+      filter.Q.setValueAtTime(2.0, now);
+      noiseGain.gain.setValueAtTime(0.01, now);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.002);
     }
     
     osc.start(now);
@@ -1211,6 +1217,18 @@ document.getElementById('btn-pm').addEventListener('click', function() {
   if (input === '0' || input === 'Xato') return;
   input = input.charAt(0) === '-' ? input.slice(1) : '-' + input;
   render();
+});
+
+/* Percent Button click (%) */
+document.getElementById('btn-pct').addEventListener('click', function() {
+  if (input === 'Xato' || input === '0') return;
+  var val = parseFloat(input);
+  if (!isNaN(val)) {
+    var r = val / 100;
+    input = String(parseFloat(r.toPrecision(12)));
+    render();
+    animPop();
+  }
 });
 
 /* Operator clicks (+, -, *, /) */
