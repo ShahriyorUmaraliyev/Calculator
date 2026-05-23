@@ -861,19 +861,19 @@ function triggerFeedback(el) {
   // 📳 AUTHENTIC HAPTIC PROFILES
   if (navigator.vibrate) {
     if (id === 'btn-back') {
-      navigator.vibrate(12); // woody deep backspace haptic
+      navigator.vibrate(12);
     } else if (id === 'btn-eq' || id === 'btn-ac') {
-      navigator.vibrate(15); // solid confirm haptic
+      navigator.vibrate(15);
     } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
-      navigator.vibrate(9);  // warm action haptic
+      navigator.vibrate(9);
     } else if (isPill) {
-      navigator.vibrate(5);  // super soft tab pop
+      navigator.vibrate(5);
     } else {
-      navigator.vibrate(7);  // standard key click haptic
+      navigator.vibrate(7);
     }
   }
   
-  // 🔊 AUTHENTIC iOS AUDIO SYNTHESIZER
+  // 🔊 PHYSICAL MODELING AUDIO SYNTHESIZER (iOS TOCK RECREATION)
   try {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -882,76 +882,131 @@ function triggerFeedback(el) {
       audioCtx.resume();
     }
     
+    var now = audioCtx.currentTime;
+    
+    // 1. Organic woody casing resonance (decaying sine wave)
     var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
+    var oscGain = audioCtx.createGain();
+    osc.type = 'sine';
+    
+    // 2. Tactile finger pad click (bandpass filtered white noise burst)
+    var noiseGain = audioCtx.createGain();
     var filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
     
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
+    osc.connect(oscGain);
+    oscGain.connect(audioCtx.destination);
     
-    filter.type = 'lowpass';
-    osc.type = 'triangle'; // triangle gives the woody/plucky iOS switch sound
+    // Setup white noise buffer (we reuse 15ms of noise for instantaneous tap transient)
+    var bufferSize = audioCtx.sampleRate * 0.015;
+    var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    var data = buffer.getChannelData(0);
+    for (var i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    
+    var noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    
+    var duration = 0.015; // Default crisp, quick tap
     
     if (id === 'btn-back') {
-      // 1. iOS Delete Key Click: Deep, hollow, woody "tock"
-      filter.frequency.setValueAtTime(800, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(380, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.035);
+      // iOS Delete Key: Deep, hollow, woody "tock"
+      duration = 0.035;
       
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.035);
+      osc.frequency.setValueAtTime(320, now);
+      osc.frequency.exponentialRampToValueAtTime(70, now + duration);
+      oscGain.gain.setValueAtTime(0.08, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.035);
+      filter.frequency.setValueAtTime(1000, now);
+      filter.Q.setValueAtTime(2.5, now);
+      noiseGain.gain.setValueAtTime(0.05, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.008);
+      
+      osc.start(now);
+      osc.stop(now + duration);
+      noise.start(now);
+      noise.stop(now + 0.008);
       
     } else if (id === 'btn-eq' || id === 'btn-ac') {
-      // 2. iOS Spacebar / Confirm Click: Heavier, solid mechanical switch
-      filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(520, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.03);
+      // iOS Spacebar / Confirm: Heavier, solid mechanical woody click
+      duration = 0.03;
       
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+      osc.frequency.setValueAtTime(450, now);
+      osc.frequency.exponentialRampToValueAtTime(90, now + duration);
+      oscGain.gain.setValueAtTime(0.06, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.03);
+      filter.frequency.setValueAtTime(1400, now);
+      filter.Q.setValueAtTime(3, now);
+      noiseGain.gain.setValueAtTime(0.04, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.006);
+      
+      osc.start(now);
+      osc.stop(now + duration);
+      noise.start(now);
+      noise.stop(now + 0.006);
       
     } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
-      // 3. iOS Action Key Click: Warm, satisfying operator switch
-      filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(750, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.022);
+      // iOS Action Key: Warm operator switch click
+      duration = 0.022;
       
-      gain.gain.setValueAtTime(0.07, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.022);
+      osc.frequency.setValueAtTime(650, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + duration);
+      oscGain.gain.setValueAtTime(0.04, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.022);
+      filter.frequency.setValueAtTime(2000, now);
+      filter.Q.setValueAtTime(3, now);
+      noiseGain.gain.setValueAtTime(0.03, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.004);
+      
+      osc.start(now);
+      osc.stop(now + duration);
+      noise.start(now);
+      noise.stop(now + 0.004);
       
     } else if (isPill) {
-      // 4. iOS Tab Pop: Very soft, airy bubble pop
-      filter.frequency.setValueAtTime(1500, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(1100, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.015);
+      // iOS Tab Pop: Very soft, airy bubble pop
+      duration = 0.012;
       
-      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.015);
+      osc.frequency.setValueAtTime(1000, now);
+      osc.frequency.exponentialRampToValueAtTime(350, now + duration);
+      oscGain.gain.setValueAtTime(0.02, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.015);
+      filter.frequency.setValueAtTime(3000, now);
+      filter.Q.setValueAtTime(4, now);
+      noiseGain.gain.setValueAtTime(0.015, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.002);
+      
+      osc.start(now);
+      osc.stop(now + duration);
+      noise.start(now);
+      noise.stop(now + 0.002);
       
     } else {
-      // 5. iOS Standard Key Click: Ultra-crisp, light high-end tactile tap
-      filter.frequency.setValueAtTime(1300, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(950, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.016);
+      // iOS Standard Key: Crisp, light high-end tactile plastic tap (Woody "Tock" tone)
+      duration = 0.015;
       
-      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.016);
+      osc.frequency.setValueAtTime(850, now);
+      osc.frequency.exponentialRampToValueAtTime(200, now + duration);
+      oscGain.gain.setValueAtTime(0.035, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.016);
+      filter.frequency.setValueAtTime(2600, now);
+      filter.Q.setValueAtTime(4, now);
+      noiseGain.gain.setValueAtTime(0.03, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.003);
+      
+      osc.start(now);
+      osc.stop(now + duration);
+      noise.start(now);
+      noise.stop(now + 0.003);
     }
   } catch (e) {
     console.warn("Feedback audio failed to synthesize:", e);
