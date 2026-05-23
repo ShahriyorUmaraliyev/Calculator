@@ -1056,18 +1056,19 @@ function switchTab(t) {
 }
 
 /* ─── CALCULATOR ────────────────────────────────────── */
-/* ─── IPHONE CALCULATOR STATE MACHINE (AUTHENTIC CLONE) ─── */
-var input = '0';            // current input string
-var storedValue = null;     // stored operand (number)
-var activeOperator = null;  // currently active operator (+, -, ×, ÷)
-var isResetOnNextDigit = false; // flag to replace input with next digit clicked
-var lastActiveOperator = null;  // for repeating operations on repeated '=' clicks
-var lastOperand = null;         // for repeating operations on repeated '=' clicks
+/* ─── AUTHENTIC iOS 18 EQUATION-BASED ENGINE (SENIOR LEVEL) ─── */
+var equation = '0';             // Holds the running equation (e.g. "2×9") or result
+var isCalculated = false;       // True if current display is a calculated result
+var calculatedEquation = '';   // Holds the equation that was just solved
+var lastOperator = null;        // For repeating operations on repeated '=' clicks
+var lastOperand = null;         // For repeating operations on repeated '=' clicks
 
 var rspanEl  = document.getElementById('rspan');
 var resultEl = document.getElementById('result');
 var exprEl   = document.getElementById('expr');
 var acBtn    = document.getElementById('btn-ac');
+
+// operator buttons map
 var opBtns   = {
   '+': document.getElementById('btn-add'),
   '−': document.getElementById('btn-sub'),
@@ -1075,18 +1076,165 @@ var opBtns   = {
   '÷': document.getElementById('btn-div')
 };
 
-/* Format display number (with commas) */
-function fmtDisp(s) {
-  if (s === 'Xato') return 'Xato';
-  var neg  = s.charAt(0) === '-';
-  var body = neg ? s.slice(1) : s;
-  var parts = body.split('.');
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return (neg ? '-' : '') + parts.join('.');
+// Check if character is a binary operator
+function isOperator(ch) {
+  return ['+', '−', '×', '÷'].indexOf(ch) !== -1;
 }
 
-function setFontSize(disp) {
-  var L = disp.replace(/[,.\-]/g, '').length;
+// Tokenize the equation string into numbers and operators
+function tokenize(str) {
+  var tokens = [];
+  var i = 0;
+  while (i < str.length) {
+    var ch = str[i];
+    if (ch === ' ') {
+      i++;
+      continue;
+    }
+    if (['+', '×', '÷'].indexOf(ch) !== -1) {
+      // Map to standard operators for computation
+      var mapped = ch === '×' ? '*' : (ch === '÷' ? '/' : '+');
+      tokens.push({ type: 'OP', val: mapped });
+      i++;
+    } else if (ch === '−') {
+      // Check if unary minus vs binary minus
+      var prev = tokens[tokens.length - 1];
+      if (!prev || prev.type === 'OP') {
+        // Unary minus: read the number following it
+        var numStr = '-';
+        i++;
+        while (i < str.length && (/[0-9.]/.test(str[i]))) {
+          numStr += str[i];
+          i++;
+        }
+        if (numStr === '-') {
+          // Just a minus sign alone? Treat as operator
+          tokens.push({ type: 'OP', val: '-' });
+        } else {
+          tokens.push({ type: 'NUM', val: parseFloat(numStr) });
+        }
+      } else {
+        // Binary minus
+        tokens.push({ type: 'OP', val: '-' });
+        i++;
+      }
+    } else if (/[0-9.]/.test(ch)) {
+      var numStr = '';
+      while (i < str.length && (/[0-9.]/.test(str[i]))) {
+        numStr += str[i];
+        i++;
+      }
+      tokens.push({ type: 'NUM', val: parseFloat(numStr) });
+    } else {
+      i++;
+    }
+  }
+  return tokens;
+}
+
+// Evaluate token array with correct mathematical precedence (BODMAS)
+function evaluateTokens(tokens) {
+  if (tokens.length === 0) return 0;
+
+  // First pass: multiplication and division
+  var i = 0;
+  var mulDivTokens = [];
+  while (i < tokens.length) {
+    var token = tokens[i];
+    if (token.type === 'OP' && (token.val === '*' || token.val === '/')) {
+      var prev = mulDivTokens.pop();
+      var next = tokens[i + 1];
+      if (!prev || !next || prev.type !== 'NUM' || next.type !== 'NUM') {
+        return null;
+      }
+      var res;
+      if (token.val === '*') {
+        res = prev.val * next.val;
+      } else {
+        if (next.val === 0) return null; // Division by zero
+        res = prev.val / next.val;
+      }
+      mulDivTokens.push({ type: 'NUM', val: res });
+      i += 2;
+    } else {
+      mulDivTokens.push(token);
+      i++;
+    }
+  }
+
+  // Second pass: addition and subtraction
+  if (mulDivTokens.length === 0) return 0;
+  var resultVal = mulDivTokens[0].val;
+  if (mulDivTokens[0].type !== 'NUM') return null;
+
+  var j = 1;
+  while (j < mulDivTokens.length) {
+    var opToken = mulDivTokens[j];
+    var numToken = mulDivTokens[j + 1];
+    if (!opToken || !numToken || opToken.type !== 'OP' || numToken.type !== 'NUM') {
+      return null;
+    }
+    if (opToken.val === '+') {
+      resultVal += numToken.val;
+    } else if (opToken.val === '-') {
+      resultVal -= numToken.val;
+    } else {
+      return null;
+    }
+    j += 2;
+  }
+
+  return resultVal;
+}
+
+// Full equation evaluator
+function evaluateEquation(eqStr) {
+  var tokens = tokenize(eqStr);
+  var r = evaluateTokens(tokens);
+  if (r === null) return null;
+  // Fix precision floating point bugs exactly like iPhone (limit to 12 digits)
+  return parseFloat(r.toPrecision(12));
+}
+
+// Scan equation from right to left to extract last operator and operand (for repeated equals)
+function extractLastOpAndOperand(eqStr) {
+  var i = eqStr.length - 1;
+  while (i >= 0 && eqStr[i] === ' ') i--;
+  
+  // Find last number segment
+  while (i >= 0 && (/[0-9.]/.test(eqStr[i]))) {
+    i--;
+  }
+  
+  // Check unary minus
+  if (i >= 0 && eqStr[i] === '−') {
+    if (i === 0 || isOperator(eqStr[i - 1])) {
+      i--;
+    }
+  }
+  
+  if (i >= 0 && isOperator(eqStr[i])) {
+    var op = eqStr[i];
+    var operandStr = eqStr.slice(i + 1);
+    var operand = parseFloat(operandStr.replace(/−/g, '-'));
+    return { op: op, operand: operand };
+  }
+  return null;
+}
+
+// Format numbers inside an equation string with commas (e.g. "12500.5×9" -> "12,500.5×9")
+function formatEquation(eqStr) {
+  if (eqStr === 'Xato') return 'Xato';
+  return eqStr.replace(/[0-9.]+/g, function(numStr) {
+    var parts = numStr.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
+  });
+}
+
+// Set display font sizes dynamically based on text length to prevent clipping
+function setFontSize(dispText) {
+  var L = dispText.replace(/[,.\-−]/g, '').length;
   resultEl.style.fontSize =
     L <= 6  ? 'clamp(44px,12vw,68px)'  :
     L <= 9  ? 'clamp(34px,9vw,52px)'   :
@@ -1100,50 +1248,45 @@ function animPop() {
   rspanEl.classList.add('popping');
 }
 
-function hlOp(o) {
-  Object.values(opBtns).forEach(function(b){ b.classList.remove('lit'); });
-  if (o && opBtns[o]) opBtns[o].classList.add('lit');
-}
-
 function render() {
-  var d = fmtDisp(input);
-  rspanEl.textContent = d;
-  setFontSize(d);
-  // AC shows if input is '0'
-  acBtn.textContent = (input === '0') ? 'AC' : 'C';
-  // We keep expr hidden or empty to clone iPhone perfectly
-  exprEl.textContent = '';
+  if (isCalculated) {
+    var rFormatted = formatEquation(equation);
+    rspanEl.textContent = rFormatted;
+    setFontSize(rFormatted);
+    exprEl.textContent = formatEquation(calculatedEquation);
+    acBtn.textContent = 'AC';
+  } else {
+    var eqFormatted = formatEquation(equation);
+    rspanEl.textContent = eqFormatted;
+    setFontSize(eqFormatted);
+    exprEl.textContent = ''; // Hidden during typing, matching Screenshot 1
+    acBtn.textContent = (equation === '0' || equation === '') ? 'AC' : 'C';
+  }
 }
 
-function compute(a, b, o) {
-  var r;
-  if      (o === '+') r = a + b;
-  else if (o === '−') r = a - b;
-  else if (o === '×') r = a * b;
-  else if (o === '÷') { if (b === 0) return null; r = a / b; }
-  else return b;
-  // Fix floating point precision bugs exactly like iPhone (limit to 12 digits)
-  return parseFloat(r.toPrecision(12));
+// Can we append a digit based on the 9-digit limit of the last number segment?
+function canAppendDigit() {
+  if (isCalculated) return true;
+  var segments = equation.split(/[+−×÷]/);
+  var lastSegment = segments[segments.length - 1] || '';
+  var digitCount = lastSegment.replace(/[.−]/g, '').length;
+  return digitCount < 9;
 }
 
-/* Number button clicks */
+// Number buttons
 document.querySelectorAll('[data-n]').forEach(function(btn) {
   btn.addEventListener('click', function() {
     var n = btn.dataset.n;
-    if (input === 'Xato') {
-      input = n;
-      storedValue = null;
-      activeOperator = null;
-      isResetOnNextDigit = false;
-    } else if (isResetOnNextDigit) {
-      input = n;
-      isResetOnNextDigit = false;
-      hlOp(null); // Unhighlight operator once digit typing starts
+    if (isCalculated || equation === 'Xato') {
+      equation = n;
+      isCalculated = false;
+      calculatedEquation = '';
     } else {
-      if (input === '0') {
-        input = (n === '0') ? '0' : n;
-      } else if (input.replace(/[.\-]/g,'').length < 9) { // iOS limit is 9 digits!
-        input += n;
+      if (!canAppendDigit()) return;
+      if (equation === '0') {
+        equation = (n === '0') ? '0' : n;
+      } else {
+        equation += n;
       }
     }
     render();
@@ -1151,119 +1294,181 @@ document.querySelectorAll('[data-n]').forEach(function(btn) {
   });
 });
 
-/* Decimal Dot Button */
+// Decimal Dot Button
 document.getElementById('btn-dot').addEventListener('click', function() {
-  if (input === 'Xato') {
-    input = '0.';
-    storedValue = null;
-    activeOperator = null;
-    isResetOnNextDigit = false;
-  } else if (isResetOnNextDigit) {
-    input = '0.';
-    isResetOnNextDigit = false;
-    hlOp(null);
-  } else if (input.indexOf('.') === -1) {
-    input += '.';
+  if (isCalculated || equation === 'Xato') {
+    equation = '0.';
+    isCalculated = false;
+    calculatedEquation = '';
+  } else {
+    var segments = equation.split(/[+−×÷]/);
+    var lastSegment = segments[segments.length - 1] || '';
+    if (lastSegment.indexOf('.') === -1) {
+      if (lastSegment === '' || lastSegment === '−') {
+        equation += '0.';
+      } else {
+        equation += '.';
+      }
+    }
   }
   render();
 });
 
-/* Reusable Delete Last Digit (Swipe or Backspace) */
+// Reusable micro-deletion logic
 function deleteLastDigit() {
-  if (input === 'Xato') {
-    input = '0';
-    storedValue = null;
-    activeOperator = null;
-    isResetOnNextDigit = false;
-    hlOp(null);
-    return true;
-  } else if (isResetOnNextDigit) {
-    return false; // can't delete digits when operator is kutilmoqda
-  } else if (input !== '0') {
-    input = input.length > 1 ? input.slice(0, -1) : '0';
-    if (input === '-') input = '0';
+  if (isCalculated) {
+    calculatedEquation = '';
+    render();
+    return false;
+  }
+  if (equation === 'Xato') {
+    equation = '0';
+    render();
     return true;
   }
-  return false;
+  if (equation.length > 1) {
+    equation = equation.slice(0, -1);
+    if (equation === '-') equation = '0';
+  } else {
+    equation = '0';
+  }
+  render();
+  return true;
 }
 
-/* Backspace Button click */
+// Backspace Button
 document.getElementById('btn-back').addEventListener('click', function() {
   if (deleteLastDigit()) {
-    render();
+    var mockEl = { id: 'btn-back', classList: { contains: function() { return false; } } };
+    triggerFeedback(mockEl);
   }
 });
 
-/* AC / C Button click */
+// AC / C Button
 document.getElementById('btn-ac').addEventListener('click', function() {
   if (acBtn.textContent === 'C') {
-    // iPhone C: Clears only current display input
-    input = '0';
+    equation = '0';
   } else {
-    // iPhone AC: Clears everything
-    input = '0';
-    storedValue = null;
-    activeOperator = null;
-    lastActiveOperator = null;
+    equation = '0';
+    isCalculated = false;
+    calculatedEquation = '';
+    lastOperator = null;
     lastOperand = null;
-    isResetOnNextDigit = false;
-    hlOp(null);
   }
   render();
 });
 
-/* +/- Button click */
+// Plus/Minus (+/-) Button
 document.getElementById('btn-pm').addEventListener('click', function() {
-  if (input === '0' || input === 'Xato') return;
-  input = input.charAt(0) === '-' ? input.slice(1) : '-' + input;
+  if (equation === 'Xato') return;
+
+  if (isCalculated) {
+    if (equation === '0') return;
+    if (equation.charAt(0) === '−') {
+      equation = equation.slice(1);
+    } else {
+      equation = '−' + equation;
+    }
+    render();
+    animPop();
+    return;
+  }
+
+  if (equation === '0' || equation === '') return;
+
+  var i = equation.length - 1;
+  while (i >= 0 && (/[0-9.]/.test(equation[i]))) {
+    i--;
+  }
+
+  if (i >= 0 && equation[i] === '−') {
+    var isUnary = (i === 0 || isOperator(equation[i - 1]));
+    if (isUnary) {
+      equation = equation.slice(0, i) + equation.slice(i + 1);
+    } else {
+      equation = equation.slice(0, i + 1) + '−' + equation.slice(i + 1);
+    }
+  } else {
+    if (i === equation.length - 1) {
+      equation += '−';
+    } else {
+      equation = equation.slice(0, i + 1) + '−' + equation.slice(i + 1);
+    }
+  }
   render();
 });
 
-/* Percent Button click (%) */
+// Percent (%) Button
 document.getElementById('btn-pct').addEventListener('click', function() {
-  if (input === 'Xato' || input === '0') return;
-  var val = parseFloat(input);
+  if (equation === 'Xato' || equation === '0') return;
+
+  if (isCalculated) {
+    var val = parseFloat(equation.replace(/−/g, '-'));
+    if (!isNaN(val)) {
+      var r = val / 100;
+      equation = String(parseFloat(r.toPrecision(12))).replace(/-/g, '−');
+      render();
+      animPop();
+    }
+    return;
+  }
+
+  var i = equation.length - 1;
+  var end = i + 1;
+  while (i >= 0 && (/[0-9.]/.test(equation[i]))) {
+    i--;
+  }
+  
+  var hasUnaryMinus = false;
+  if (i >= 0 && equation[i] === '−' && (i === 0 || isOperator(equation[i - 1]))) {
+    hasUnaryMinus = true;
+    i--;
+  }
+  
+  var start = i + 1;
+  var numStr = equation.slice(start, end);
+  var val = parseFloat(numStr.replace(/−/g, '-'));
   if (!isNaN(val)) {
     var r = val / 100;
-    input = String(parseFloat(r.toPrecision(12)));
+    var formatted = String(parseFloat(r.toPrecision(12))).replace(/-/g, '−');
+    equation = equation.slice(0, start) + formatted + equation.slice(end);
     render();
     animPop();
   }
 });
 
-/* Operator clicks (+, -, *, /) */
+// Operators (+, −, ×, ÷)
 function handleOp(newOp) {
-  if (input === 'Xato') return;
-  
-  if (activeOperator && isResetOnNextDigit) {
-    // If operator clicked sequentially without typing digits (e.g. 5 + then -),
-    // we just swap the active operator
-    activeOperator = newOp;
-    hlOp(newOp);
+  if (equation === 'Xato') return;
+
+  if (isCalculated) {
+    equation = equation + newOp;
+    isCalculated = false;
+    calculatedEquation = '';
+    render();
     return;
   }
-  
-  if (storedValue !== null && activeOperator && !isResetOnNextDigit) {
-    // Calculate intermediate sequential operation (e.g. 5 + 3 + -> displays 8, stores 8)
-    var r = compute(storedValue, parseFloat(input), activeOperator);
-    if (r === null) {
-      input = 'Xato';
-      storedValue = null;
-      activeOperator = null;
-      hlOp(null);
+
+  if (equation.slice(-1) === '.') {
+    equation = equation.slice(0, -1);
+  }
+
+  if (equation.length >= 2) {
+    var last2 = equation.slice(-2);
+    if (isOperator(last2[0]) && last2[1] === '−') {
+      equation = equation.slice(0, -2) + newOp;
       render();
       return;
     }
-    input = String(r);
-    storedValue = r;
-    animPop();
-  } else {
-    storedValue = parseFloat(input);
   }
-  
-  activeOperator = newOp;
-  isResetOnNextDigit = true;
-  hlOp(newOp);
+
+  if (isOperator(equation.slice(-1))) {
+    equation = equation.slice(0, -1) + newOp;
+    render();
+    return;
+  }
+
+  equation += newOp;
   render();
 }
 
@@ -1272,36 +1477,60 @@ document.getElementById('btn-sub').addEventListener('click', function(){ handleO
 document.getElementById('btn-mul').addEventListener('click', function(){ handleOp('×'); });
 document.getElementById('btn-div').addEventListener('click', function(){ handleOp('÷'); });
 
-/* Equal Button click (=) */
+// Equal (=) Button
 document.getElementById('btn-eq').addEventListener('click', function() {
-  if (input === 'Xato') return;
-  
-  var currentVal = parseFloat(input);
-  var r = null;
-  
-  if (activeOperator) {
-    // Standard operation
-    lastActiveOperator = activeOperator;
-    lastOperand = currentVal;
-    r = compute(storedValue, currentVal, activeOperator);
-    storedValue = null;
-    activeOperator = null;
-  } else if (lastActiveOperator && lastOperand !== null) {
-    // Repeated '=' click: repeat the last operation
-    r = compute(currentVal, lastOperand, lastActiveOperator);
-  } else {
-    // No operation, just return
+  if (equation === 'Xato') return;
+
+  if (isCalculated) {
+    if (lastOperator && lastOperand !== null) {
+      var currentVal = parseFloat(equation.replace(/−/g, '-'));
+      if (!isNaN(currentVal)) {
+        var opChar = lastOperator === '*' ? '×' : (lastOperator === '/' ? '÷' : lastOperator);
+        var operandStr = String(lastOperand).replace(/-/g, '−');
+        var newEq = String(currentVal).replace(/-/g, '−') + opChar + operandStr;
+        
+        var r = evaluateEquation(newEq);
+        if (r === null) {
+          equation = 'Xato';
+          calculatedEquation = '';
+          isCalculated = false;
+        } else {
+          calculatedEquation = newEq;
+          equation = String(r).replace(/-/g, '−');
+          isCalculated = true;
+        }
+      }
+    }
+    render();
+    animPop();
     return;
   }
-  
-  if (r === null) {
-    input = 'Xato';
+
+  var extracted = extractLastOpAndOperand(equation);
+  if (extracted) {
+    lastOperator = extracted.op === '×' ? '*' : (extracted.op === '÷' ? '/' : extracted.op);
+    lastOperand = extracted.operand;
   } else {
-    input = String(r);
+    lastOperator = null;
+    lastOperand = null;
   }
-  
-  isResetOnNextDigit = true;
-  hlOp(null);
+
+  var parseEq = equation;
+  if (isOperator(parseEq.slice(-1))) {
+    parseEq = parseEq.slice(0, -1);
+  }
+
+  var r = evaluateEquation(parseEq);
+  if (r === null) {
+    equation = 'Xato';
+    calculatedEquation = '';
+    isCalculated = false;
+  } else {
+    calculatedEquation = equation;
+    equation = String(r).replace(/-/g, '−');
+    isCalculated = true;
+  }
+
   render();
   animPop();
 });
