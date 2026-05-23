@@ -1020,8 +1020,8 @@ function triggerFeedback(el) {
   }
 }
 
-// Global delegated listener for instantaneous click/touch feedback
-document.addEventListener('click', function(e) {
+// Global delegated listener for instantaneous click/touch feedback (pointerdown for 0ms latency)
+document.addEventListener('pointerdown', function(e) {
   var el = e.target;
   while (el && el !== document.body) {
     if (
@@ -1038,6 +1038,9 @@ document.addEventListener('click', function(e) {
     el = el.parentElement;
   }
 });
+
+// Enable instant CSS :active states on iOS Safari
+document.body.addEventListener('touchstart', function() {}, {passive: true});
 
 /* ─── TEMA ─────────────────────────────────────────── */
 var dark = true;
@@ -1927,13 +1930,7 @@ document.addEventListener('touchmove', function(e) {
   e.preventDefault();
 }, { passive: false });
 
-/* Double tap zoom o'chirish */
-var lastTap = 0;
-document.addEventListener('touchend', function(e) {
-  var now = Date.now();
-  if (now - lastTap < 280) e.preventDefault();
-  lastTap = now;
-}, { passive: false });
+
 
 document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
