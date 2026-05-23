@@ -841,39 +841,28 @@
       <button class="pill" id="nb-theme" onclick="toggleTheme()">
         <svg class="pill-icon" viewBox="0 0 24 24" fill="none" id="theme-svg">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
-        </svg>
-        <span class="pill-label" id="theme-lbl">Tungi</span>
-      </button>
-    </div>
-  </div>
-  <div class="author">Shahriyor Umaraliyev</div>
-</div>
-
-<script>
-'use strict';
-
 /* ─── HAPTIC & AUDIO FEEDBACK (AUTHENTIC iOS SYSTEM) ── */
 var audioCtx = null;
 function triggerFeedback(el) {
   var id = el.id || '';
   var isPill = el.classList.contains('pill') || el.classList.contains('pct-btn') || el.classList.contains('swap-btn') || el.classList.contains('refresh-btn');
   
-  // 📳 AUTHENTIC HAPTIC PROFILES
+  // 📳 AUTHENTIC HAPTIC PROFILES (Very micro and gentle)
   if (navigator.vibrate) {
     if (id === 'btn-back') {
-      navigator.vibrate(12);
+      navigator.vibrate(8);
     } else if (id === 'btn-eq' || id === 'btn-ac') {
-      navigator.vibrate(15);
+      navigator.vibrate(10);
     } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
-      navigator.vibrate(9);
+      navigator.vibrate(6);
     } else if (isPill) {
-      navigator.vibrate(5);
+      navigator.vibrate(4);
     } else {
-      navigator.vibrate(7);
+      navigator.vibrate(5);
     }
   }
   
-  // 🔊 PHYSICAL MODELING AUDIO SYNTHESIZER (iOS TOCK RECREATION)
+  // 🔊 ULTRA-SOFT PHYSICAL MODELING AUDIO SYNTHESIZER
   try {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -884,12 +873,12 @@ function triggerFeedback(el) {
     
     var now = audioCtx.currentTime;
     
-    // 1. Organic woody casing resonance (decaying sine wave)
+    // 1. Decaying warm sine wave (wooden hollow housing)
     var osc = audioCtx.createOscillator();
     var oscGain = audioCtx.createGain();
     osc.type = 'sine';
     
-    // 2. Tactile finger pad click (bandpass filtered white noise burst)
+    // 2. Soft plastic tap transient (bandpass white noise burst)
     var noiseGain = audioCtx.createGain();
     var filter = audioCtx.createBiquadFilter();
     filter.type = 'bandpass';
@@ -897,8 +886,8 @@ function triggerFeedback(el) {
     osc.connect(oscGain);
     oscGain.connect(audioCtx.destination);
     
-    // Setup white noise buffer (we reuse 15ms of noise for instantaneous tap transient)
-    var bufferSize = audioCtx.sampleRate * 0.015;
+    // Generate organic white noise transient
+    var bufferSize = audioCtx.sampleRate * 0.01;
     var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     var data = buffer.getChannelData(0);
     for (var i = 0; i < bufferSize; i++) {
@@ -911,39 +900,20 @@ function triggerFeedback(el) {
     filter.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
     
-    var duration = 0.015; // Default crisp, quick tap
+    var duration = 0.008; // Super short decay (8ms)
     
     if (id === 'btn-back') {
-      // iOS Delete Key: Deep, hollow, woody "tock"
-      duration = 0.035;
+      // iOS Delete: Gentle, woody, low "tock"
+      duration = 0.022;
       
-      osc.frequency.setValueAtTime(320, now);
-      osc.frequency.exponentialRampToValueAtTime(70, now + duration);
-      oscGain.gain.setValueAtTime(0.08, now);
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(50, now + duration);
+      oscGain.gain.setValueAtTime(0.035, now);
       oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      filter.frequency.setValueAtTime(1000, now);
-      filter.Q.setValueAtTime(2.5, now);
-      noiseGain.gain.setValueAtTime(0.05, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.008);
-      
-      osc.start(now);
-      osc.stop(now + duration);
-      noise.start(now);
-      noise.stop(now + 0.008);
-      
-    } else if (id === 'btn-eq' || id === 'btn-ac') {
-      // iOS Spacebar / Confirm: Heavier, solid mechanical woody click
-      duration = 0.03;
-      
-      osc.frequency.setValueAtTime(450, now);
-      osc.frequency.exponentialRampToValueAtTime(90, now + duration);
-      oscGain.gain.setValueAtTime(0.06, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      
-      filter.frequency.setValueAtTime(1400, now);
-      filter.Q.setValueAtTime(3, now);
-      noiseGain.gain.setValueAtTime(0.04, now);
+      filter.frequency.setValueAtTime(800, now);
+      filter.Q.setValueAtTime(1.5, now);
+      noiseGain.gain.setValueAtTime(0.025, now);
       noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.006);
       
       osc.start(now);
@@ -951,62 +921,81 @@ function triggerFeedback(el) {
       noise.start(now);
       noise.stop(now + 0.006);
       
-    } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
-      // iOS Action Key: Warm operator switch click
-      duration = 0.022;
+    } else if (id === 'btn-eq' || id === 'btn-ac') {
+      // iOS Confirm/Clear: Solid, soft mechanical click
+      duration = 0.02;
       
-      osc.frequency.setValueAtTime(650, now);
-      osc.frequency.exponentialRampToValueAtTime(150, now + duration);
-      oscGain.gain.setValueAtTime(0.04, now);
+      osc.frequency.setValueAtTime(300, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + duration);
+      oscGain.gain.setValueAtTime(0.03, now);
       oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      filter.frequency.setValueAtTime(2000, now);
-      filter.Q.setValueAtTime(3, now);
-      noiseGain.gain.setValueAtTime(0.03, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.004);
+      filter.frequency.setValueAtTime(1000, now);
+      filter.Q.setValueAtTime(1.8, now);
+      noiseGain.gain.setValueAtTime(0.02, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.005);
       
       osc.start(now);
       osc.stop(now + duration);
       noise.start(now);
-      noise.stop(now + 0.004);
+      noise.stop(now + 0.005);
       
-    } else if (isPill) {
-      // iOS Tab Pop: Very soft, airy bubble pop
+    } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm') {
+      // iOS Action: Soft warm operator toggle click
       duration = 0.012;
       
-      osc.frequency.setValueAtTime(1000, now);
-      osc.frequency.exponentialRampToValueAtTime(350, now + duration);
+      osc.frequency.setValueAtTime(380, now);
+      osc.frequency.exponentialRampToValueAtTime(80, now + duration);
       oscGain.gain.setValueAtTime(0.02, now);
       oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
       
-      filter.frequency.setValueAtTime(3000, now);
-      filter.Q.setValueAtTime(4, now);
+      filter.frequency.setValueAtTime(1400, now);
+      filter.Q.setValueAtTime(2.0, now);
       noiseGain.gain.setValueAtTime(0.015, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.002);
-      
-      osc.start(now);
-      osc.stop(now + duration);
-      noise.start(now);
-      noise.stop(now + 0.002);
-      
-    } else {
-      // iOS Standard Key: Crisp, light high-end tactile plastic tap (Woody "Tock" tone)
-      duration = 0.015;
-      
-      osc.frequency.setValueAtTime(850, now);
-      osc.frequency.exponentialRampToValueAtTime(200, now + duration);
-      oscGain.gain.setValueAtTime(0.035, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-      
-      filter.frequency.setValueAtTime(2600, now);
-      filter.Q.setValueAtTime(4, now);
-      noiseGain.gain.setValueAtTime(0.03, now);
       noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.003);
       
       osc.start(now);
       osc.stop(now + duration);
       noise.start(now);
       noise.stop(now + 0.003);
+      
+    } else if (isPill) {
+      // iOS Tab Pop: Airy, extremely quiet bubble pop
+      duration = 0.006;
+      
+      osc.frequency.setValueAtTime(550, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + duration);
+      oscGain.gain.setValueAtTime(0.008, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      
+      filter.frequency.setValueAtTime(2200, now);
+      filter.Q.setValueAtTime(2.5, now);
+      noiseGain.gain.setValueAtTime(0.005, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.0015);
+      
+      osc.start(now);
+      osc.stop(now + duration);
+      noise.start(now);
+      noise.stop(now + 0.0015);
+      
+    } else {
+      // iOS Standard: Extremely soft, subtle plastic tick (Woody tone with zero buzz/beep)
+      duration = 0.008; // 8ms (super quick transient)
+      
+      osc.frequency.setValueAtTime(450, now); // lower frequency is much gentler on the ear
+      osc.frequency.exponentialRampToValueAtTime(100, now + duration);
+      oscGain.gain.setValueAtTime(0.012, now); // 1.2% volume (very subtle!)
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      
+      filter.frequency.setValueAtTime(1800, now);
+      filter.Q.setValueAtTime(1.5, now); // lower Q factor = softer, warmer sound
+      noiseGain.gain.setValueAtTime(0.008, now); // extremely soft contact noise
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.002);
+      
+      osc.start(now);
+      osc.stop(now + duration);
+      noise.start(now);
+      noise.stop(now + 0.002);
     }
   } catch (e) {
     console.warn("Feedback audio failed to synthesize:", e);
