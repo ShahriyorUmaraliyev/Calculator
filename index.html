@@ -177,11 +177,52 @@
       padding: 0; /* Edge-to-edge flat mobile design */
     }
     .panel.active { display: flex; }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+    @keyframes slideForward {
+      from { opacity: 0; transform: translateX(25px) scale(0.99); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
     }
-    .panel.anim { animation: slideUp 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+    @keyframes slideBackward {
+      from { opacity: 0; transform: translateX(-25px) scale(0.99); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    .panel.anim-forward { animation: slideForward 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .panel.anim-backward { animation: slideBackward 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    /* ── IPHONE HOME INDICATOR ── */
+    .home-indicator-container {
+      width: 100%;
+      height: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--nav-bg);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      padding-bottom: 6px;
+      cursor: ew-resize;
+      z-index: 10;
+      user-select: none;
+      touch-action: none;
+      border-top: none;
+      margin-top: -1px;
+    }
+    .home-indicator {
+      width: 140px;
+      height: 5px;
+      border-radius: 100px;
+      background: rgba(255, 255, 255, 0.45);
+      transition: background 0.2s, transform 0.2s;
+    }
+    body.light .home-indicator {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    .home-indicator-container:active .home-indicator {
+      background: rgba(255, 255, 255, 0.85);
+      transform: scaleY(1.2);
+    }
+    body.light .home-indicator-container:active .home-indicator {
+      background: rgba(0, 0, 0, 0.6);
+    }
 
     /* iPhone Frosted Glass Panel */
     .glass-card {
@@ -856,6 +897,9 @@
       </button>
     </div>
   </div>
+  <div class="home-indicator-container" id="home-indicator-bar">
+    <div class="home-indicator"></div>
+  </div>
   <div class="author">Dizayn va Dastur: Shahriyor Umaraliyev © 2026</div>
 </div>
 
@@ -1041,16 +1085,32 @@ function toggleTheme() {
 /* ─── TABS ──────────────────────────────────────────── */
 var TABS = { calc:'p-calc', pct:'p-pct', cur:'p-cur' };
 var curTab = 'calc';
+var tabsOrder = ['calc', 'pct', 'cur'];
+
 function switchTab(t) {
   if (curTab === t) return;
-  document.getElementById(TABS[curTab]).classList.remove('active');
+  
+  var oldIndex = tabsOrder.indexOf(curTab);
+  var newIndex = tabsOrder.indexOf(t);
+  var direction = newIndex > oldIndex ? 'forward' : 'backward';
+
+  var oldPanel = document.getElementById(TABS[curTab]);
+  oldPanel.classList.remove('active', 'anim-forward', 'anim-backward');
   document.getElementById('nb-' + curTab).classList.remove('active');
+
   curTab = t;
+
   var panel = document.getElementById(TABS[t]);
   panel.classList.add('active');
-  panel.classList.remove('anim');
-  void panel.offsetWidth;
-  panel.classList.add('anim');
+  panel.classList.remove('anim-forward', 'anim-backward');
+  void panel.offsetWidth; // trigger reflow
+  
+  if (direction === 'forward') {
+    panel.classList.add('anim-forward');
+  } else {
+    panel.classList.add('anim-backward');
+  }
+
   document.getElementById('nb-' + t).classList.add('active');
   if (t === 'cur' && !curState.official && !curState.live) loadRates();
 }
@@ -2207,6 +2267,77 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     if (!isMouseDown) return;
     isMouseDown = false;
     handleEnd(e.clientX, e.clientY);
+  });
+})();
+
+/* ─── HOME INDICATOR SWIPE TO SWITCH TABS (IPHONE GESTURE) ─── */
+(function() {
+  var startX = 0;
+  var startY = 0;
+  var bottomArea = document.querySelector('.nav');
+  var indicatorBar = document.getElementById('home-indicator-bar');
+  
+  if (!bottomArea || !indicatorBar) return;
+
+  var tabsOrder = ['calc', 'pct', 'cur'];
+
+  function handleStart(x, y) {
+    startX = x;
+    startY = y;
+  }
+
+  function handleEnd(endX, endY) {
+    var diffX = endX - startX;
+    var diffY = endY - startY;
+
+    // Minimum horizontal swipe of 45px, vertical tolerance of 40px
+    if (Math.abs(diffX) > 45 && Math.abs(diffY) < 40) {
+      var currentIndex = tabsOrder.indexOf(curTab);
+      if (currentIndex === -1) return;
+
+      if (diffX < 0) {
+        // Swipe Left -> next tab (calc -> pct -> cur)
+        if (currentIndex < tabsOrder.length - 1) {
+          var nextTab = tabsOrder[currentIndex + 1];
+          switchTab(nextTab);
+          var mockEl = { id: 'nb-' + nextTab, classList: { contains: function(c) { return c === 'pill'; } } };
+          triggerFeedback(mockEl);
+        }
+      } else {
+        // Swipe Right -> previous tab (cur -> pct -> calc)
+        if (currentIndex > 0) {
+          var prevTab = tabsOrder[currentIndex - 1];
+          switchTab(prevTab);
+          var mockEl = { id: 'nb-' + prevTab, classList: { contains: function(c) { return c === 'pill'; } } };
+          triggerFeedback(mockEl);
+        }
+      }
+    }
+  }
+
+  // Bind to both .nav and #home-indicator-bar
+  [bottomArea, indicatorBar].forEach(function(el) {
+    el.addEventListener('touchstart', function(e) {
+      var t = e.touches[0];
+      handleStart(t.clientX, t.clientY);
+    }, { passive: true });
+
+    el.addEventListener('touchend', function(e) {
+      var t = e.changedTouches[0];
+      handleEnd(t.clientX, t.clientY);
+    }, { passive: true });
+
+    var isMouseDown = false;
+    el.addEventListener('mousedown', function(e) {
+      isMouseDown = true;
+      handleStart(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mouseup', function(e) {
+      if (!isMouseDown) return;
+      isMouseDown = false;
+      handleEnd(e.clientX, e.clientY);
+    });
   });
 })();
 
