@@ -658,6 +658,11 @@
       transition: transform 0.26s cubic-bezier(0.25, 1, 0.5, 1), width 0.26s cubic-bezier(0.25, 1, 0.5, 1);
       pointer-events: none;
     }
+    body.dragging-tab * {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      cursor: ew-resize !important;
+    }
     body.light .nav-highlighter {
       background: rgba(255, 255, 255, 0.45);
       border: 1px solid rgba(255, 255, 255, 0.55);
@@ -2423,6 +2428,9 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     
     highlighter.style.transition = 'none';
     highlighter.classList.add('dragging');
+    
+    // Add global body dragging state to disable text selection and enforce cursor
+    document.body.classList.add('dragging-tab');
   }
 
   function handleMove(e) {
@@ -2432,16 +2440,30 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
     var currentX = getX(e);
     var deltaX = currentX - startX;
+    
+    // CEO LEVEL: Elastic "Jelly" Stretch Math (pill stretches in the direction of drag)
+    var stretch = Math.min(Math.abs(deltaX) * 0.16, 20); // liquid stretch factor
     var currentLeft = initialLeft + deltaX;
 
+    // Clamp currentLeft inside the nav-pills boundaries
     var minLeft = 4;
     var maxLeft = parentWidth - pillWidth + 4;
     if (currentLeft < minLeft) currentLeft = minLeft;
     if (currentLeft > maxLeft) currentLeft = maxLeft;
 
-    highlighter.style.transform = 'translateX(' + currentLeft + 'px)';
+    // Apply fluid size and transform matching Apple's physics engine
+    var finalWidth = pillWidth + stretch;
+    var finalLeft = currentLeft;
+    if (deltaX > 0) {
+      // Anchored to the left while extending right
+      finalLeft = currentLeft - stretch * 0.15; 
+    }
 
-    var center = currentLeft + pillWidth / 2;
+    highlighter.style.width = finalWidth + 'px';
+    highlighter.style.transform = 'translateX(' + finalLeft + 'px)';
+
+    // Find the closest tab center
+    var center = finalLeft + finalWidth / 2;
     var closestIndex = -1;
     var minDistance = Infinity;
 
@@ -2461,8 +2483,22 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
       }
     }
 
+    // CEO LEVEL: Active text cross-fading & real-time glow previews
+    pills.forEach(function(pill, index) {
+      if (pill.id === 'nb-theme') return;
+      if (index === closestIndex) {
+        pill.style.color = '#ff9500';
+        pill.style.opacity = '1';
+        pill.style.transition = 'color 0.15s, opacity 0.15s';
+      } else {
+        pill.style.color = 'var(--text-dim)';
+        pill.style.opacity = '0.65';
+        pill.style.transition = 'color 0.15s, opacity 0.15s';
+      }
+    });
+
     if (closestIndex !== -1 && closestIndex !== lastTickIndex) {
-      if (navigator.vibrate) navigator.vibrate(2);
+      if (navigator.vibrate) navigator.vibrate(2); // subtle mechanical tick
       lastTickIndex = closestIndex;
     }
   }
@@ -2471,7 +2507,9 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     if (!isDragging) return;
     isDragging = false;
     highlighter.classList.remove('dragging');
+    document.body.classList.remove('dragging-tab');
 
+    // Restore perfect ease-out snapping transition
     highlighter.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), width 0.28s cubic-bezier(0.25, 1, 0.5, 1)';
 
     var transformVal = highlighter.style.transform;
@@ -2497,8 +2535,17 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
       }
     });
 
+    // Snap to target tab
     switchTab(closestTab);
     lastTickIndex = -1;
+
+    // Reset inline styling overrides to return styling control to static CSS
+    pills.forEach(function(pill) {
+      if (pill.id === 'nb-theme') return;
+      pill.style.color = '';
+      pill.style.opacity = '';
+      pill.style.transition = '';
+    });
   }
 
   pillsContainer.addEventListener('touchstart', handleStart, { passive: false });
