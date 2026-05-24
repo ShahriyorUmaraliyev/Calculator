@@ -1107,14 +1107,16 @@ function updateNavHighlighter() {
   var activePill = document.querySelector('.pill.active');
   if (!highlighter || !activePill) return;
   
-  var parentRect = activePill.parentElement.getBoundingClientRect();
-  var pillRect = activePill.getBoundingClientRect();
+  var pills = Array.prototype.slice.call(activePill.parentElement.querySelectorAll('.pill'));
+  var index = pills.indexOf(activePill);
+  if (index === -1) return;
   
-  var left = pillRect.left - parentRect.left;
-  var width = pillRect.width;
+  var pillWidthPercent = 100 / pills.length;
+  var leftPercent = index * pillWidthPercent;
   
-  highlighter.style.width = (width - 8) + 'px';
-  highlighter.style.transform = 'translateX(' + (left + 4) + 'px)';
+  // 100% hardware-accelerated CSS calc transition, immune to DOM reflow latency
+  highlighter.style.width = 'calc(' + pillWidthPercent + '% - 8px)';
+  highlighter.style.transform = 'translateX(calc(' + leftPercent + '% + 4px))';
 }
 
 function switchTab(t) {
@@ -2515,31 +2517,25 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     var transformVal = highlighter.style.transform;
     var match = transformVal.match(/translateX\(([-\d.]+)px\)/);
     var releasedLeft = match ? parseFloat(match[1]) : initialLeft;
+    
+    // CEO LEVEL: Calculate snapping mathematically by horizontal zone ratios
+    var parentRect = pillsContainer.getBoundingClientRect();
     var center = releasedLeft + pillWidth / 2;
+    var normalizedRatio = center / parentRect.width; 
 
-    var closestTab = 'calc';
-    var minDistance = Infinity;
-
-    var pills = pillsContainer.querySelectorAll('.pill');
-    pills.forEach(function(pill) {
-      if (pill.id === 'nb-theme') return;
-      var pRect = pill.getBoundingClientRect();
-      var pParentRect = pillsContainer.getBoundingClientRect();
-      var pCenter = (pRect.left - pParentRect.left) + pRect.width / 2;
-
-      var dist = Math.abs(center - pCenter);
-      if (dist < minDistance) {
-        minDistance = dist;
-        var tabId = pill.id.replace('nb-', '');
-        closestTab = tabId;
-      }
-    });
+    var closestIndex = 0;
+    if (normalizedRatio < 0.375) closestIndex = 0;      // Hisob (0.00 - 0.375)
+    else if (normalizedRatio < 0.625) closestIndex = 1; // Foiz (0.375 - 0.625)
+    else closestIndex = 2;                              // Valyuta (0.625 - 1.00)
+    
+    var closestTab = tabsOrder[closestIndex];
 
     // Snap to target tab
     switchTab(closestTab);
     lastTickIndex = -1;
 
     // Reset inline styling overrides to return styling control to static CSS
+    var pills = pillsContainer.querySelectorAll('.pill');
     pills.forEach(function(pill) {
       if (pill.id === 'nb-theme') return;
       pill.style.color = '';
