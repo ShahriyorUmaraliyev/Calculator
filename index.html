@@ -2545,6 +2545,10 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
     // Snap to target tab
     switchTab(closestTab);
+    
+    // CRITICAL: Always force update highlighter position to CSS calc percentages (even if switchTab returned early)
+    updateNavHighlighter();
+    
     lastTickIndex = -1;
 
     // Reset inline styling overrides to return styling control to static CSS
