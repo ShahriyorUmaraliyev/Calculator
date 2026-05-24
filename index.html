@@ -2395,6 +2395,8 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   var pillWidth = 0;
   var parentWidth = 0;
   var lastTickIndex = -1;
+  var lastX = 0;
+  var rAFActive = false;
 
   var tabsOrder = ['calc', 'pct', 'cur'];
 
@@ -2420,6 +2422,7 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
     isDragging = true;
     startX = getX(e);
+    lastX = startX;
 
     var parentRect = pillsContainer.getBoundingClientRect();
     var pillRect = activePill.getBoundingClientRect();
@@ -2439,9 +2442,22 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     if (!isDragging) return;
     
     if (e.cancelable) e.preventDefault();
+    lastX = getX(e);
 
-    var currentX = getX(e);
-    var deltaX = currentX - startX;
+    // Throttle style updates to refresh rate using requestAnimationFrame (CEO LEVEL 120FPS)
+    if (!rAFActive) {
+      rAFActive = true;
+      requestAnimationFrame(updateDragPosition);
+    }
+  }
+
+  function updateDragPosition() {
+    if (!isDragging) {
+      rAFActive = false;
+      return;
+    }
+
+    var deltaX = lastX - startX;
     
     // CEO LEVEL: Elastic "Jelly" Stretch Math (pill stretches in the direction of drag)
     var stretch = Math.min(Math.abs(deltaX) * 0.16, 20); // liquid stretch factor
@@ -2464,38 +2480,25 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     highlighter.style.width = finalWidth + 'px';
     highlighter.style.transform = 'translateX(' + finalLeft + 'px)';
 
-    // Find the closest tab center
+    // Find the closest tab center (Mathematically calculated, 0 reflows!)
     var center = finalLeft + finalWidth / 2;
-    var closestIndex = -1;
-    var minDistance = Infinity;
-
-    var pills = pillsContainer.querySelectorAll('.pill');
-    for (var i = 0; i < pills.length; i++) {
-      var pill = pills[i];
-      if (pill.id === 'nb-theme') continue;
-      
-      var pRect = pill.getBoundingClientRect();
-      var pParentRect = pillsContainer.getBoundingClientRect();
-      var pCenter = (pRect.left - pParentRect.left) + pRect.width / 2;
-      
-      var dist = Math.abs(center - pCenter);
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestIndex = i;
-      }
-    }
+    var normalizedCenterRatio = center / parentWidth;
+    
+    var closestIndex = 0;
+    if (normalizedCenterRatio < 0.375) closestIndex = 0;      // Hisob (0.00 - 0.375)
+    else if (normalizedCenterRatio < 0.625) closestIndex = 1; // Foiz (0.375 - 0.625)
+    else closestIndex = 2;                              // Valyuta (0.625 - 1.00)
 
     // CEO LEVEL: Active text cross-fading & real-time glow previews
+    var pills = pillsContainer.querySelectorAll('.pill');
     pills.forEach(function(pill, index) {
       if (pill.id === 'nb-theme') return;
       if (index === closestIndex) {
         pill.style.color = '#ff9500';
         pill.style.opacity = '1';
-        pill.style.transition = 'color 0.15s, opacity 0.15s';
       } else {
         pill.style.color = 'var(--text-dim)';
         pill.style.opacity = '0.65';
-        pill.style.transition = 'color 0.15s, opacity 0.15s';
       }
     });
 
@@ -2503,6 +2506,8 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
       if (navigator.vibrate) navigator.vibrate(2); // subtle mechanical tick
       lastTickIndex = closestIndex;
     }
+
+    rAFActive = false;
   }
 
   function handleEnd(e) {
