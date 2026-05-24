@@ -2376,6 +2376,140 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   });
 })();
 
+/* ─── INTERACTIVE FLUID DRAGGABLE HIGHLIGHTER (TELEGRAM/iOS STYLE) ─── */
+(function() {
+  var pillsContainer = document.querySelector('.nav-pills');
+  var highlighter = document.getElementById('nav-highlighter');
+  if (!pillsContainer || !highlighter) return;
+
+  var isDragging = false;
+  var startX = 0;
+  var initialLeft = 0;
+  var pillWidth = 0;
+  var parentWidth = 0;
+  var lastTickIndex = -1;
+
+  var tabsOrder = ['calc', 'pct', 'cur'];
+
+  function getX(e) {
+    return e.touches ? e.touches[0].clientX : e.clientX;
+  }
+
+  function handleStart(e) {
+    var activePill = document.querySelector('.pill.active');
+    if (!activePill) return;
+
+    var target = e.target;
+    var clickedPillOrIndicator = false;
+    while (target && target !== pillsContainer) {
+      if (target === highlighter || target === activePill) {
+        clickedPillOrIndicator = true;
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    if (!clickedPillOrIndicator) return;
+
+    isDragging = true;
+    startX = getX(e);
+
+    var parentRect = pillsContainer.getBoundingClientRect();
+    var pillRect = activePill.getBoundingClientRect();
+    
+    initialLeft = pillRect.left - parentRect.left + 4;
+    pillWidth = pillRect.width;
+    parentWidth = parentRect.width;
+    
+    highlighter.style.transition = 'none';
+    highlighter.classList.add('dragging');
+  }
+
+  function handleMove(e) {
+    if (!isDragging) return;
+    
+    if (e.cancelable) e.preventDefault();
+
+    var currentX = getX(e);
+    var deltaX = currentX - startX;
+    var currentLeft = initialLeft + deltaX;
+
+    var minLeft = 4;
+    var maxLeft = parentWidth - pillWidth + 4;
+    if (currentLeft < minLeft) currentLeft = minLeft;
+    if (currentLeft > maxLeft) currentLeft = maxLeft;
+
+    highlighter.style.transform = 'translateX(' + currentLeft + 'px)';
+
+    var center = currentLeft + pillWidth / 2;
+    var closestIndex = -1;
+    var minDistance = Infinity;
+
+    var pills = pillsContainer.querySelectorAll('.pill');
+    for (var i = 0; i < pills.length; i++) {
+      var pill = pills[i];
+      if (pill.id === 'nb-theme') continue;
+      
+      var pRect = pill.getBoundingClientRect();
+      var pParentRect = pillsContainer.getBoundingClientRect();
+      var pCenter = (pRect.left - pParentRect.left) + pRect.width / 2;
+      
+      var dist = Math.abs(center - pCenter);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = i;
+      }
+    }
+
+    if (closestIndex !== -1 && closestIndex !== lastTickIndex) {
+      if (navigator.vibrate) navigator.vibrate(2);
+      lastTickIndex = closestIndex;
+    }
+  }
+
+  function handleEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
+    highlighter.classList.remove('dragging');
+
+    highlighter.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), width 0.28s cubic-bezier(0.25, 1, 0.5, 1)';
+
+    var transformVal = highlighter.style.transform;
+    var match = transformVal.match(/translateX\(([-\d.]+)px\)/);
+    var releasedLeft = match ? parseFloat(match[1]) : initialLeft;
+    var center = releasedLeft + pillWidth / 2;
+
+    var closestTab = 'calc';
+    var minDistance = Infinity;
+
+    var pills = pillsContainer.querySelectorAll('.pill');
+    pills.forEach(function(pill) {
+      if (pill.id === 'nb-theme') return;
+      var pRect = pill.getBoundingClientRect();
+      var pParentRect = pillsContainer.getBoundingClientRect();
+      var pCenter = (pRect.left - pParentRect.left) + pRect.width / 2;
+
+      var dist = Math.abs(center - pCenter);
+      if (dist < minDistance) {
+        minDistance = dist;
+        var tabId = pill.id.replace('nb-', '');
+        closestTab = tabId;
+      }
+    });
+
+    switchTab(closestTab);
+    lastTickIndex = -1;
+  }
+
+  pillsContainer.addEventListener('touchstart', handleStart, { passive: false });
+  window.addEventListener('touchmove', handleMove, { passive: false });
+  window.addEventListener('touchend', handleEnd, { passive: true });
+
+  pillsContainer.addEventListener('mousedown', handleStart);
+  window.addEventListener('mousemove', handleMove);
+  window.addEventListener('mouseup', handleEnd);
+})();
+
 /* ─── SERVICE WORKER ────────────────────────────────── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
