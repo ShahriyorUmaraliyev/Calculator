@@ -2397,6 +2397,7 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   var lastTickIndex = -1;
   var lastX = 0;
   var rAFActive = false;
+  var initialIndex = 0;
 
   var tabsOrder = ['calc', 'pct', 'cur'];
 
@@ -2430,6 +2431,9 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     initialLeft = pillRect.left - parentRect.left + 4;
     pillWidth = pillRect.width;
     parentWidth = parentRect.width;
+    
+    var pills = Array.prototype.slice.call(pillsContainer.querySelectorAll('.pill'));
+    initialIndex = pills.indexOf(activePill);
     
     highlighter.style.transition = 'none';
     highlighter.classList.add('dragging');
@@ -2480,14 +2484,16 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     highlighter.style.width = finalWidth + 'px';
     highlighter.style.transform = 'translateX(' + finalLeft + 'px)';
 
-    // Find the closest tab center (Mathematically calculated, 0 reflows!)
-    var center = finalLeft + finalWidth / 2;
-    var normalizedCenterRatio = center / parentWidth;
-    
-    var closestIndex = 0;
-    if (normalizedCenterRatio < 0.375) closestIndex = 0;      // Hisob (0.00 - 0.375)
-    else if (normalizedCenterRatio < 0.625) closestIndex = 1; // Foiz (0.375 - 0.625)
-    else closestIndex = 2;                              // Valyuta (0.625 - 1.00)
+    // CEO LEVEL: Intent-based active index calculation during drag (Telegram/Flutter style)
+    var threshold = 35; // 35px drag threshold to prime the switch
+    var closestIndex = initialIndex;
+    if (Math.abs(deltaX) > threshold) {
+      var direction = Math.sign(deltaX); // +1 = swipe right, -1 = swipe left
+      var steps = Math.max(1, Math.round(Math.abs(deltaX) / pillWidth));
+      closestIndex = initialIndex + (direction * steps);
+    }
+    if (closestIndex < 0) closestIndex = 0;
+    if (closestIndex > 2) closestIndex = 2;
 
     // CEO LEVEL: Active text cross-fading & real-time glow previews
     var pills = pillsContainer.querySelectorAll('.pill');
@@ -2519,21 +2525,23 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     // Restore perfect ease-out snapping transition
     highlighter.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), width 0.28s cubic-bezier(0.25, 1, 0.5, 1)';
 
-    var transformVal = highlighter.style.transform;
-    var match = transformVal.match(/translateX\(([-\d.]+)px\)/);
-    var releasedLeft = match ? parseFloat(match[1]) : initialLeft;
+    var finalX = getX(e);
+    var deltaX = finalX - startX;
     
-    // CEO LEVEL: Calculate snapping mathematically by horizontal zone ratios
-    var parentRect = pillsContainer.getBoundingClientRect();
-    var center = releasedLeft + pillWidth / 2;
-    var normalizedRatio = center / parentRect.width; 
+    // CEO LEVEL: Snapping mathematically based on drag intent threshold (Telegram/Flutter model)
+    var threshold = 35; // 35px displacement triggers intent
+    var targetIndex = initialIndex;
 
-    var closestIndex = 0;
-    if (normalizedRatio < 0.375) closestIndex = 0;      // Hisob (0.00 - 0.375)
-    else if (normalizedRatio < 0.625) closestIndex = 1; // Foiz (0.375 - 0.625)
-    else closestIndex = 2;                              // Valyuta (0.625 - 1.00)
+    if (Math.abs(deltaX) > threshold) {
+      var direction = Math.sign(deltaX); // +1 = right, -1 = left
+      var steps = Math.max(1, Math.round(Math.abs(deltaX) / pillWidth));
+      targetIndex = initialIndex + (direction * steps);
+    }
+
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex > 2) targetIndex = 2;
     
-    var closestTab = tabsOrder[closestIndex];
+    var closestTab = tabsOrder[targetIndex];
 
     // Snap to target tab
     switchTab(closestTab);
