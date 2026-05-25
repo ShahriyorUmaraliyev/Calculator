@@ -1107,16 +1107,9 @@ function updateNavHighlighter() {
   var activePill = document.querySelector('.pill.active');
   if (!highlighter || !activePill) return;
   
-  var pills = Array.prototype.slice.call(activePill.parentElement.querySelectorAll('.pill'));
-  var index = pills.indexOf(activePill);
-  if (index === -1) return;
-  
-  var pillWidthPercent = 100 / pills.length;
-  var leftPercent = index * pillWidthPercent;
-  
-  // 100% hardware-accelerated CSS calc transition, immune to DOM reflow latency
-  highlighter.style.width = 'calc(' + pillWidthPercent + '% - 8px)';
-  highlighter.style.transform = 'translateX(calc(' + leftPercent + '% + 4px))';
+  // SENIOR LEVEL: Pixel-perfect absolute tracking using offset properties (immune to layout structure changes and percent glitches)
+  highlighter.style.width = (activePill.offsetWidth - 8) + 'px';
+  highlighter.style.transform = 'translateX(' + (activePill.offsetLeft + 4) + 'px)';
 }
 
 function switchTab(t) {
@@ -2313,6 +2306,7 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 (function() {
   var startX = 0;
   var startY = 0;
+  var isSwiping = false; // Flag to prevent clashes with direct capsule dragging
   var bottomArea = document.querySelector('.nav');
   var indicatorBar = document.getElementById('home-indicator-bar');
   
@@ -2326,6 +2320,9 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   }
 
   function handleEnd(endX, endY) {
+    if (!isSwiping) return;
+    isSwiping = false;
+
     var diffX = endX - startX;
     var diffY = endY - startY;
 
@@ -2357,23 +2354,60 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   // Bind to both .nav and #home-indicator-bar
   [bottomArea, indicatorBar].forEach(function(el) {
     el.addEventListener('touchstart', function(e) {
+      // SENIOR LEVEL: Prevent clash with direct interactive tab dragging
+      var activePill = document.querySelector('.pill.active');
+      var highlighter = document.getElementById('nav-highlighter');
+      var target = e.target;
+      var touchedCapsule = false;
+      while (target && target !== el) {
+        if (target === highlighter || target === activePill) {
+          touchedCapsule = true;
+          break;
+        }
+        target = target.parentElement;
+      }
+      if (touchedCapsule) {
+        isSwiping = false;
+        return;
+      }
+
+      isSwiping = true;
       var t = e.touches[0];
       handleStart(t.clientX, t.clientY);
     }, { passive: true });
 
     el.addEventListener('touchend', function(e) {
+      if (!isSwiping) return;
       var t = e.changedTouches[0];
       handleEnd(t.clientX, t.clientY);
     }, { passive: true });
 
     var isMouseDown = false;
     el.addEventListener('mousedown', function(e) {
+      // Prevent clash for mouse dragging too
+      var activePill = document.querySelector('.pill.active');
+      var highlighter = document.getElementById('nav-highlighter');
+      var target = e.target;
+      var touchedCapsule = false;
+      while (target && target !== el) {
+        if (target === highlighter || target === activePill) {
+          touchedCapsule = true;
+          break;
+        }
+        target = target.parentElement;
+      }
+      if (touchedCapsule) {
+        isSwiping = false;
+        return;
+      }
+
       isMouseDown = true;
+      isSwiping = true;
       handleStart(e.clientX, e.clientY);
     });
 
     document.addEventListener('mouseup', function(e) {
-      if (!isMouseDown) return;
+      if (!isMouseDown || !isSwiping) return;
       isMouseDown = false;
       handleEnd(e.clientX, e.clientY);
     });
