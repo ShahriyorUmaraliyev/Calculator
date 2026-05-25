@@ -915,7 +915,7 @@
   <div class="home-indicator-container" id="home-indicator-bar">
     <div class="home-indicator"></div>
   </div>
-  <div class="author">Dizayn va Dastur: Shahriyor Umaraliyev © 2026</div>
+  <div class="author">Dizayn va Dastur: Shahriyor Umaraliyev © 2026 (v59.1)</div>
 </div>
 
 <script>
@@ -1107,9 +1107,24 @@ function updateNavHighlighter() {
   var activePill = document.querySelector('.pill.active');
   if (!highlighter || !activePill) return;
   
-  // SENIOR LEVEL: Pixel-perfect absolute tracking using offset properties (immune to layout structure changes and percent glitches)
-  highlighter.style.width = (activePill.offsetWidth - 8) + 'px';
-  highlighter.style.transform = 'translateX(' + (activePill.offsetLeft + 4) + 'px)';
+  var w = activePill.offsetWidth;
+  var l = activePill.offsetLeft;
+  
+  if (w && w > 0) {
+    // SENIOR LEVEL: Pixel-perfect absolute tracking using offset properties
+    highlighter.style.width = (w - 8) + 'px';
+    highlighter.style.transform = 'translateX(' + (l + 4) + 'px)';
+  } else {
+    // SENIOR LEVEL: Layout fallback if styles are not fully computed yet (e.g. early DOMContentLoaded)
+    var pills = Array.prototype.slice.call(activePill.parentElement.querySelectorAll('.pill'));
+    var index = pills.indexOf(activePill);
+    if (index !== -1) {
+      var pillWidthPercent = 100 / pills.length;
+      var leftPercent = index * pillWidthPercent;
+      highlighter.style.width = 'calc(' + pillWidthPercent + '% - 8px)';
+      highlighter.style.transform = 'translateX(calc(' + leftPercent + '% + 4px))';
+    }
+  }
 }
 
 function switchTab(t) {
