@@ -2238,15 +2238,12 @@ window.onRefreshRates = function() {
 /* Sahifa to'liq yuklangandan keyin kurslarni yuklash */
 window.addEventListener('load', function() { loadRates(); });
 
-/* ─── SCROLL LOCK ───────────────────────────────────── */
+/* ─── SCROLL LOCK (HIGH PERFORMANCE) ────────────────── */
 document.addEventListener('touchmove', function(e) {
-  var el = e.target;
-  while (el && el !== document.documentElement) {
-    if (el.id === 'p-pct' || el.id === 'p-cur') return;
-    if (el.classList && (el.classList.contains('pct-wrap') || el.classList.contains('cur-wrap'))) return;
-    el = el.parentElement;
+  if (e.target.closest && e.target.closest('.pct-wrap, .cur-wrap')) {
+    return; // Allow native scrolling in scrollable compartments
   }
-  e.preventDefault();
+  e.preventDefault(); // Lock browser viewport bounce and pull-to-refresh
 }, { passive: false });
 
 
@@ -2401,8 +2398,15 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
   var tabsOrder = ['calc', 'pct', 'cur'];
 
+  // SENIOR LEVEL: Robust multi-pointer coordinate parsing (prevents crash on finger release)
   function getX(e) {
-    return e.touches ? e.touches[0].clientX : e.clientX;
+    if (e.touches && e.touches.length > 0) {
+      return e.touches[0].clientX;
+    }
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      return e.changedTouches[0].clientX;
+    }
+    return e.clientX;
   }
 
   function handleStart(e) {
@@ -2435,6 +2439,8 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     var pills = Array.prototype.slice.call(pillsContainer.querySelectorAll('.pill'));
     initialIndex = pills.indexOf(activePill);
     
+    // SENIOR LEVEL: Set transform origin to left edge to support fluid hardware-accelerated scale animations
+    highlighter.style.transformOrigin = 'left center';
     highlighter.style.transition = 'none';
     highlighter.classList.add('dragging');
     
@@ -2448,7 +2454,7 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     if (e.cancelable) e.preventDefault();
     lastX = getX(e);
 
-    // Throttle style updates to refresh rate using requestAnimationFrame (CEO LEVEL 120FPS)
+    // Throttle style updates to refresh rate using requestAnimationFrame (120FPS ProMotion Friendly)
     if (!rAFActive) {
       rAFActive = true;
       requestAnimationFrame(updateDragPosition);
@@ -2463,7 +2469,7 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
     var deltaX = lastX - startX;
     
-    // CEO LEVEL: Elastic "Jelly" Stretch Math (pill stretches in the direction of drag)
+    // SENIOR LEVEL: Elastic "Jelly" Stretch Math (pill stretches in the direction of drag)
     var stretch = Math.min(Math.abs(deltaX) * 0.16, 20); // liquid stretch factor
     var currentLeft = initialLeft + deltaX;
 
@@ -2481,10 +2487,11 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
       finalLeft = currentLeft - stretch * 0.15; 
     }
 
-    highlighter.style.width = finalWidth + 'px';
-    highlighter.style.transform = 'translateX(' + finalLeft + 'px)';
+    // SENIOR LEVEL: 100% GPU composite layer scale animation (eliminates layout-thrashing reflows of style.width)
+    var scaleFactor = finalWidth / pillWidth;
+    highlighter.style.transform = 'translateX(' + finalLeft + 'px) scaleX(' + scaleFactor + ')';
 
-    // CEO LEVEL: Intent-based active index calculation during drag (Telegram/Flutter style)
+    // SENIOR LEVEL: Intent-based active index calculation during drag (Telegram/Flutter style)
     var threshold = 35; // 35px drag threshold to prime the switch
     var closestIndex = initialIndex;
     if (Math.abs(deltaX) > threshold) {
@@ -2495,7 +2502,7 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     if (closestIndex < 0) closestIndex = 0;
     if (closestIndex > 2) closestIndex = 2;
 
-    // CEO LEVEL: Active text cross-fading & real-time glow previews
+    // SENIOR LEVEL: Active text cross-fading & real-time glow previews
     var pills = pillsContainer.querySelectorAll('.pill');
     pills.forEach(function(pill, index) {
       if (pill.id === 'nb-theme') return;
@@ -2524,11 +2531,12 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 
     // Restore perfect ease-out snapping transition
     highlighter.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), width 0.28s cubic-bezier(0.25, 1, 0.5, 1)';
+    highlighter.style.transformOrigin = '';
 
     var finalX = getX(e);
     var deltaX = finalX - startX;
     
-    // CEO LEVEL: Snapping mathematically based on drag intent threshold (Telegram/Flutter model)
+    // SENIOR LEVEL: Snapping mathematically based on drag intent threshold (Telegram/Flutter model)
     var threshold = 35; // 35px displacement triggers intent
     var targetIndex = initialIndex;
 
