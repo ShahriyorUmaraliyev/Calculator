@@ -648,6 +648,7 @@
       top: 4px;
       left: 0;
       height: calc(100% - 8px);
+      width: calc(25% - 8px); /* 4 pills = 25% each */
       border-radius: 20px;
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(20px) saturate(1.5);
@@ -657,6 +658,17 @@
       z-index: 1;
       transition: transform 0.26s cubic-bezier(0.25, 1, 0.5, 1), width 0.26s cubic-bezier(0.25, 1, 0.5, 1);
       pointer-events: none;
+      transform: translateX(4px); /* Default active Hisob tab position */
+    }
+    /* SENIOR LEVEL: 100% Declarative CSS Snapping via Sibling Selector (bulletproof, zero-reflow, immune to JS lags/caching) */
+    #nb-calc.active ~ #nav-highlighter {
+      transform: translateX(4px);
+    }
+    #nb-pct.active ~ #nav-highlighter {
+      transform: translateX(calc(25% + 4px));
+    }
+    #nb-cur.active ~ #nav-highlighter {
+      transform: translateX(calc(50% + 4px));
     }
     body.dragging-tab * {
       user-select: none !important;
@@ -876,7 +888,6 @@
   <!-- PASTKI NAV — iOS glass pill tabs -->
   <div class="nav">
     <div class="nav-pills">
-      <div id="nav-highlighter" class="nav-highlighter"></div>
       <button class="pill active" id="nb-calc" onclick="switchTab('calc')">
         <svg class="pill-icon" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="8" height="5" rx="1.5" fill="currentColor" opacity="0.9"/>
@@ -910,12 +921,13 @@
         </svg>
         <span class="pill-label" id="theme-lbl">Tungi</span>
       </button>
+      <div id="nav-highlighter" class="nav-highlighter"></div>
     </div>
   </div>
   <div class="home-indicator-container" id="home-indicator-bar">
     <div class="home-indicator"></div>
   </div>
-  <div class="author">Dizayn va Dastur: Shahriyor Umaraliyev © 2026 (v59.1)</div>
+  <div class="author">Dizayn va Dastur: Shahriyor Umaraliyev © 2026 (v60.1)</div>
 </div>
 
 <script>
@@ -1104,27 +1116,10 @@ var tabsOrder = ['calc', 'pct', 'cur'];
 
 function updateNavHighlighter() {
   var highlighter = document.getElementById('nav-highlighter');
-  var activePill = document.querySelector('.pill.active');
-  if (!highlighter || !activePill) return;
-  
-  var w = activePill.offsetWidth;
-  var l = activePill.offsetLeft;
-  
-  if (w && w > 0) {
-    // SENIOR LEVEL: Pixel-perfect absolute tracking using offset properties
-    highlighter.style.width = (w - 8) + 'px';
-    highlighter.style.transform = 'translateX(' + (l + 4) + 'px)';
-  } else {
-    // SENIOR LEVEL: Layout fallback if styles are not fully computed yet (e.g. early DOMContentLoaded)
-    var pills = Array.prototype.slice.call(activePill.parentElement.querySelectorAll('.pill'));
-    var index = pills.indexOf(activePill);
-    if (index !== -1) {
-      var pillWidthPercent = 100 / pills.length;
-      var leftPercent = index * pillWidthPercent;
-      highlighter.style.width = 'calc(' + pillWidthPercent + '% - 8px)';
-      highlighter.style.transform = 'translateX(calc(' + leftPercent + '% + 4px))';
-    }
-  }
+  if (!highlighter) return;
+  // SENIOR LEVEL: 100% Declarative snapping. We clear all inline style overrides and let the browser's CSS handle the position perfectly!
+  highlighter.style.transform = '';
+  highlighter.style.width = '';
 }
 
 function switchTab(t) {
