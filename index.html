@@ -261,11 +261,10 @@
       font-size: clamp(44px, 12vw, 68px); /* Safe, gorgeous dynamic font size */
       font-weight: 200;
       color: var(--text-main);
-      line-height: 1.15; /* Prevents text clipping of top loops and tails */
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1.35; /* Prevents text clipping of top and bottom */
       white-space: nowrap;
       transition: font-size 0.12s ease;
+      padding-bottom: 6px;
     }
     .result span {
       display: inline-block;
@@ -619,6 +618,7 @@
       width: 100%;
       position: relative;
       z-index: 1;
+      touch-action: none !important;
     }
     .pill {
       flex: 1;
@@ -636,6 +636,7 @@
       font-family: inherit;
       position: relative;
       z-index: 2;
+      touch-action: none !important;
     }
     .pill-icon { width: 22px; height: 22px; flex-shrink: 0; }
     .pill-label { font-size: 10px; font-weight: 500; }
@@ -659,17 +660,9 @@
       transition: transform 0.26s cubic-bezier(0.25, 1, 0.5, 1), width 0.26s cubic-bezier(0.25, 1, 0.5, 1);
       pointer-events: none;
       transform: translateX(4px); /* Default active Hisob tab position */
+      touch-action: none !important;
     }
-    /* SENIOR LEVEL: 100% Declarative CSS Snapping via Sibling Selector (bulletproof, zero-reflow, immune to JS lags/caching) */
-    #nb-calc.active ~ #nav-highlighter {
-      transform: translateX(4px);
-    }
-    #nb-pct.active ~ #nav-highlighter {
-      transform: translateX(calc(25% + 4px));
-    }
-    #nb-cur.active ~ #nav-highlighter {
-      transform: translateX(calc(50% + 4px));
-    }
+
     body.dragging-tab * {
       user-select: none !important;
       -webkit-user-select: none !important;
@@ -927,7 +920,7 @@
   <div class="home-indicator-container" id="home-indicator-bar">
     <div class="home-indicator"></div>
   </div>
-  <div class="author">Dizayn va Dastur: Shahriyor Umaraliyev © 2026 (v60.1)</div>
+  <div class="author">Dizayn va Dastur: Shahriyor Umaraliyev © 2026</div>
 </div>
 
 <script>
@@ -1091,22 +1084,44 @@ document.body.addEventListener('touchstart', function() {}, {passive: true});
 
 /* ─── TEMA ─────────────────────────────────────────── */
 var dark = true;
+try {
+  var savedTheme = localStorage.getItem('kalk_theme');
+  if (savedTheme) {
+    dark = (savedTheme === 'dark');
+  } else {
+    dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+} catch(e) {}
+
+function applyTheme(isDark) {
+  document.body.className = isDark ? 'dark' : 'light';
+  document.documentElement.className = isDark ? '' : 'light';
+  var metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.setAttribute('content', isDark ? '#0d1117' : '#e8eaf6');
+  var themeSvg = document.getElementById('theme-svg');
+  if (themeSvg) {
+    themeSvg.innerHTML = isDark
+      ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>'
+      : '<circle cx="12" cy="12" r="5" fill="currentColor"/>'
+        + '<g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">'
+        + '<line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>'
+        + '<line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>'
+        + '<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>'
+        + '<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        + '</g>';
+  }
+  var themeLbl = document.getElementById('theme-lbl');
+  if (themeLbl) themeLbl.textContent = isDark ? 'Tungi' : 'Kunduz';
+}
+
+applyTheme(dark);
+
 function toggleTheme() {
   dark = !dark;
-  document.body.className = dark ? 'dark' : 'light';
-  document.documentElement.className = dark ? '' : 'light';
-  document.querySelector('meta[name="theme-color"]')
-    .setAttribute('content', dark ? '#0d1117' : '#e8eaf6');
-  document.getElementById('theme-svg').innerHTML = dark
-    ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>'
-    : '<circle cx="12" cy="12" r="5" fill="currentColor"/>'
-      + '<g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">'
-      + '<line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/>'
-      + '<line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/>'
-      + '<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>'
-      + '<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
-      + '</g>';
-  document.getElementById('theme-lbl').textContent = dark ? 'Tungi' : 'Kunduz';
+  applyTheme(dark);
+  try {
+    localStorage.setItem('kalk_theme', dark ? 'dark' : 'light');
+  } catch(e) {}
 }
 
 /* ─── TABS ──────────────────────────────────────────── */
@@ -1117,7 +1132,20 @@ var tabsOrder = ['calc', 'pct', 'cur'];
 function updateNavHighlighter() {
   var highlighter = document.getElementById('nav-highlighter');
   if (!highlighter) return;
-  // SENIOR LEVEL: 100% Declarative snapping. We clear all inline style overrides and let the browser's CSS handle the position perfectly!
+  
+  var activePill = document.querySelector('.pill.active');
+  if (activePill) {
+    var parentRect = activePill.parentElement.getBoundingClientRect();
+    var pillRect = activePill.getBoundingClientRect();
+    if (pillRect.width > 0) {
+      var left = pillRect.left - parentRect.left + 4;
+      var width = pillRect.width - 8;
+      highlighter.style.transform = 'translateX(' + left + 'px)';
+      highlighter.style.width = width + 'px';
+      return;
+    }
+  }
+  
   highlighter.style.transform = '';
   highlighter.style.width = '';
 }
@@ -1256,8 +1284,11 @@ function evaluateTokens(tokens) {
       if (token.val === '*') {
         res = prev.val * next.val;
       } else {
-        if (next.val === 0) return null; // Division by zero
-        res = prev.val / next.val;
+        if (next.val === 0) {
+          res = prev.val < 0 ? -Infinity : Infinity;
+        } else {
+          res = prev.val / next.val;
+        }
       }
       mulDivTokens.push({ type: 'NUM', val: res });
       i += 2;
@@ -1298,6 +1329,7 @@ function evaluateEquation(eqStr) {
   var r = evaluateTokens(tokens);
   if (r === null) return null;
   // Fix precision floating point bugs exactly like iPhone (limit to 12 digits)
+  if (!isFinite(r)) return r;
   return parseFloat(r.toPrecision(12));
 }
 
@@ -1330,6 +1362,8 @@ function extractLastOpAndOperand(eqStr) {
 // Format numbers inside an equation string with commas (e.g. "12500.5×9" -> "12,500.5×9")
 function formatEquation(eqStr) {
   if (eqStr === 'Xato') return 'Xato';
+  if (eqStr === 'Infinity') return 'Cheksizlik';
+  if (eqStr === '−Infinity') return '−Cheksizlik';
   return eqStr.replace(/[0-9.]+/g, function(numStr) {
     var parts = numStr.split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -1465,7 +1499,7 @@ document.getElementById('btn-ac').addEventListener('click', function() {
 
 // Plus/Minus (+/-) Button
 document.getElementById('btn-pm').addEventListener('click', function() {
-  if (equation === 'Xato') return;
+  if (equation === 'Xato' || equation === 'Infinity' || equation === '−Infinity') return;
 
   if (isCalculated) {
     if (equation === '0') return;
@@ -1505,7 +1539,7 @@ document.getElementById('btn-pm').addEventListener('click', function() {
 
 // Percent (%) Button
 document.getElementById('btn-pct').addEventListener('click', function() {
-  if (equation === 'Xato' || equation === '0') return;
+  if (equation === 'Xato' || equation === '0' || equation === 'Infinity' || equation === '−Infinity') return;
 
   if (isCalculated) {
     var val = parseFloat(equation.replace(/−/g, '-'));
@@ -1544,7 +1578,7 @@ document.getElementById('btn-pct').addEventListener('click', function() {
 
 // Operators (+, −, ×, ÷)
 function handleOp(newOp) {
-  if (equation === 'Xato') return;
+  if (equation === 'Xato' || equation === 'Infinity' || equation === '−Infinity') return;
 
   if (isCalculated) {
     equation = equation + newOp;
@@ -1621,7 +1655,7 @@ document.getElementById('btn-eq').addEventListener('click', function() {
   }
 
   var parseEq = equation;
-  if (isOperator(parseEq.slice(-1))) {
+  while (parseEq.length > 0 && isOperator(parseEq.slice(-1))) {
     parseEq = parseEq.slice(0, -1);
   }
 
@@ -1715,8 +1749,7 @@ function clearInp(id, wrapId) {
 
 function getRawVal(id) {
   var raw = stripFmt(document.getElementById(id).value);
-  /* Oxirida nuqta bo'lsa — hali yozilmagan, NaN qaytaramiz */
-  if (raw.slice(-1) === '.') return NaN;
+  if (!raw) return 0;
   return parseFloat(raw) || 0;
 }
 var pctMode = 'tip';
@@ -2122,8 +2155,8 @@ function convert() {
   var fRate = getFromData(data, from);
   var tRate = getFromData(data, to);
 
-  if (!fRate || !tRate || !isFinite(amt) || amt <= 0) {
-    resEl.textContent = amt > 0 ? "Kurs yo'q" : '—';
+  if (!fRate || !tRate || !isFinite(amt) || amt < 0) {
+    resEl.textContent = amt < 0 ? "Kurs yo'q" : '—';
   } else {
     var result  = (amt * fRate) / tRate;
     var isLarge = (to === 'UZS' || to === 'KZT');
@@ -2392,6 +2425,11 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
       handleEnd(t.clientX, t.clientY);
     }, { passive: true });
 
+    el.addEventListener('touchcancel', function(e) {
+      if (!isSwiping) return;
+      isSwiping = false;
+    }, { passive: true });
+
     var isMouseDown = false;
     el.addEventListener('mousedown', function(e) {
       // Prevent clash for mouse dragging too
@@ -2424,36 +2462,29 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
   });
 })();
 
-/* ─── INTERACTIVE FLUID DRAGGABLE HIGHLIGHTER (TELEGRAM/iOS STYLE) ─── */
+
+/* ─── INTERACTIVE FLUID DRAGGABLE HIGHLIGHTER (TELEGRAM/iOS STYLE - POINTER EVENTS BASED) ─── */
 (function() {
   var pillsContainer = document.querySelector('.nav-pills');
   var highlighter = document.getElementById('nav-highlighter');
   if (!pillsContainer || !highlighter) return;
 
   var isDragging = false;
+  var pointerId = null;
   var startX = 0;
   var initialLeft = 0;
   var pillWidth = 0;
   var parentWidth = 0;
+  var initialIndex = 0;
   var lastTickIndex = -1;
   var lastX = 0;
-  var rAFActive = false;
-  var initialIndex = 0;
+  var blockTabClick = false; // Flag to block simulated clicks after dragging
 
   var tabsOrder = ['calc', 'pct', 'cur'];
 
-  // SENIOR LEVEL: Robust multi-pointer coordinate parsing (prevents crash on finger release)
-  function getX(e) {
-    if (e.touches && e.touches.length > 0) {
-      return e.touches[0].clientX;
-    }
-    if (e.changedTouches && e.changedTouches.length > 0) {
-      return e.changedTouches[0].clientX;
-    }
-    return e.clientX;
-  }
-
   function handleStart(e) {
+    if (!e.isPrimary) return;
+
     var activePill = document.querySelector('.pill.active');
     if (!activePill) return;
 
@@ -2470,7 +2501,14 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     if (!clickedPillOrIndicator) return;
 
     isDragging = true;
-    startX = getX(e);
+    pointerId = e.pointerId;
+    blockTabClick = false; // Reset blocker on start
+    
+    try {
+      e.target.setPointerCapture(e.pointerId);
+    } catch (err) {}
+
+    startX = e.clientX;
     lastX = startX;
 
     var parentRect = pillsContainer.getBoundingClientRect();
@@ -2483,70 +2521,54 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     var pills = Array.prototype.slice.call(pillsContainer.querySelectorAll('.pill'));
     initialIndex = pills.indexOf(activePill);
     
-    // SENIOR LEVEL: Set transform origin to left edge to support fluid hardware-accelerated scale animations
     highlighter.style.transformOrigin = 'left center';
     highlighter.style.transition = 'none';
     highlighter.classList.add('dragging');
-    
-    // Add global body dragging state to disable text selection and enforce cursor
     document.body.classList.add('dragging-tab');
   }
 
   function handleMove(e) {
     if (!isDragging) return;
     
-    if (e.cancelable) e.preventDefault();
-    lastX = getX(e);
-
-    // Throttle style updates to refresh rate using requestAnimationFrame (120FPS ProMotion Friendly)
-    if (!rAFActive) {
-      rAFActive = true;
-      requestAnimationFrame(updateDragPosition);
+    // Prevent native horizontal gestures/swipes
+    if (e.cancelable) {
+      e.preventDefault();
     }
-  }
-
-  function updateDragPosition() {
-    if (!isDragging) {
-      rAFActive = false;
-      return;
-    }
-
-    var deltaX = lastX - startX;
     
-    // SENIOR LEVEL: Elastic "Jelly" Stretch Math (pill stretches in the direction of drag)
-    var stretch = Math.min(Math.abs(deltaX) * 0.16, 20); // liquid stretch factor
+    var currentX = e.clientX;
+    if (currentX !== undefined && currentX !== 0) {
+      lastX = currentX;
+    }
+    var deltaX = lastX - startX;
+    if (isNaN(deltaX)) return;
+
+    var stretch = Math.min(Math.abs(deltaX) * 0.18, 24); 
     var currentLeft = initialLeft + deltaX;
 
-    // Clamp currentLeft inside the nav-pills boundaries
     var minLeft = 4;
     var maxLeft = parentWidth - pillWidth + 4;
     if (currentLeft < minLeft) currentLeft = minLeft;
     if (currentLeft > maxLeft) currentLeft = maxLeft;
 
-    // Apply fluid size and transform matching Apple's physics engine
     var finalWidth = pillWidth + stretch;
     var finalLeft = currentLeft;
     if (deltaX > 0) {
-      // Anchored to the left while extending right
       finalLeft = currentLeft - stretch * 0.15; 
     }
 
-    // SENIOR LEVEL: 100% GPU composite layer scale animation (eliminates layout-thrashing reflows of style.width)
-    var scaleFactor = finalWidth / pillWidth;
+    var scaleFactor = finalWidth / (pillWidth || 1);
     highlighter.style.transform = 'translateX(' + finalLeft + 'px) scaleX(' + scaleFactor + ')';
 
-    // SENIOR LEVEL: Intent-based active index calculation during drag (Telegram/Flutter style)
-    var threshold = 35; // 35px drag threshold to prime the switch
+    var threshold = 35; 
     var closestIndex = initialIndex;
     if (Math.abs(deltaX) > threshold) {
-      var direction = Math.sign(deltaX); // +1 = swipe right, -1 = swipe left
-      var steps = Math.max(1, Math.round(Math.abs(deltaX) / pillWidth));
+      var direction = Math.sign(deltaX);
+      var steps = Math.max(1, Math.round(Math.abs(deltaX) / (pillWidth || 1)));
       closestIndex = initialIndex + (direction * steps);
     }
     if (closestIndex < 0) closestIndex = 0;
     if (closestIndex > 2) closestIndex = 2;
 
-    // SENIOR LEVEL: Active text cross-fading & real-time glow previews
     var pills = pillsContainer.querySelectorAll('.pill');
     pills.forEach(function(pill, index) {
       if (pill.id === 'nb-theme') return;
@@ -2560,67 +2582,84 @@ document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     });
 
     if (closestIndex !== -1 && closestIndex !== lastTickIndex) {
-      if (navigator.vibrate) navigator.vibrate(2); // subtle mechanical tick
+      if (navigator.vibrate) navigator.vibrate(2);
       lastTickIndex = closestIndex;
     }
-
-    rAFActive = false;
   }
 
   function handleEnd(e) {
     if (!isDragging) return;
     isDragging = false;
-    highlighter.classList.remove('dragging');
-    document.body.classList.remove('dragging-tab');
+    pointerId = null;
 
-    // Restore perfect ease-out snapping transition
-    highlighter.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), width 0.28s cubic-bezier(0.25, 1, 0.5, 1)';
-    highlighter.style.transformOrigin = '';
+    try {
+      highlighter.classList.remove('dragging');
+      document.body.classList.remove('dragging-tab');
 
-    var finalX = getX(e);
-    var deltaX = finalX - startX;
-    
-    // SENIOR LEVEL: Snapping mathematically based on drag intent threshold (Telegram/Flutter model)
-    var threshold = 35; // 35px displacement triggers intent
-    var targetIndex = initialIndex;
+      highlighter.style.transition = 'transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), width 0.28s cubic-bezier(0.25, 1, 0.5, 1)';
+      highlighter.style.transformOrigin = '';
 
-    if (Math.abs(deltaX) > threshold) {
-      var direction = Math.sign(deltaX); // +1 = right, -1 = left
-      var steps = Math.max(1, Math.round(Math.abs(deltaX) / pillWidth));
-      targetIndex = initialIndex + (direction * steps);
+      var currentX = lastX;
+      var deltaX = isNaN(currentX - startX) ? 0 : (currentX - startX);
+      
+      var threshold = 35;
+      var targetIndex = initialIndex;
+
+      var dragDistance = Math.abs(deltaX);
+      if (dragDistance > threshold) {
+        var direction = Math.sign(deltaX);
+        var steps = Math.max(1, Math.round(dragDistance / (pillWidth || 1)));
+        targetIndex = initialIndex + (direction * steps);
+      }
+
+      if (isNaN(targetIndex) || targetIndex < 0) targetIndex = 0;
+      if (targetIndex > 2) targetIndex = 2;
+      
+      var closestTab = tabsOrder[targetIndex];
+
+      // Set blockTabClick to ignore the simulated click event fired on release
+      if (dragDistance > 10) {
+        blockTabClick = true;
+        setTimeout(function() {
+          blockTabClick = false;
+        }, 50);
+      }
+
+      if (closestTab) {
+        switchTab(closestTab);
+      }
+    } catch (err) {
+      console.error("Error ending drag:", err);
+    } finally {
+      updateNavHighlighter();
+      lastTickIndex = -1;
+
+      var pills = pillsContainer.querySelectorAll('.pill');
+      pills.forEach(function(pill) {
+        if (pill.id === 'nb-theme') return;
+        pill.style.color = '';
+        pill.style.opacity = '';
+        pill.style.transition = '';
+      });
     }
-
-    if (targetIndex < 0) targetIndex = 0;
-    if (targetIndex > 2) targetIndex = 2;
-    
-    var closestTab = tabsOrder[targetIndex];
-
-    // Snap to target tab
-    switchTab(closestTab);
-    
-    // CRITICAL: Always force update highlighter position to CSS calc percentages (even if switchTab returned early)
-    updateNavHighlighter();
-    
-    lastTickIndex = -1;
-
-    // Reset inline styling overrides to return styling control to static CSS
-    var pills = pillsContainer.querySelectorAll('.pill');
-    pills.forEach(function(pill) {
-      if (pill.id === 'nb-theme') return;
-      pill.style.color = '';
-      pill.style.opacity = '';
-      pill.style.transition = '';
-    });
   }
 
-  pillsContainer.addEventListener('touchstart', handleStart, { passive: false });
-  window.addEventListener('touchmove', handleMove, { passive: false });
-  window.addEventListener('touchend', handleEnd, { passive: true });
+  pillsContainer.addEventListener('pointerdown', handleStart);
+  window.addEventListener('pointermove', handleMove, { passive: false });
+  window.addEventListener('pointerup', handleEnd);
+  window.addEventListener('pointercancel', handleEnd);
 
-  pillsContainer.addEventListener('mousedown', handleStart);
-  window.addEventListener('mousemove', handleMove);
-  window.addEventListener('mouseup', handleEnd);
+  // Capture phase to intercept and block simulated click events generated on release
+  pillsContainer.addEventListener('click', function(e) {
+    if (blockTabClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }
+  }, true);
 })();
+
+
 
 /* ─── SERVICE WORKER ────────────────────────────────── */
 if ('serviceWorker' in navigator) {
