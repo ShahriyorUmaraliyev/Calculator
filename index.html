@@ -663,15 +663,16 @@
       gap: 8px;
       transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
       position: relative;
+      cursor: pointer;
     }
-    .cur-card:focus-within {
+    .cur-card.active, .cur-card:focus-within {
       background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 149, 0, 0.4);
+      border-color: rgba(255, 159, 10, 0.5);
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    body.light .cur-card:focus-within {
+    body.light .cur-card.active, body.light .cur-card:focus-within {
       background: rgba(0, 0, 0, 0.015);
-      border-color: rgba(255, 149, 0, 0.4);
+      border-color: rgba(255, 149, 0, 0.5);
     }
     
     .cur-card-header {
@@ -3030,7 +3031,8 @@ function renderCurrencyCards() {
 
     var prefix = curState.currencyMode === 'wallet' ? '＋' : 'x';
 
-    html += '<div class="cur-card" data-code="' + code + '">' +
+    var isActive = (code === curState.activeInputCode);
+    html += '<div class="cur-card' + (isActive ? ' active' : '') + '" data-code="' + code + '" onclick="onCardClick(event, \'' + code + '\')">' +
               '<div class="cur-card-header">' +
                 '<div class="cur-card-drag-handle" onpointerdown="startDragCard(event, \'' + code + '\')">' +
                   '<svg width="12" height="18" viewBox="0 0 12 18" fill="none" stroke="currentColor" opacity="0.3">' +
@@ -3108,6 +3110,41 @@ function updateRateTexts() {
     }
   });
 }
+
+window.onCardClick = function(event, code) {
+  // If the user clicked the remove button, drag handle, or the input field itself, ignore card-level click
+  if (event.target.closest('.cur-card-remove') || 
+      event.target.closest('.cur-card-drag-handle') || 
+      event.target.closest('.cur-card-input')) {
+    return;
+  }
+  
+  if (curState.activeInputCode === code) return;
+  
+  // Convert current activeValue to the target currency to preserve amounts when switching base
+  var data = curState.live || curState.official;
+  var convertedVal = curState.activeValue;
+  if (data && curState.currencyMode !== 'wallet') {
+    var activeRate = getFromData(data, curState.activeInputCode);
+    var targetRate = getFromData(data, code);
+    if (activeRate && targetRate) {
+      convertedVal = (curState.activeValue * activeRate) / targetRate;
+    }
+  }
+  
+  curState.activeInputCode = code;
+  
+  if (curState.currencyMode !== 'wallet') {
+    curState.activeValue = isFinite(convertedVal) ? convertedVal : 0;
+    curState.activeInputString = curState.activeValue === 0 ? '' : curState.activeValue.toString();
+  }
+  
+  // Update background landmark dynamically (CEO Level UX)
+  updateBackgroundLandmark(code);
+  
+  // Re-render all cards to reflect the new active card and conversion calculations
+  renderCurrencyCards();
+};
 
 window.onCardInputFocus = function(code) {
   var isNewFocus = (curState.activeInputCode !== code);
