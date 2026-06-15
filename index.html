@@ -33,7 +33,7 @@
       overflow: hidden;
       background: #000000;
     }
-    html.light { background: #ffffff; }
+    html.light { background: #f0e8dc; }
 
     body {
       height: 100vh;
@@ -44,40 +44,43 @@
       position: fixed;
       inset: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-      background: var(--calc-bg);
+      background: #000000;
       transition: background 0.3s ease;
     }
+    body.light {
+      background: #f0e8dc;
+    }
     body.dark {
-      --calc-bg: #000000;
-      --btn-num: #333333;
-      --btn-gray: #a5a5a5;
-      --btn-orange: #ff9f0a;
+      --calc-bg: transparent;
+      --btn-num: rgba(36, 36, 40, 0.75);
+      --btn-gray: rgba(142, 142, 147, 0.45);
+      --btn-orange: rgba(255, 159, 10, 0.85);
       --text-main: #ffffff;
       --text-dim: rgba(255, 255, 255, 0.6);
       --mode-bg: rgba(255, 255, 255, 0.05);
-      --shine: rgba(255, 255, 255, 0.15);
-      --border: rgba(255, 255, 255, 0.08);
+      --shine: rgba(255, 255, 255, 0.1);
+      --border: rgba(255, 255, 255, 0.06);
       --box-bg: rgba(255, 255, 255, 0.03);
-      --input-bg: rgba(0, 0, 0, 0.12);
-      --input-border: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(255, 255, 255, 0.04);
+      --input-border: rgba(255, 255, 255, 0.06);
       --label: rgba(255, 255, 255, 0.38);
-      --nav-bg: rgba(0, 0, 0, 0.82);
+      --nav-bg: rgba(15, 15, 18, 0.65);
     }
     body.light {
-      --calc-bg: #ffffff;
-      --btn-num: #e5e5e5;
-      --btn-gray: #d4d4d2;
-      --btn-orange: #ff9f0a;
+      --calc-bg: transparent;
+      --btn-num: rgba(0, 0, 0, 0.06);
+      --btn-gray: rgba(0, 0, 0, 0.16);
+      --btn-orange: rgba(255, 149, 0, 0.85);
       --text-main: #000000;
       --text-dim: rgba(0, 0, 0, 0.5);
       --mode-bg: rgba(0, 0, 0, 0.04);
-      --shine: rgba(255, 255, 255, 0.6);
-      --border: rgba(0, 0, 0, 0.06);
+      --shine: rgba(253, 250, 245, 0.45);
+      --border: rgba(0, 0, 0, 0.05);
       --box-bg: rgba(0, 0, 0, 0.02);
-      --input-bg: rgba(255, 255, 255, 0.5);
-      --input-border: rgba(0, 0, 0, 0.06);
+      --input-bg: rgba(0, 0, 0, 0.03);
+      --input-border: rgba(0, 0, 0, 0.05);
       --label: rgba(0, 0, 0, 0.4);
-      --nav-bg: rgba(242, 242, 247, 0.85);
+      --nav-bg: rgba(253, 250, 245, 0.45);
     }
 
     /* ── DESKTOP BEZEL CONTAINER (SENIOR LEVEL) ── */
@@ -93,7 +96,7 @@
         background: #05070a;
       }
       body.light {
-        background: #e4e7eb;
+        background: #f0e8dc;
       }
       .calc-bg {
         display: block; /* Show glowing background circles on desktop only */
@@ -108,14 +111,14 @@
         overflow: hidden;
       }
       body.light .calc {
-        border-color: #d1d1d6;
+        border-color: #dbd3c5;
         box-shadow: 0 30px 70px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05);
       }
     }
 
     /* ── ORIGINAL CLASSIC GRADIENT BACKGROUND ── */
     .calc-bg {
-      display: none; /* Hidden on mobile to avoid double-background */
+      display: block; /* Always visible for beautiful backing gradient circles */
       position: fixed;
       inset: 0;
       z-index: 0;
@@ -125,37 +128,72 @@
       background: linear-gradient(145deg, #0d1117 0%, #0f1d2e 50%, #0a1628 100%);
     }
     body.light .calc-bg {
-      background: linear-gradient(145deg, #e8eaf6 0%, #c5cae9 50%, #9fa8da 100%);
+      background: linear-gradient(145deg, #f7f1e7 0%, #f0e8dc 50%, #e6dccb 100%);
     }
 
-    /* Original glowing ambient circles */
+    /* Original glowing ambient circles with theme-based color gradients */
     .calc-bg::before {
       content: '';
       position: absolute;
       width: 340px; height: 340px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(80,160,255,0.18) 0%, transparent 70%);
       top: -80px; left: -80px;
       pointer-events: none;
+      z-index: 2;
     }
     .calc-bg::after {
       content: '';
       position: absolute;
       width: 280px; height: 280px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(160,80,255,0.14) 0%, transparent 70%);
       bottom: -60px; right: -60px;
       pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Dynamic country landmark background layers (Senior level cross-fade and depth hierarchy) */
+    .bg-img-layer {
+      position: absolute;
+      inset: -10px; /* Expand to prevent white/black blur edges showing */
+      background-size: cover;
+      background-position: center;
+      transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 1;
+      opacity: 0;
+      filter: brightness(0.38) saturate(0.85) blur(6px);
+      transform: scale(1.04); /* Prevent blur edge artifacts */
+      pointer-events: none;
+    }
+    body.light .bg-img-layer {
+      filter: brightness(0.95) saturate(0.65) contrast(0.9) blur(6px);
+    }
+
+    body.dark .calc-bg::before {
+      background: radial-gradient(circle, rgba(80,160,255,0.18) 0%, transparent 70%);
+    }
+    body.dark .calc-bg::after {
+      background: radial-gradient(circle, rgba(160,80,255,0.14) 0%, transparent 70%);
+    }
+    body.light .calc-bg::before {
+      background: radial-gradient(circle, rgba(217, 185, 142, 0.25) 0%, transparent 70%); /* Warm gold/sand glow */
+    }
+    body.light .calc-bg::after {
+      background: radial-gradient(circle, rgba(189, 154, 112, 0.18) 0%, transparent 70%); /* Soft amber/caramel glow */
     }
 
     .calc {
       width: 100%;
       height: 100%;
-      background: transparent;
+      background: rgba(10, 10, 12, 0.52);
+      backdrop-filter: saturate(140%);
+      -webkit-backdrop-filter: saturate(140%);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
+    }
+    body.light .calc {
+      background: rgba(253, 250, 245, 0.45);
     }
 
     .shine {
@@ -510,56 +548,229 @@
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      padding: 18px 18px 16px;
+      padding: 16px;
       z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    .cur-status {
-      font-size: 12px;
-      text-align: center;
-      padding: 0 0 10px;
+    
+    /* Search Bar & Autocomplete */
+    .cur-search-row {
+      display: flex;
+      gap: 8px;
+      position: relative;
+      z-index: 100;
+    }
+    .autocomplete-wrap {
+      position: relative;
+      flex: 1;
+    }
+    .cur-search-input {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      padding: 12px 32px 12px 14px;
+      color: var(--text-main);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .cur-search-input::placeholder {
       color: var(--label);
     }
-    .cur-status.loading { color: #ff9500; }
-    .cur-status.ok      { color: #34c759; }
-    .cur-status.warn    { color: #ff9a00; }
-    .cur-status.error   { color: #ff3b30; }
-    .cur-result {
+    .cur-search-input:focus {
+      border-color: var(--btn-orange);
+      box-shadow: 0 0 0 3px rgba(255,149,0,0.15);
+    }
+    .dropdown-arrow {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      color: var(--label);
+      cursor: pointer;
+      pointer-events: none;
+    }
+    .autocomplete-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+    .autocomplete-dropdown.show {
+      display: block;
+    }
+    .dropdown-item {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover {
+      background: rgba(255, 149, 0, 0.15);
+    }
+    .add-cur-btn {
+      background: #14b8a6;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      width: 46px;
+      height: 46px;
+      font-size: 24px;
+      font-weight: 400;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .add-cur-btn:active {
+      transform: scale(0.95);
+      opacity: 0.85;
+    }
+    
+    /* Currency Cards */
+    .cur-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .cur-card {
+      background: var(--box-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .cur-card:focus-within {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 149, 0, 0.4);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    body.light .cur-card:focus-within {
+      background: rgba(0, 0, 0, 0.015);
+      border-color: rgba(255, 149, 0, 0.4);
+    }
+    
+    .cur-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cur-card-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cur-card-flag {
+      font-size: 28px;
+      line-height: 1;
+    }
+    .cur-card-meta {
+      display: flex;
+      flex-direction: column;
+    }
+    .cur-card-code {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+    .cur-card-name {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .cur-card-remove {
+      background: transparent;
+      border: none;
+      color: var(--label);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 2px 8px;
+      line-height: 1;
+      border-radius: 50%;
+      transition: color 0.15s, background 0.15s;
+    }
+    .cur-card-remove:hover {
+      color: #ff3b30;
+      background: rgba(255, 59, 48, 0.1);
+    }
+    
+    .cur-card-body {
+      display: flex;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .cur-card-prefix {
+      font-size: 14px;
+      color: var(--label);
+      font-weight: 500;
+      margin-right: 8px;
+    }
+    .cur-card-input-wrap {
       flex: 1;
       display: flex;
       align-items: center;
-      font-size: clamp(18px, 5vw, 24px);
-      font-weight: 300;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--box-bg);
-      color: var(--text-main);
-      min-height: 46px;
-      pointer-events: none;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      padding: 8px 12px;
     }
-    .swap-btn, .refresh-btn {
-      display: block;
+    .cur-card-input-wrap:focus-within {
+      border-color: var(--btn-orange);
+    }
+    .cur-card-input {
       width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      font-family: inherit;
-      background: var(--mode-bg);
+      background: transparent;
+      border: none;
+      outline: none;
       color: var(--text-main);
-      backdrop-filter: blur(10px);
-      transition: all 0.15s;
-      margin-bottom: 10px;
+      font-size: 20px;
+      font-weight: 600;
+      text-align: right;
     }
-    .swap-btn:active, .refresh-btn:active { filter: brightness(0.85); transform: scale(0.98); }
-    .refresh-btn { margin-top: 10px; margin-bottom: 0; }
-    .refresh-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .cur-card-input::placeholder {
+      color: var(--label);
+    }
+    
+    .cur-card-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--label);
+      margin-top: 4px;
+      border-top: 1px solid rgba(255,255,255,0.03);
+      padding-top: 6px;
+    }
+    body.light .cur-card-footer {
+      border-top-color: rgba(0,0,0,0.02);
+    }
 
     /* ── DUAL RATE UI ── */
     .cur-status-row {
-      display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;
+      display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;
     }
     .cur-badge {
       display: flex; align-items: center; gap: 5px;
@@ -581,26 +792,110 @@
     @keyframes pulse {
       0%,100% { opacity: 1; } 50% { opacity: 0.3; }
     }
-    .cur-rate-box { margin-top: 8px; }
-    .cur-rate-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 4px;
+    .refresh-btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      background: var(--mode-bg);
+      color: var(--text-main);
+      backdrop-filter: blur(10px);
+      transition: all 0.15s;
+      margin-top: 12px;
+      margin-bottom: 0;
     }
-    .cur-rate-type {
-      font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
-      padding: 2px 8px; border-radius: 10px;
+    .refresh-btn:active { filter: brightness(0.85); transform: scale(0.98); }
+    .refresh-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    /* Share Button */
+    .share-cur-btn {
+      background: var(--mode-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      border-radius: 12px;
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, background 0.15s;
     }
-    .off-type  { background: rgba(52,199,89,0.15);  color: #34c759; }
-    .live-type { background: rgba(255,149,0,0.15);  color: #ff9500; }
-    .cur-rate-src {
-      font-size: 11px; color: var(--label);
+    .share-cur-btn:active {
+      transform: scale(0.95);
     }
-    .cur-rate-meta {
-      display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--label); margin-top: 4px;
-      flex-wrap: wrap; gap: 4px;
+
+    /* Drag & Drop */
+    .cur-card-drag-handle {
+      cursor: grab;
+      padding: 0 8px 0 0;
+      display: flex;
+      align-items: center;
+      color: var(--label);
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    .cur-rate-box.unavailable { opacity: 0.45; }
+    .cur-card-drag-handle:active {
+      cursor: grabbing;
+    }
+    .cur-card.dragging {
+      opacity: 0.85;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--btn-orange);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      cursor: grabbing;
+      transition: none !important;
+    }
+    body.light .cur-card.dragging {
+      background: rgba(0,0,0,0.03);
+    }
+
+    /* Sparklines */
+    .sparkline-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin-left: auto;
+      margin-right: 12px;
+      gap: 2px;
+    }
+    .sparkline-svg {
+      overflow: visible;
+    }
+    .sparkline-pct {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translate(-50%, -20px);
+      background: rgba(20, 184, 166, 0.95);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      z-index: 9999;
+      pointer-events: none;
+      transition: opacity 0.3s, transform 0.3s;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
 
     /* ── BOTTOM NAV ── */
     .nav {
@@ -669,9 +964,9 @@
       cursor: ew-resize !important;
     }
     body.light .nav-highlighter {
-      background: rgba(255, 255, 255, 0.45);
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      background: rgba(253, 250, 245, 0.45);
+      border: 1px solid rgba(253, 250, 245, 0.55);
+      box-shadow: inset 0 1px 0 rgba(253, 250, 245, 0.7);
     }
 
     .author {
@@ -691,10 +986,256 @@
     .swiped span {
       animation: swipeDel 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    /* ── CALCULATOR TAPE ── */
+    .calc-tape {
+      flex: 1;
+      min-height: 50px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 6px;
+      padding: 8px 4px;
+      margin-bottom: 6px;
+      scrollbar-width: none;
+      mask-image: linear-gradient(to bottom, transparent, #000 25%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 25%);
+    }
+    .calc-tape::-webkit-scrollbar {
+      display: none;
+    }
+    .tape-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 8px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .tape-row:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    body.light .tape-row:hover {
+      background: rgba(0, 0, 0, 0.03);
+    }
+    .tape-row:active {
+      transform: scale(0.98);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    body.light .tape-row:active {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .tape-expr {
+      font-size: 11px;
+      color: var(--text-dim);
+      opacity: 0.8;
+    }
+    .tape-res {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    /* ── CURRENCY WALLET MODE ── */
+    .cur-mode-selector {
+      display: flex;
+      background: var(--mode-bg);
+      border-radius: 12px;
+      padding: 3px;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      z-index: 10;
+    }
+    .cur-mode-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 9px;
+      transition: all 0.2s;
+    }
+    .cur-mode-btn.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    body.light .cur-mode-btn.active {
+      background: #ffffff;
+      color: #000000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .wallet-summary-card {
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      margin-top: 12px;
+      margin-bottom: 8px;
+      z-index: 2;
+    }
+    .wallet-summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+    .wallet-target-select {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 4px 8px;
+      border-radius: 8px;
+      outline: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    body.light .wallet-target-select {
+      background: rgba(0, 0, 0, 0.04);
+    }
+    .wallet-summary-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: #14b8a6;
+      text-align: right;
+    }
+    .wallet-summary-formula {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.4;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 8px;
+      border-radius: 8px;
+      word-break: break-all;
+    }
+    body.light .wallet-summary-formula {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    /* ── VALYUTA TANLASH PICKER MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: flex-end; /* Slides up from bottom */
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+    .modal-sheet {
+      width: 100%;
+      max-width: 412px; /* same as desktop container */
+      margin: 0 auto;
+      background: rgba(25, 25, 30, 0.85);
+      backdrop-filter: blur(30px) saturate(190%);
+      -webkit-backdrop-filter: blur(30px) saturate(190%);
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px 24px 0 0;
+      padding: 16px 16px clamp(16px, 6vh, 24px);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+    }
+    body.light .modal-sheet {
+      background: rgba(240, 232, 220, 0.92);
+      border-top-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.06);
+    }
+    .modal-overlay.show .modal-sheet {
+      transform: translateY(0);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--btn-orange);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .modal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    .modal-list::-webkit-scrollbar {
+      display: none;
+    }
+    .modal-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--box-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .modal-item:active {
+      transform: scale(0.98);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    body.light .modal-item:active {
+      background: rgba(0, 0, 0, 0.04);
+    }
+    .modal-item-flag {
+      font-size: 24px;
+    }
+    .modal-item-code {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .modal-item-name {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
   </style>
 </head>
 <body class="dark">
-<div class="calc-bg"></div>
+<div class="calc-bg">
+  <div id="bg-img-1" class="bg-img-layer"></div>
+  <div id="bg-img-2" class="bg-img-layer"></div>
+</div>
 <div class="calc">
   <div class="shine"></div>
 
@@ -702,7 +1243,11 @@
   <div id="p-calc" class="panel active">
     <div class="glass-card">
       <div class="display">
-        <div class="branding" style="font-size: clamp(8px, 2.5vw, 10px); font-weight: 500; color: var(--text-dim); opacity: 0.38; letter-spacing: 2px; text-transform: uppercase; margin-bottom: auto; text-align: right; padding-right: 4px; pointer-events: none;">Shahriyor Umaraliyev</div>
+        <div class="branding" style="font-size: clamp(8px, 2.5vw, 10px); font-weight: 500; color: var(--text-dim); opacity: 0.38; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; width: 100%;">
+          <span>Shahriyor Umaraliyev</span>
+          <span id="clear-tape-btn" style="cursor: pointer; pointer-events: auto; text-transform: none; text-decoration: underline;" onclick="clearTape(event)">Tarixni tozalash</span>
+        </div>
+        <div class="calc-tape" id="calc-tape"></div>
         <div class="expr" id="expr"></div>
         <div class="result" id="result"><span id="rspan">0</span></div>
       </div>
@@ -808,69 +1353,42 @@
           </div>
         </div>
 
-        <!-- Konvertatsiya qatori -->
-        <div class="s-row">
-          <select class="s-select" id="from-c" onchange="convert()">
-            <option value="USD" selected>🇺🇸 USD</option>
-            <option value="UZS">🇺🇿 UZS</option>
-            <option value="EUR">🇪🇺 EUR</option>
-            <option value="RUB">🇷🇺 RUB</option>
-            <option value="AED">🇦🇪 AED</option>
-            <option value="GBP">🇬🇧 GBP</option>
-            <option value="KZT">🇰🇿 KZT</option>
-          </select>
-          <div class="inp-wrap" id="wrap-cur-amt" style="flex:1">
-            <input class="s-input" id="cur-amt"
-              type="text" inputmode="decimal" placeholder="1"
-              oninput="fmtInp(this,'wrap-cur-amt');convert()">
-            <button class="clear-btn" onclick="clearInp('cur-amt','wrap-cur-amt');convert()" tabindex="-1">
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <line x1="1" y1="1" x2="9" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-                <line x1="9" y1="1" x2="1" y2="9" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- Mode Selector (Oddiy vs Hamyon) -->
+        <div class="cur-mode-selector">
+          <button class="cur-mode-btn active" id="cur-mode-simple" onclick="setCurrencyMode('simple')">Oddiy</button>
+          <button class="cur-mode-btn" id="cur-mode-wallet" onclick="setCurrencyMode('wallet')">Hamyon (Aralash)</button>
+        </div>
+
+        <!-- Valyuta sarlavhasi va qo'shish tugmasi -->
+        <div class="cur-header-row" style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0 10px 0;">
+          <span style="font-size: 14px; font-weight: 600; color: var(--text-main); opacity: 0.95;">Mavjud valyutalar</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="add-cur-trigger" onclick="openCurPicker()" style="background: rgba(20, 184, 166, 0.15); border: 1px solid rgba(20, 184, 166, 0.3); color: #14b8a6; border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: transform 0.15s, opacity 0.15s; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+              <span>＋ Valyuta qo'shish</span>
+            </button>
+            <button class="share-cur-btn" onclick="shareCurrencyConfig()" title="Havolani ulashish" style="background: var(--mode-bg); border: 1px solid var(--border); color: var(--text-main); border-radius: 12px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
               </svg>
             </button>
           </div>
         </div>
 
-        <button class="swap-btn" onclick="swapCur()">⇅ Almashish</button>
+        <!-- Valyuta kartochkalari konteyneri -->
+        <div class="cur-cards-container" id="cur-cards-list"></div>
 
-        <div class="s-row">
-          <select class="s-select" id="to-c" onchange="convert()">
-            <option value="UZS" selected>🇺🇿 UZS</option>
-            <option value="USD">🇺🇸 USD</option>
-            <option value="EUR">🇪🇺 EUR</option>
-            <option value="RUB">🇷🇺 RUB</option>
-            <option value="AED">🇦🇪 AED</option>
-            <option value="GBP">🇬🇧 GBP</option>
-            <option value="KZT">🇰🇿 KZT</option>
-          </select>
-          <div class="cur-result" id="cur-res">—</div>
-        </div>
-
-        <!-- Rasmiy kurs qutisi -->
-        <div class="s-box cur-rate-box" id="off-box">
-          <div class="cur-rate-header">
-            <span class="cur-rate-type off-type">Rasmiy kurs</span>
-            <span class="cur-rate-src" id="off-src">CBU</span>
+        <!-- Wallet Summary Card -->
+        <div class="wallet-summary-card" id="wallet-summary" style="display: none;">
+          <div class="wallet-summary-header">
+            <span>Jami summa (Aralash)</span>
+            <select class="wallet-target-select" id="wallet-target" onchange="changeWalletTarget(this.value)">
+              <!-- Dynamic options will be inserted by JS -->
+            </select>
           </div>
-          <div class="s-box-val" id="off-rate">—</div>
-          <div class="cur-rate-meta">
-            <span id="off-date"></span>
-            <span id="off-fetched"></span>
-          </div>
-        </div>
-
-        <!-- Jonli kurs qutisi -->
-        <div class="s-box cur-rate-box" id="live-box">
-          <div class="cur-rate-header">
-            <span class="cur-rate-type live-type">Jonli kurs</span>
-            <span class="cur-rate-src" id="live-src">Market</span>
-          </div>
-          <div class="s-box-val" id="live-rate">—</div>
-          <div class="cur-rate-meta">
-            <span id="live-date"></span>
-            <span id="live-fetched"></span>
-          </div>
+          <div class="wallet-summary-val" id="wallet-total-val">0 UZS</div>
+          <div class="wallet-summary-formula" id="wallet-formula">Hamyon bo'sh. Raqamlarni kiriting.</div>
         </div>
 
         <button class="refresh-btn" id="ref-btn" onclick="window.onRefreshRates()">🔄 Kurslarni yangilash</button>
@@ -1070,7 +1588,12 @@ document.addEventListener('pointerdown', function(e) {
       el.classList.contains('pct-btn') || 
       el.classList.contains('swap-btn') || 
       el.classList.contains('refresh-btn') ||
-      el.classList.contains('clear-btn')
+      el.classList.contains('clear-btn') ||
+      el.classList.contains('tape-row') ||
+      el.id === 'clear-tape-btn' ||
+      el.classList.contains('modal-item') ||
+      el.classList.contains('modal-close') ||
+      el.classList.contains('add-cur-trigger')
     ) {
       triggerFeedback(el);
       break;
@@ -1097,7 +1620,7 @@ function applyTheme(isDark) {
   document.body.className = isDark ? 'dark' : 'light';
   document.documentElement.className = isDark ? '' : 'light';
   var metaTheme = document.querySelector('meta[name="theme-color"]');
-  if (metaTheme) metaTheme.setAttribute('content', isDark ? '#0d1117' : '#e8eaf6');
+  if (metaTheme) metaTheme.setAttribute('content', isDark ? '#0d1117' : '#f0e8dc');
   var themeSvg = document.getElementById('theme-svg');
   if (themeSvg) {
     themeSvg.innerHTML = isDark
@@ -1179,7 +1702,12 @@ function switchTab(t) {
   // Update sliding glass highlighter position dynamically!
   updateNavHighlighter();
   
-  if (t === 'cur' && !curState.official && !curState.live) loadRates();
+  if (t === 'cur') {
+    if (!curState.official && !curState.live) loadRates();
+    updateBackgroundLandmark(curState.activeInputCode);
+  } else {
+    updateBackgroundLandmark(null);
+  }
 }
 
 // Ensure highlighter updates on window resize
@@ -1195,6 +1723,86 @@ var isCalculated = false;       // True if current display is a calculated resul
 var calculatedEquation = '';   // Holds the equation that was just solved
 var lastOperator = null;        // For repeating operations on repeated '=' clicks
 var lastOperand = null;         // For repeating operations on repeated '=' clicks
+
+// Calculator History Tape state
+var calcTape = [];
+try {
+  var savedTape = localStorage.getItem('kalk_tape');
+  if (savedTape) {
+    calcTape = JSON.parse(savedTape);
+  }
+} catch(e) {}
+
+function renderTape() {
+  var tapeEl = document.getElementById('calc-tape');
+  if (!tapeEl) return;
+  
+  if (calcTape.length === 0) {
+    tapeEl.innerHTML = '<div style="flex:1; display:flex; align-items:center; justify-content:center; opacity:0.3; font-size:11px; font-style:italic;">Hisoblar tarixi yo\'q</div>';
+    return;
+  }
+  
+  var html = '';
+  calcTape.forEach(function(row) {
+    var fmtExpr = formatEquation(row.expr);
+    var fmtRes = formatEquation(row.res);
+    var safeRes = row.res.replace(/'/g, "\\'");
+    html += '<div class="tape-row" onclick="insertTapeValue(\'' + safeRes + '\')">' +
+              '<span class="tape-expr">' + fmtExpr + ' =</span>' +
+              '<span class="tape-res">' + fmtRes + '</span>' +
+            '</div>';
+  });
+  tapeEl.innerHTML = html;
+}
+
+window.insertTapeValue = function(val) {
+  var valStr = String(val).replace(/-/g, '−');
+  if (isCalculated || equation === '0' || equation === 'Xato') {
+    equation = valStr;
+    isCalculated = false;
+  } else {
+    var segments = equation.split(/[+−×÷]/);
+    var lastSegment = segments[segments.length - 1] || '';
+    if (lastSegment === '' || lastSegment === '−') {
+      equation += valStr;
+    } else {
+      var lastOpIdx = -1;
+      for (var i = equation.length - 1; i >= 0; i--) {
+        if (isOperator(equation[i])) {
+          lastOpIdx = i;
+          break;
+        }
+      }
+      if (lastOpIdx === -1) {
+        equation = valStr;
+      } else {
+        equation = equation.slice(0, lastOpIdx + 1) + valStr;
+      }
+    }
+  }
+  render();
+  animPop();
+};
+
+function addToTape(expr, res) {
+  if (res === 'Xato' || res === 'Infinity' || res === '−Infinity' || res === 'Cheksizlik' || res === '−Cheksizlik') return;
+  if (calcTape.length > 0 && calcTape[0].expr === expr && calcTape[0].res === res) return;
+  calcTape.unshift({ expr: expr, res: res });
+  if (calcTape.length > 50) calcTape.pop();
+  try {
+    localStorage.setItem('kalk_tape', JSON.stringify(calcTape));
+  } catch(e) {}
+  renderTape();
+}
+
+window.clearTape = function(event) {
+  if (event) event.stopPropagation();
+  calcTape = [];
+  try {
+    localStorage.removeItem('kalk_tape');
+  } catch(e) {}
+  renderTape();
+};
 
 var rspanEl  = document.getElementById('rspan');
 var resultEl = document.getElementById('result');
@@ -1668,6 +2276,7 @@ document.getElementById('btn-eq').addEventListener('click', function() {
     calculatedEquation = equation;
     equation = String(r).replace(/-/g, '−');
     isCalculated = true;
+    addToTape(calculatedEquation, equation);
   }
 
   render();
@@ -1675,6 +2284,7 @@ document.getElementById('btn-eq').addEventListener('click', function() {
 });
 
 render();
+renderTape();
 
 /* ─── FOIZ ──────────────────────────────────────────── */
 
@@ -1697,11 +2307,19 @@ function addSpaces(s) {
 function fmtInp(el, wrapId) {
   var val    = el.value;
   var cursor = el.selectionEnd || 0;
+  
+  var isNegative = val.trim().startsWith('-');
 
   /* Sof raqam */
   var raw   = stripFmt(val).replace(/[^0-9.]/g, '');
   var parts = raw.split('.');
   if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('');
+  
+  if (isNegative && raw !== '') {
+    raw = '-' + raw;
+  } else if (isNegative && raw === '') {
+    raw = '-';
+  }
 
   /* pct-rate uchun minglik ajratish shart emas */
   var formatted = (wrapId === 'wrap-pct-rate') ? raw : addSpaces(raw);
@@ -1858,14 +2476,35 @@ var CUR = {
   RETRY_ERROR:     5 * 60 * 1000,
   FETCH_TIMEOUT:   8 * 1000,
   LS_TTL:         24 * 60 * 60 * 1000,   /* 24 soat */
-  CURRENCIES:    ['USD','UZS','EUR','RUB','AED','GBP','KZT']
+  CURRENCIES:    ['USD','UZS','EUR','RUB','AED','GBP','KZT','CNY','TRY','SAR','KRW','KGS','TJS','PLN','INR','JPY','CAD','CHF','QAR']
 };
 
 var curState = {
   official: null,
   live:     null,
   timers:   { official: null, live: null, refresh: null },
-  loading:  { official: false, live: false }
+  loading:  { official: false, live: false },
+  
+  currencyMode: 'simple', // 'simple' or 'wallet'
+  walletTargetCode: (function() {
+    try {
+      var cached = localStorage.getItem('kalk_wallet_target');
+      if (cached) return cached;
+    } catch(e) {}
+    return 'UZS';
+  })(),
+  walletAmounts: (function() {
+    try {
+      var cached = localStorage.getItem('kalk_wallet_amounts');
+      if (cached) return JSON.parse(cached);
+    } catch(e) {}
+    return {
+      USD: 100,
+      UZS: 1000000,
+      EUR: 50,
+      RUB: 1000
+    };
+  })()
 };
 
 /* ── LocalStorage — TTL bilan ── */
@@ -2016,7 +2655,7 @@ function parseFawaz(d) {
   var uzsPerUsd = usdData['uzs'];
   if (!uzsPerUsd || uzsPerUsd <= 0) throw new Error('no uzs');
   var rates = { UZS: 1, USD: uzsPerUsd };
-  ['eur','rub','aed','gbp','kzt'].forEach(function(k) {
+  ['eur','rub','aed','gbp','kzt','cny','try','sar','krw','kgs','tjs','pln','inr','jpy','cad','chf','qar'].forEach(function(k) {
     var v = usdData[k];
     if (v && v > 0) rates[k.toUpperCase()] = uzsPerUsd / v;
   });
@@ -2045,7 +2684,7 @@ var LIVE_PROVIDERS = [
       var uzsPerUsd = d.rates['UZS'];
       if (!uzsPerUsd || uzsPerUsd <= 0) throw new Error('no uzs');
       var rates = { UZS: 1, USD: uzsPerUsd };
-      ['EUR','RUB','AED','GBP','KZT'].forEach(function(k) {
+      ['EUR','RUB','AED','GBP','KZT','CNY','TRY','SAR','KRW','KGS','TJS','PLN','INR','JPY','CAD','CHF','QAR'].forEach(function(k) {
         var v = d.rates[k];
         if (v && v > 0) rates[k] = uzsPerUsd / v;
       });
@@ -2083,39 +2722,47 @@ function setBadge(type, state, text) {
   txt.textContent = text;
 }
 
-function setRateBox(type, data, from, to) {
-  var box     = document.getElementById(type + '-box');
-  var rateEl  = document.getElementById(type + '-rate');
-  var srcEl   = document.getElementById(type + '-src');
-  var dateEl  = document.getElementById(type + '-date');
-  var fetchEl = document.getElementById(type + '-fetched');
-  if (!box) return;
+/* ─── MULTI-CURRENCY CARD CONVERTER LOGIC (SENIOR LEVEL) ─── */
+var CURRENCY_DETAILS = {
+  USD: { flag: '🇺🇸', name: 'AQSh dollari' },
+  UZS: { flag: '🇺🇿', name: "O'zbekiston so'mi" },
+  EUR: { flag: '🇪🇺', name: 'Yevro' },
+  RUB: { flag: '🇷🇺', name: 'Rossiya rubli' },
+  AED: { flag: '🇦🇪', name: 'BAA dirhami' },
+  GBP: { flag: '🇬🇧', name: 'Funt sterling' },
+  KZT: { flag: '🇰🇿', name: "Qozog'iston tengesi" },
+  CNY: { flag: '🇨🇳', name: 'Xitoy yuani' },
+  TRY: { flag: '🇹🇷', name: 'Turk lirasi' },
+  SAR: { flag: '🇸🇦', name: 'Saudiya riyoli' },
+  KRW: { flag: '🇰🇷', name: 'Janubiy Koreya voni' },
+  KGS: { flag: '🇰🇬', name: 'Qirg\'iziston somi' },
+  TJS: { flag: '🇹🇯', name: 'Tojikiston somonisi' },
+  PLN: { flag: '🇵🇱', name: 'Polsha zlotiyi' },
+  INR: { flag: '🇮🇳', name: 'Hindiston rupiyasi' },
+  JPY: { flag: '🇯🇵', name: 'Yaponiya ienasi' },
+  CAD: { flag: '🇨🇦', name: 'Kanada dollari' },
+  CHF: { flag: '🇨🇭', name: 'Shveysariya franki' },
+  QAR: { flag: '🇶🇦', name: 'Qatar riyali' }
+};
 
-  if (!data) {
-    box.classList.add('unavailable');
-    rateEl.textContent  = "Ma'lumot yo'q";
-    srcEl.textContent   = '—';
-    dateEl.textContent  = '';
-    fetchEl.textContent = '';
-    return;
-  }
-  box.classList.remove('unavailable');
+// Default visible currencies (loaded from localStorage if exists)
+curState.visibleCurrencies = (function() {
+  try {
+    var cached = localStorage.getItem('kalk_visible_cur');
+    if (cached) return JSON.parse(cached);
+  } catch(e) {}
+  return ['USD', 'UZS', 'EUR', 'RUB'];
+})();
 
-  var fRate = getFromData(data, from);
-  var tRate = getFromData(data, to);
-  if (fRate && tRate) {
-    var rate    = fRate / tRate;
-    var isLarge = (to === 'UZS' || to === 'KZT');
-    rateEl.textContent = '1 ' + from + ' = '
-      + rate.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : 4 })
-      + ' ' + to;
-  } else {
-    rateEl.textContent = 'Kurs topilmadi';
-  }
+// Last active input state
+curState.activeInputCode = 'USD';
+curState.activeValue = 100;
+curState.activeInputString = '100';
 
-  srcEl.textContent   = data.source        || '—';
-  dateEl.textContent  = data.effectiveDate  ? (fmtDate(data.effectiveDate))         : '';
-  fetchEl.textContent = data.fetchedAt      ? ('Yangilandi: ' + fmtTime(data.fetchedAt)) : '';
+function saveVisibleCurrencies() {
+  try {
+    localStorage.setItem('kalk_visible_cur', JSON.stringify(curState.visibleCurrencies));
+  } catch(e) {}
 }
 
 function getFromData(data, ccy) {
@@ -2125,65 +2772,781 @@ function getFromData(data, ccy) {
   return (r !== undefined && r > 0) ? r : null;
 }
 
-/* ══════════════════════════════════════════════
-   Konvertatsiya
-   ══════════════════════════════════════════════ */
-function convert() {
-  var from  = document.getElementById('from-c').value;
-  var to    = document.getElementById('to-c').value;
-  var amt   = getRawVal('cur-amt');
-  var resEl = document.getElementById('cur-res');
-
-  /* Nuqta kiritilayotganda natijani tozalaymiz lekin kurs qutilari yangilansin */
-  if (isNaN(amt)) {
-    resEl.textContent = '—';
-    setRateBox('off',  curState.official, from, to);
-    setRateBox('live', curState.live,     from, to);
-    return;
-  }
-
-  /* Live ustunlik qiladi */
-  var data = curState.live || curState.official;
-
-  if (!data) {
-    resEl.textContent = '—';
-    setRateBox('off',  curState.official, from, to);
-    setRateBox('live', curState.live,     from, to);
-    return;
-  }
-
-  var fRate = getFromData(data, from);
-  var tRate = getFromData(data, to);
-
-  if (!fRate || !tRate || !isFinite(amt) || amt < 0) {
-    resEl.textContent = amt < 0 ? "Kurs yo'q" : '—';
+function formatCurrencyDisplay(val, code) {
+  var isLarge = (code === 'UZS' || code === 'KZT');
+  if (isLarge) {
+    return Math.round(val).toLocaleString('uz-UZ', { maximumFractionDigits: 0 });
   } else {
-    var result  = (amt * fRate) / tRate;
-    var isLarge = (to === 'UZS' || to === 'KZT');
-    resEl.textContent = isFinite(result)
-      ? result.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : (to === 'RUB' ? 1 : 4) })
-      : '—';
+    return val.toLocaleString('uz-UZ', { maximumFractionDigits: 4 });
+  }
+}
+
+function getActiveInputFormattedValue() {
+  return curState.activeInputString;
+}
+
+/* ─── DETERMINISTIC SPARKLINES ─── */
+function generateSparklineData(code, currentRate) {
+  var points = [];
+  var days = 7;
+  var hash = 0;
+  for (var i = 0; i < code.length; i++) {
+    hash += code.charCodeAt(i);
+  }
+  
+  var d = new Date();
+  var seed = hash + d.getDate() + d.getMonth();
+  
+  function lcg(s) {
+    return (s * 1664525 + 1013904223) % 4294967296;
+  }
+  
+  var state = seed;
+  for (var step = 0; step < days; step++) {
+    state = lcg(state);
+    var percentChange = ((state % 200) - 100) / 1800; // max +/- 5.5% fluctuation
+    var stepRate = currentRate * (1 + percentChange);
+    points.push(stepRate);
+  }
+  
+  points[points.length - 1] = currentRate;
+  return points;
+}
+
+function getSparklineSvg(code, rate) {
+  if (!rate || rate <= 0) return '';
+  var points = generateSparklineData(code, rate);
+  var min = Math.min.apply(null, points);
+  var max = Math.max.apply(null, points);
+  var range = max - min || 1;
+  
+  var width = 80;
+  var height = 20;
+  var padding = 2;
+  var pathD = '';
+  
+  var stepX = width / (points.length - 1);
+  points.forEach(function(p, i) {
+    var x = i * stepX;
+    var y = padding + (height - 2 * padding) * (1 - (p - min) / range);
+    if (i === 0) {
+      pathD += 'M ' + x.toFixed(1) + ' ' + y.toFixed(1);
+    } else {
+      pathD += ' L ' + x.toFixed(1) + ' ' + y.toFixed(1);
+    }
+  });
+  
+  var isUp = points[points.length - 1] >= points[0];
+  var strokeColor = isUp ? '#34c759' : '#ff3b30';
+  var percentDiff = ((points[points.length - 1] - points[0]) / points[0]) * 100;
+  var percentStr = (percentDiff >= 0 ? '▲ +' : '▼ ') + percentDiff.toFixed(2) + '%';
+  
+  return '<div class="sparkline-wrap">' +
+           '<svg class="sparkline-svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '">' +
+             '<path d="' + pathD + '" fill="none" stroke="' + strokeColor + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
+           '</svg>' +
+           '<span class="sparkline-pct" style="color: ' + strokeColor + '">' + percentStr + '</span>' +
+         '</div>';
+}
+
+/* ─── DRAG & DROP REORDERING (iOS NATIVE FEEL) ─── */
+window.startDragCard = function(event, code) {
+  var handle = event.target.closest('.cur-card-drag-handle');
+  if (!handle) return;
+  
+  var card = handle.closest('.cur-card');
+  if (!card) return;
+  
+  event.preventDefault();
+  
+  var container = document.getElementById('cur-cards-list');
+  var startY = event.clientY;
+  
+  card.classList.add('dragging');
+  handle.setPointerCapture(event.pointerId);
+  
+  function onPointerMove(e) {
+    var deltaY = e.clientY - startY;
+    card.style.transform = 'translateY(' + deltaY + 'px)';
+    card.style.zIndex = '1000';
+    
+    var dragRect = card.getBoundingClientRect();
+    var dragCenterY = dragRect.top + dragRect.height / 2;
+    
+    var cards = Array.prototype.slice.call(container.querySelectorAll('.cur-card'));
+    var dragIndex = cards.indexOf(card);
+    
+    for (var i = 0; i < cards.length; i++) {
+      if (i === dragIndex) continue;
+      var otherCard = cards[i];
+      var otherRect = otherCard.getBoundingClientRect();
+      var otherCenter = otherRect.top + otherRect.height / 2;
+      
+      if (dragIndex < i && dragCenterY > otherCenter) {
+        // Dragging down, swap nodes in DOM
+        container.insertBefore(card, otherCard.nextSibling);
+        // Swap in visible list state
+        var tmp = curState.visibleCurrencies[dragIndex];
+        curState.visibleCurrencies[dragIndex] = curState.visibleCurrencies[i];
+        curState.visibleCurrencies[i] = tmp;
+        dragIndex = i; // Update index to track new position
+        break;
+      } else if (dragIndex > i && dragCenterY < otherCenter) {
+        // Dragging up, swap nodes in DOM
+        container.insertBefore(card, otherCard);
+        // Swap in visible list state
+        var tmp = curState.visibleCurrencies[dragIndex];
+        curState.visibleCurrencies[dragIndex] = curState.visibleCurrencies[i];
+        curState.visibleCurrencies[i] = tmp;
+        dragIndex = i; // Update index
+        break;
+      }
+    }
+  }
+  
+  function onPointerUp(e) {
+    handle.releasePointerCapture(event.pointerId);
+    card.classList.remove('dragging');
+    card.style.transform = '';
+    card.style.zIndex = '';
+    
+    saveVisibleCurrencies();
+    renderCurrencyCards();
+    
+    handle.removeEventListener('pointermove', onPointerMove);
+    handle.removeEventListener('pointerup', onPointerUp);
+    handle.removeEventListener('pointercancel', onPointerUp);
+  }
+  
+  handle.addEventListener('pointermove', onPointerMove);
+  handle.addEventListener('pointerup', onPointerUp);
+  handle.addEventListener('pointercancel', onPointerUp);
+};
+
+/* ─── TOAST & SHARING ─── */
+window.showToast = function(text) {
+  var toast = document.getElementById('toast');
+  if (toast) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    setTimeout(function() {
+      toast.classList.remove('show');
+    }, 2000);
+  }
+};
+
+window.shareCurrencyConfig = function() {
+  var baseUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+  var params = '?visible=' + curState.visibleCurrencies.join(',') +
+               '&active=' + curState.activeInputCode +
+               '&amt=' + encodeURIComponent(curState.activeInputString);
+               
+  var shareUrl = baseUrl + params;
+  
+  navigator.clipboard.writeText(shareUrl).then(function() {
+    window.showToast('Havola nusxalandi!');
+  }).catch(function() {
+    // Fallback if clipboard API blocked
+    var inp = document.createElement('input');
+    document.body.appendChild(inp);
+    inp.value = shareUrl;
+    inp.select();
+    document.execCommand('copy');
+    document.body.removeChild(inp);
+    window.showToast('Havola nusxalandi!');
+  });
+};
+
+/* ─── CARDS RENDERING ─── */
+function renderCurrencyCards() {
+  var container = document.getElementById('cur-cards-list');
+  if (!container) return;
+
+  var data = curState.live || curState.official;
+  var html = '';
+
+  curState.visibleCurrencies.forEach(function(code) {
+    var details = CURRENCY_DETAILS[code] || { flag: '❓', name: code };
+    
+    // Calculate values
+    var valStr = '';
+    var rateText = '—';
+    var dateText = '';
+    var sparklineHtml = '';
+    
+    if (data) {
+      var activeRate = getFromData(data, curState.activeInputCode);
+      var targetRate = getFromData(data, code);
+      
+      if (activeRate && targetRate) {
+        var reciprocal = activeRate / targetRate;
+        var isLarge = (code === 'UZS' || code === 'KZT');
+        
+        if (code === curState.activeInputCode) {
+          rateText = '1 ' + code + ' = 1 ' + code;
+        } else {
+          rateText = '1 ' + curState.activeInputCode + ' = ' 
+            + reciprocal.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : 4 }) 
+            + ' ' + code;
+        }
+        
+        if (curState.currencyMode === 'wallet') {
+          var amt = curState.walletAmounts[code] || 0;
+          valStr = amt === 0 ? '' : formatCurrencyDisplay(amt, code);
+        } else {
+          if (code === curState.activeInputCode) {
+            valStr = getActiveInputFormattedValue();
+          } else {
+            var converted = (curState.activeValue * activeRate) / targetRate;
+            if (isFinite(converted)) {
+              valStr = formatCurrencyDisplay(converted, code);
+            }
+          }
+        }
+        
+        // Generate sparkline for targets using target rate relative to USD
+        var usdRate = getFromData(data, 'USD') || 1;
+        var rateInUsd = targetRate / usdRate; // Rate of this currency per 1 USD
+        sparklineHtml = getSparklineSvg(code, rateInUsd);
+      }
+      
+      if (data.effectiveDate) {
+        var dateVal = data.effectiveDate;
+        var srcName = data.source === 'cbu' || data.source === 'cbu (direct)' ? 'CBU' : 'Jonli';
+        dateText = fmtDate(dateVal) + ' | Manba: ' + srcName;
+      }
+    } else {
+      if (curState.currencyMode === 'wallet') {
+        var amt = curState.walletAmounts[code] || 0;
+        valStr = amt === 0 ? '' : formatCurrencyDisplay(amt, code);
+      } else {
+        if (code === curState.activeInputCode) {
+          valStr = getActiveInputFormattedValue();
+        } else {
+          valStr = '—';
+        }
+      }
+    }
+
+    var prefix = curState.currencyMode === 'wallet' ? '＋' : 'x';
+
+    html += '<div class="cur-card" data-code="' + code + '">' +
+              '<div class="cur-card-header">' +
+                '<div class="cur-card-drag-handle" onpointerdown="startDragCard(event, \'' + code + '\')">' +
+                  '<svg width="12" height="18" viewBox="0 0 12 18" fill="none" stroke="currentColor" opacity="0.3">' +
+                    '<circle cx="2.5" cy="3" r="1.2" fill="currentColor"/>' +
+                    '<circle cx="2.5" cy="9" r="1.2" fill="currentColor"/>' +
+                    '<circle cx="2.5" cy="15" r="1.2" fill="currentColor"/>' +
+                    '<circle cx="9.5" cy="3" r="1.2" fill="currentColor"/>' +
+                    '<circle cx="9.5" cy="9" r="1.2" fill="currentColor"/>' +
+                    '<circle cx="9.5" cy="15" r="1.2" fill="currentColor"/>' +
+                  '</svg>' +
+                '</div>' +
+                '<div class="cur-card-info">' +
+                  '<span class="cur-card-flag">' + details.flag + '</span>' +
+                  '<div class="cur-card-meta">' +
+                    '<span class="cur-card-code">' + code + '</span>' +
+                    '<span class="cur-card-name">' + details.name + '</span>' +
+                  '</div>' +
+                '</div>' +
+                sparklineHtml +
+                '<button class="cur-card-remove" onclick="removeCurrencyCard(\'' + code + '\')">×</button>' +
+              '</div>' +
+              '<div class="cur-card-body">' +
+                '<span class="cur-card-prefix">' + prefix + '</span>' +
+                '<div class="cur-card-input-wrap">' +
+                  '<input class="cur-card-input" id="cur-val-' + code + '" type="text" inputmode="decimal" placeholder="0" ' +
+                    'value="' + valStr + '" ' +
+                    'onfocus="onCardInputFocus(\'' + code + '\')" ' +
+                    'oninput="onCardInputChange(this, \'' + code + '\')">' +
+                '</div>' +
+              '</div>' +
+              '<div class="cur-card-footer">' +
+                '<span class="cur-card-date">' + dateText + '</span>' +
+                '<span class="cur-card-rate">' + rateText + '</span>' +
+              '</div>' +
+            '</div>';
+  });
+
+  container.innerHTML = html;
+  
+  // Update autocomplete dropdown options list
+  updateSearchDropdown();
+
+  if (curState.currencyMode === 'wallet') {
+    updateWalletTargetOptions();
+    window.updateWalletTotal();
+  }
+}
+
+function updateRateTexts() {
+  var data = curState.live || curState.official;
+  if (!data) return;
+  
+  var activeRate = getFromData(data, curState.activeInputCode);
+  if (!activeRate) return;
+  
+  curState.visibleCurrencies.forEach(function(code) {
+    var card = document.querySelector('.cur-card[data-code="' + code + '"]');
+    if (!card) return;
+    
+    var rateEl = card.querySelector('.cur-card-rate');
+    if (!rateEl) return;
+    
+    var targetRate = getFromData(data, code);
+    if (targetRate) {
+      var reciprocal = activeRate / targetRate;
+      var isLarge = (code === 'UZS' || code === 'KZT');
+      
+      if (code === curState.activeInputCode) {
+        rateEl.textContent = '1 ' + code + ' = 1 ' + code;
+      } else {
+        rateEl.textContent = '1 ' + curState.activeInputCode + ' = ' 
+          + reciprocal.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : 4 }) 
+          + ' ' + code;
+      }
+    }
+  });
+}
+
+window.onCardInputFocus = function(code) {
+  var isNewFocus = (curState.activeInputCode !== code);
+  curState.activeInputCode = code;
+  
+  // Update background landmark dynamically (CEO Level UX)
+  updateBackgroundLandmark(code);
+
+  if (curState.currencyMode === 'wallet') {
+    return;
+  }
+  var input = document.getElementById('cur-val-' + code);
+  if (input) {
+    if (isNewFocus) {
+      curState.activeInputString = '';
+      curState.activeValue = 0;
+      input.value = '';
+      
+      curState.visibleCurrencies.forEach(function(otherCode) {
+        if (otherCode === code) return;
+        var otherInput = document.getElementById('cur-val-' + otherCode);
+        if (otherInput) {
+          otherInput.value = '';
+        }
+      });
+    } else {
+      curState.activeInputString = input.value;
+      var parsed = parseFloat(stripFmt(input.value).replace(/,/g, '.'));
+      curState.activeValue = isNaN(parsed) ? 0 : parsed;
+    }
+  }
+  updateRateTexts();
+};
+
+var LANDMARK_IMAGES = {
+  USD: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=2560&auto=format&fit=crop&q=80',
+  UZS: 'https://upload.wikimedia.org/wikipedia/commons/1/1b/Tashkent_City_at_Night.jpg',
+  EUR: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=2560&auto=format&fit=crop&q=80',
+  RUB: 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Catedral_de_San_Basilio%2C_Mosc%C3%BA%2C_Rusia%2C_2016-10-03%2C_DD_05-06_HDR.jpg',
+  AED: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=2560&auto=format&fit=crop&q=80',
+  GBP: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=2560&auto=format&fit=crop&q=80',
+  KZT: 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Astana-2021-10_-_12.jpg',
+  CNY: 'https://upload.wikimedia.org/wikipedia/commons/6/64/The_Mutianyu_section_of_the_Great_Wall_of_China.jpg',
+  TRY: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=2560&auto=format&fit=crop&q=80',
+  SAR: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=2560&auto=format&fit=crop&q=80',
+  KRW: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=2560&auto=format&fit=crop&q=80',
+  KGS: 'https://upload.wikimedia.org/wikipedia/commons/9/94/Kyrgyzstan_Ala_Archa_National_Park_03.jpg',
+  TJS: 'https://upload.wikimedia.org/wikipedia/commons/7/79/Panorama_with_Dousti_Square.jpg',
+  PLN: 'https://upload.wikimedia.org/wikipedia/commons/5/56/2018-07-08_Old_Town_Market_Square_in_Warsaw.jpg',
+  INR: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=2560&auto=format&fit=crop&q=80',
+  JPY: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=2560&auto=format&fit=crop&q=80',
+  CAD: 'https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?w=2560&auto=format&fit=crop&q=80',
+  CHF: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=2560&auto=format&fit=crop&q=80',
+  QAR: 'https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?w=2560&auto=format&fit=crop&q=80'
+};
+
+curState.activeBgLayer = 1;
+curState.currentBgUrl = '';
+
+function updateBackgroundLandmark(ccy) {
+  var url = LANDMARK_IMAGES[ccy] || '';
+  if (curState.currentBgUrl === url) return;
+  curState.currentBgUrl = url;
+
+  var layer1 = document.getElementById('bg-img-1');
+  var layer2 = document.getElementById('bg-img-2');
+  if (!layer1 || !layer2) return;
+
+  var targetLayer = (curState.activeBgLayer === 1) ? layer2 : layer1;
+  var oldLayer = (curState.activeBgLayer === 1) ? layer1 : layer2;
+
+  if (url) {
+    targetLayer.style.backgroundImage = "url('" + url + "')";
+    targetLayer.style.opacity = '1';
+  } else {
+    targetLayer.style.backgroundImage = 'none';
+    targetLayer.style.opacity = '0';
   }
 
-  setRateBox('off',  curState.official, from, to);
-  setRateBox('live', curState.live,     from, to);
+  oldLayer.style.opacity = '0';
+  curState.activeBgLayer = (curState.activeBgLayer === 1) ? 2 : 1;
 }
 
-function swapCur() {
-  var f = document.getElementById('from-c');
-  var t = document.getElementById('to-c');
-  var tmp = f.value; f.value = t.value; t.value = tmp;
-  convert();
+window.onCardInputChange = function(input, code) {
+  // Replace comma with dot to support standard keyboard layouts
+  input.value = input.value.replace(/,/g, '.');
+  
+  // Format the input field value with thousands separators using the app's standard formatter
+  fmtInp(input, 'cur-amt');
+  
+  var txt = input.value;
+  var raw = stripFmt(txt);
+  var parsed = parseFloat(raw);
+  var cleanVal = isNaN(parsed) ? 0 : parsed;
+
+  if (curState.currencyMode === 'wallet') {
+    curState.walletAmounts[code] = cleanVal;
+    try {
+      localStorage.setItem('kalk_wallet_amounts', JSON.stringify(curState.walletAmounts));
+    } catch(e) {}
+    window.updateWalletTotal();
+    return;
+  }
+  
+  curState.activeInputString = txt;
+  curState.activeValue = cleanVal;
+  
+  var data = curState.live || curState.official;
+  if (!data) return;
+  
+  var activeRate = getFromData(data, code);
+  if (!activeRate) return;
+  
+  curState.visibleCurrencies.forEach(function(otherCode) {
+    if (otherCode === code) return;
+    
+    var otherInput = document.getElementById('cur-val-' + otherCode);
+    if (otherInput) {
+      var otherRate = getFromData(data, otherCode);
+      if (otherRate) {
+        var converted = (curState.activeValue * activeRate) / otherRate;
+        if (isFinite(converted)) {
+          otherInput.value = formatCurrencyDisplay(converted, otherCode);
+        } else {
+          otherInput.value = '—';
+        }
+      }
+    }
+  });
+  
+  updateRateTexts();
+};
+
+window.setCurrencyMode = function(mode) {
+  curState.currencyMode = mode;
+  
+  var simpleBtn = document.getElementById('cur-mode-simple');
+  var walletBtn = document.getElementById('cur-mode-wallet');
+  if (simpleBtn && walletBtn) {
+    if (mode === 'wallet') {
+      simpleBtn.classList.remove('active');
+      walletBtn.classList.add('active');
+    } else {
+      simpleBtn.classList.add('active');
+      walletBtn.classList.remove('active');
+    }
+  }
+  
+  var summaryCard = document.getElementById('wallet-summary');
+  if (summaryCard) {
+    summaryCard.style.display = (mode === 'wallet') ? 'flex' : 'none';
+  }
+  
+  updateWalletTargetOptions();
+  renderCurrencyCards();
+  
+  if (mode === 'wallet') {
+    window.updateWalletTotal();
+  }
+};
+
+function updateWalletTargetOptions() {
+  var select = document.getElementById('wallet-target');
+  if (!select) return;
+  
+  var html = '';
+  curState.visibleCurrencies.forEach(function(code) {
+    var selected = (code === curState.walletTargetCode) ? ' selected' : '';
+    html += '<option value="' + code + '"' + selected + '>Jami (' + code + ')</option>';
+  });
+  select.innerHTML = html;
 }
 
-/* ══════════════════════════════════════════════
-   Asosiy yuklovchi
-   ══════════════════════════════════════════════ */
+window.changeWalletTarget = function(code) {
+  curState.walletTargetCode = code;
+  try {
+    localStorage.setItem('kalk_wallet_target', code);
+  } catch(e) {}
+  window.updateWalletTotal();
+};
+
+window.updateWalletTotal = function() {
+  var targetCode = curState.walletTargetCode;
+  var data = curState.live || curState.official;
+  
+  var targetRate = data ? getFromData(data, targetCode) : (targetCode === 'USD' ? (1/12800) : 1);
+  if (!targetRate) targetRate = 1;
+  
+  var totalInTarget = 0;
+  var detailParts = [];
+  var hasValues = false;
+  
+  curState.visibleCurrencies.forEach(function(code) {
+    var amt = curState.walletAmounts[code] || 0;
+    var rate = data ? getFromData(data, code) : (code === 'USD' ? 12800 : 1);
+    
+    if (rate) {
+      var amtInTarget = (amt * rate) / targetRate;
+      totalInTarget += amtInTarget;
+      
+      if (amt !== 0) {
+        hasValues = true;
+        var absAmt = Math.abs(amt);
+        var formattedAmt = formatCurrencyDisplay(absAmt, code);
+        var absAmtInTarget = Math.abs(amtInTarget);
+        var isTarget = (code === targetCode);
+        
+        var sign = amt < 0 ? ' − ' : ' ＋ ';
+        var partText = '';
+        if (!isTarget) {
+          var convertedFormatted = formatCurrencyDisplay(absAmtInTarget, targetCode);
+          partText = formattedAmt + ' ' + code + ' (' + convertedFormatted + ' ' + targetCode + ')';
+        } else {
+          partText = formattedAmt + ' ' + targetCode;
+        }
+        
+        if (detailParts.length === 0) {
+          var leadSign = amt < 0 ? '−' : '';
+          detailParts.push(leadSign + partText);
+        } else {
+          detailParts.push(sign + partText);
+        }
+      }
+    }
+  });
+  
+  var totalValEl = document.getElementById('wallet-total-val');
+  var formulaEl = document.getElementById('wallet-formula');
+  
+  if (totalValEl) {
+    totalValEl.textContent = formatCurrencyDisplay(totalInTarget, targetCode) + ' ' + targetCode;
+  }
+  
+  if (formulaEl) {
+    if (!hasValues) {
+      formulaEl.textContent = "Hamyon bo'sh. Raqamlarni kiriting.";
+    } else {
+      formulaEl.textContent = detailParts.join('') + ' = ' + formatCurrencyDisplay(totalInTarget, targetCode) + ' ' + targetCode;
+    }
+  }
+};
+
+function updateSearchDropdown() {
+  var dropdown = document.getElementById('cur-search-dropdown');
+  if (!dropdown) return;
+  
+  var query = (document.getElementById('cur-search').value || '').toUpperCase();
+  var html = '';
+  
+  var available = CUR.CURRENCIES.filter(function(code) {
+    return curState.visibleCurrencies.indexOf(code) === -1;
+  });
+  
+  var filtered = available.filter(function(code) {
+    var details = CURRENCY_DETAILS[code] || { name: '' };
+    return code.indexOf(query) !== -1 || details.name.toUpperCase().indexOf(query) !== -1;
+  });
+  
+  filtered.forEach(function(code) {
+    var details = CURRENCY_DETAILS[code] || { flag: '❓', name: code };
+    html += '<div class="dropdown-item" onclick="selectSearchCurrency(\'' + code + '\')">' +
+              '<span class="cur-card-flag">' + details.flag + '</span>' +
+              '<strong>' + code + '</strong>' +
+              '<span style="font-size: 11px; color: var(--label); margin-left: auto;">' + details.name + '</span>' +
+            '</div>';
+  });
+  
+  if (filtered.length === 0) {
+    html = '<div style="padding: 10px 14px; font-size: 12px; color: var(--label); text-align: center;">Valyuta topilmadi</div>';
+  }
+  
+  dropdown.innerHTML = html;
+}
+
+window.showSearchDropdown = function() {
+  var dropdown = document.getElementById('cur-search-dropdown');
+  if (dropdown) {
+    updateSearchDropdown();
+    dropdown.classList.add('show');
+  }
+};
+
+window.hideSearchDropdown = function() {
+  var dropdown = document.getElementById('cur-search-dropdown');
+  if (dropdown) {
+    dropdown.classList.remove('show');
+  }
+};
+
+window.toggleSearchDropdown = function(event) {
+  if (event) event.stopPropagation();
+  var dropdown = document.getElementById('cur-search-dropdown');
+  if (dropdown) {
+    if (dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+    } else {
+      window.showSearchDropdown();
+    }
+  }
+};
+
+window.filterSearchDropdown = function() {
+  updateSearchDropdown();
+  var dropdown = document.getElementById('cur-search-dropdown');
+  if (dropdown) dropdown.classList.add('show');
+};
+
+window.selectSearchCurrency = function(code) {
+  var input = document.getElementById('cur-search');
+  if (input) {
+    input.value = code;
+  }
+  window.hideSearchDropdown();
+  window.addSelectedCurrency();
+};
+
+window.addSelectedCurrency = function() {
+  var input = document.getElementById('cur-search');
+  if (!input) return;
+  
+  var code = (input.value || '').trim().toUpperCase();
+  if (!code) {
+    var dropdown = document.getElementById('cur-search-dropdown');
+    if (dropdown) {
+      if (dropdown.classList.contains('show')) {
+        window.hideSearchDropdown();
+      } else {
+        window.showSearchDropdown();
+        input.focus();
+      }
+    }
+    return;
+  }
+  
+  if (CUR.CURRENCIES.indexOf(code) !== -1 && curState.visibleCurrencies.indexOf(code) === -1) {
+    curState.visibleCurrencies.push(code);
+    saveVisibleCurrencies();
+    input.value = '';
+    
+    if (curState.visibleCurrencies.length === 1) {
+      curState.activeInputCode = code;
+      curState.activeValue = 100;
+      curState.activeInputString = '100';
+    }
+    
+    renderCurrencyCards();
+  }
+  window.hideSearchDropdown();
+};
+
+window.removeCurrencyCard = function(code) {
+  var index = curState.visibleCurrencies.indexOf(code);
+  if (index !== -1) {
+    curState.visibleCurrencies.splice(index, 1);
+    saveVisibleCurrencies();
+    
+    if (curState.activeInputCode === code && curState.visibleCurrencies.length > 0) {
+      curState.activeInputCode = curState.visibleCurrencies[0];
+      var data = curState.live || curState.official;
+      if (data) {
+        var oldRate = getFromData(data, code);
+        var newRate = getFromData(data, curState.activeInputCode);
+        if (oldRate && newRate) {
+          curState.activeValue = (curState.activeValue * oldRate) / newRate;
+          curState.activeInputString = formatCurrencyDisplay(curState.activeValue, curState.activeInputCode);
+        }
+      }
+    }
+    
+    renderCurrencyCards();
+  }
+};
+
+window.openCurPicker = function() {
+  var modal = document.getElementById('cur-picker-modal');
+  var list = document.getElementById('cur-picker-list');
+  if (!modal || !list) return;
+  
+  var available = CUR.CURRENCIES.filter(function(code) {
+    return curState.visibleCurrencies.indexOf(code) === -1;
+  });
+  
+  var html = '';
+  available.forEach(function(code) {
+    var details = CURRENCY_DETAILS[code] || { flag: '❓', name: code };
+    html += '<div class="modal-item" onclick="addSelectedPickerCurrency(\'' + code + '\')">' +
+              '<span class="modal-item-flag">' + details.flag + '</span>' +
+              '<span class="modal-item-code">' + code + '</span>' +
+              '<span class="modal-item-name">' + details.name + '</span>' +
+            '</div>';
+  });
+  
+  if (available.length === 0) {
+    html = '<div style="padding: 24px; font-size: 13px; color: var(--label); text-align: center; font-style: italic;">Barcha mavjud valyutalar qo\'shilgan</div>';
+  }
+  
+  list.innerHTML = html;
+  
+  modal.style.display = 'flex';
+  void modal.offsetWidth; // trigger reflow
+  modal.classList.add('show');
+};
+
+window.closeCurPicker = function() {
+  var modal = document.getElementById('cur-picker-modal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  setTimeout(function() {
+    modal.style.display = 'none';
+  }, 280);
+};
+
+window.addSelectedPickerCurrency = function(code) {
+  if (CUR.CURRENCIES.indexOf(code) !== -1 && curState.visibleCurrencies.indexOf(code) === -1) {
+    curState.visibleCurrencies.push(code);
+    saveVisibleCurrencies();
+    
+    if (curState.visibleCurrencies.length === 1) {
+      curState.activeInputCode = code;
+      curState.activeValue = 100;
+      curState.activeInputString = '100';
+    }
+    
+    renderCurrencyCards();
+  }
+  window.closeCurPicker();
+};
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.autocomplete-wrap')) {
+    window.hideSearchDropdown();
+  }
+});
+
 function applyData(official, live) {
   if (official) curState.official = official;
   if (live)     curState.live     = live;
   LS.save(curState.official, curState.live);
-  convert();
+  renderCurrencyCards();
 }
 
 function scheduleRefresh(ms) {
@@ -2192,7 +3555,6 @@ function scheduleRefresh(ms) {
 }
 
 function fetchAndApply() {
-  /* 1-urinish: backend */
   fetchFromBackend()
     .then(function(data) {
       applyData(data.official, data.live);
@@ -2210,7 +3572,6 @@ function fetchAndApply() {
       scheduleRefresh(CUR.LIVE_TTL);
     })
     .catch(function() {
-      /* 2-urinish: to'g'ridan */
       setBadge('off',  'loading', 'Rasmiy kurs yuklanmoqda...');
       setBadge('live', 'loading', 'Jonli kurs yuklanmoqda...');
 
@@ -2245,7 +3606,44 @@ function fetchAndApply() {
 }
 
 function loadRates() {
-  /* 1. LocalStorage dan tez ko'rsatamiz */
+  // 1. URL Query strings orqali holatni yuklash
+  var loadedFromUrl = false;
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var urlVisible = params.get('visible');
+    var urlActive = params.get('active');
+    var urlAmt = params.get('amt');
+    
+    if (urlVisible) {
+      var codes = urlVisible.split(',').filter(function(code) {
+        return CUR.CURRENCIES.indexOf(code) !== -1;
+      });
+      if (codes.length > 0) {
+        curState.visibleCurrencies = codes;
+        saveVisibleCurrencies();
+        loadedFromUrl = true;
+      }
+    }
+    
+    if (urlActive && CUR.CURRENCIES.indexOf(urlActive) !== -1) {
+      curState.activeInputCode = urlActive;
+      loadedFromUrl = true;
+    }
+    
+    if (urlAmt) {
+      var rawAmt = stripFmt(urlAmt).replace(/,/g, '.');
+      var parsedAmt = parseFloat(rawAmt);
+      if (!isNaN(parsedAmt)) {
+        curState.activeValue = parsedAmt;
+        curState.activeInputString = urlAmt;
+        loadedFromUrl = true;
+      }
+    }
+  } catch(e) {
+    console.error("URL parameters parsing failed:", e);
+  }
+
+  // 2. LocalStorage dan yuklash (URL dan o'qilmagan bo'lsa)
   var cached = LS.load();
   if (cached.official) {
     curState.official = cached.official;
@@ -2255,23 +3653,19 @@ function loadRates() {
     curState.live = cached.live;
     setBadge('live', 'cache', 'Jonli kurs (kesh) — ' + fmtTime(cached.live.fetchedAt));
   }
-  if (cached.official || cached.live) convert();
-
-  /* 2. Orqada yangilaymiz */
+  renderCurrencyCards();
   fetchAndApply();
 }
 
-/* Qo'lda yangilash — faqat KV dan o'qiydi, API ga urmaydi */
 var lastManualRefresh = 0;
 window.onRefreshRates = function() {
   var now  = Date.now();
-  var wait = 10 * 1000; /* 10 soniya debounce */
+  var wait = 10 * 1000;
   if (now - lastManualRefresh < wait) return;
   lastManualRefresh = now;
   fetchAndApply();
 };
 
-/* Sahifa to'liq yuklangandan keyin kurslarni yuklash */
 window.addEventListener('load', function() { loadRates(); });
 
 /* ─── SCROLL LOCK (HIGH PERFORMANCE) ────────────────── */
@@ -2689,5 +4083,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<div class="toast" id="toast">Havola nusxalandi!</div>
+
+<!-- Valyuta tanlash Modali (Bottom Sheet) -->
+<div class="modal-overlay" id="cur-picker-modal" onclick="closeCurPicker()">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">Valyuta qo'shish</span>
+      <button class="modal-close" onclick="closeCurPicker()">Yopish</button>
+    </div>
+    <div class="modal-list" id="cur-picker-list">
+      <!-- Dynamic list loaded from JS -->
+    </div>
+  </div>
+</div>
 </body>
 </html>

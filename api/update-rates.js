@@ -11,7 +11,7 @@
 
 const { kv } = require('@vercel/kv');
 
-const CURRENCIES      = ['USD', 'EUR', 'RUB', 'AED', 'GBP', 'KZT'];
+const CURRENCIES      = ['USD', 'EUR', 'RUB', 'AED', 'GBP', 'KZT', 'CNY', 'TRY', 'SAR', 'KRW', 'KGS', 'TJS', 'PLN', 'INR', 'JPY', 'CAD', 'CHF', 'QAR'];
 const TIMEOUT_MS      = 10000;
 const KV_OFFICIAL     = 'rates:official';
 const KV_LIVE         = 'rates:live';
@@ -64,7 +64,7 @@ async function fetchLive() {
       const usd  = data.usd || data.USD;
       if (!usd || !usd.uzs || usd.uzs <= 0) continue;
       const rates = { UZS: 1, USD: usd.uzs };
-      ['eur','rub','aed','gbp','kzt'].forEach(k => {
+      ['eur','rub','aed','gbp','kzt','cny','try','sar','krw','kgs','tjs','pln','inr','jpy','cad','chf','qar'].forEach(k => {
         if (usd[k] > 0) rates[k.toUpperCase()] = usd.uzs / usd[k];
       });
       return { rates, source:'fawazahmed0', effectiveDate: data.date||'', type:'market' };
