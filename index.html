@@ -2860,6 +2860,8 @@ window.startDragCard = function(event, code) {
   
   event.preventDefault();
   
+  curState.isDraggingCard = true; // Mark dragging as active (Senior level UX guard)
+  
   var container = document.getElementById('cur-cards-list');
   var startY = event.clientY;
   
@@ -2884,8 +2886,18 @@ window.startDragCard = function(event, code) {
       var otherCenter = otherRect.top + otherRect.height / 2;
       
       if (dragIndex < i && dragCenterY > otherCenter) {
+        var offsetBefore = card.offsetTop;
         // Dragging down, swap nodes in DOM
         container.insertBefore(card, otherCard.nextSibling);
+        var offsetAfter = card.offsetTop;
+        
+        // Stabilize pointer tracking by adjusting startY by the layout shift
+        startY += (offsetAfter - offsetBefore);
+        
+        // Re-apply translation immediately in the same frame to prevent visible jumps
+        var newDeltaY = e.clientY - startY;
+        card.style.transform = 'translateY(' + newDeltaY + 'px)';
+        
         // Swap in visible list state
         var tmp = curState.visibleCurrencies[dragIndex];
         curState.visibleCurrencies[dragIndex] = curState.visibleCurrencies[i];
@@ -2893,8 +2905,18 @@ window.startDragCard = function(event, code) {
         dragIndex = i; // Update index to track new position
         break;
       } else if (dragIndex > i && dragCenterY < otherCenter) {
+        var offsetBefore = card.offsetTop;
         // Dragging up, swap nodes in DOM
         container.insertBefore(card, otherCard);
+        var offsetAfter = card.offsetTop;
+        
+        // Stabilize pointer tracking by adjusting startY by the layout shift
+        startY += (offsetAfter - offsetBefore);
+        
+        // Re-apply translation immediately in the same frame to prevent visible jumps
+        var newDeltaY = e.clientY - startY;
+        card.style.transform = 'translateY(' + newDeltaY + 'px)';
+        
         // Swap in visible list state
         var tmp = curState.visibleCurrencies[dragIndex];
         curState.visibleCurrencies[dragIndex] = curState.visibleCurrencies[i];
@@ -2910,6 +2932,8 @@ window.startDragCard = function(event, code) {
     card.classList.remove('dragging');
     card.style.transform = '';
     card.style.zIndex = '';
+    
+    curState.isDraggingCard = false; // Mark dragging as finished
     
     saveVisibleCurrencies();
     renderCurrencyCards();
@@ -2962,6 +2986,7 @@ window.shareCurrencyConfig = function() {
 function renderCurrencyCards() {
   var container = document.getElementById('cur-cards-list');
   if (!container) return;
+  if (curState.isDraggingCard) return; // Prevent overwriting DOM during active drag
 
   var data = curState.live || curState.official;
   var html = '';

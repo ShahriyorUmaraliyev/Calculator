@@ -1,6 +1,6 @@
 'use strict';
 
-var CACHE   = 'kalkulyator-v92';
+var CACHE   = 'kalkulyator-v93';
 var STATIC  = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 /* Currency endpointlar — hech qachon cache qilinmaydi (network-only) */
