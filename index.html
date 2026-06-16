@@ -2866,7 +2866,11 @@ window.startDragCard = function(event, code) {
   var startY = event.clientY;
   
   card.classList.add('dragging');
-  handle.setPointerCapture(event.pointerId);
+  try {
+    handle.setPointerCapture(event.pointerId);
+  } catch (err) {
+    console.warn('setPointerCapture failed:', err);
+  }
   
   function onPointerMove(e) {
     var deltaY = e.clientY - startY;
@@ -2928,7 +2932,11 @@ window.startDragCard = function(event, code) {
   }
   
   function onPointerUp(e) {
-    handle.releasePointerCapture(event.pointerId);
+    try {
+      handle.releasePointerCapture(event.pointerId);
+    } catch (err) {
+      // Ignore if pointer capture was already released or invalidated by browser/system
+    }
     card.classList.remove('dragging');
     card.style.transform = '';
     card.style.zIndex = '';
