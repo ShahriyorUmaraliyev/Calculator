@@ -43,7 +43,7 @@
       overscroll-behavior: none;
       position: fixed;
       inset: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      font-family: -apple-system, "SF Pro Display", "SF Pro Text", BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       background: #000000;
       transition: background 0.3s ease;
     }
@@ -52,9 +52,9 @@
     }
     body.dark {
       --calc-bg: transparent;
-      --btn-num: rgba(36, 36, 40, 0.75);
-      --btn-gray: rgba(142, 142, 147, 0.45);
-      --btn-orange: rgba(255, 159, 10, 0.85);
+      --btn-num: rgba(44, 44, 46, 0.92);    /* iOS #2C2C2E — neytral kulrang, ko'k chiqmaydi */
+      --btn-gray: rgba(170, 170, 176, 0.95); /* iOS #A5A5A5 — ochiq kulrang yuqori qator */
+      --btn-orange: rgba(255, 159, 10, 0.98); /* iOS #FF9F0A — solid to'q sariq */
       --text-main: #ffffff;
       --text-dim: rgba(255, 255, 255, 0.6);
       --mode-bg: rgba(255, 255, 255, 0.05);
@@ -65,6 +65,7 @@
       --input-border: rgba(255, 255, 255, 0.06);
       --label: rgba(255, 255, 255, 0.38);
       --nav-bg: rgba(15, 15, 18, 0.65);
+      --hist-bg: rgba(18, 18, 22, 0.82);
     }
     body.light {
       --calc-bg: transparent;
@@ -81,6 +82,7 @@
       --input-border: rgba(0, 0, 0, 0.05);
       --label: rgba(0, 0, 0, 0.4);
       --nav-bg: rgba(253, 250, 245, 0.45);
+      --hist-bg: rgba(247, 243, 236, 0.88);
     }
 
     /* ── DESKTOP BEZEL CONTAINER (SENIOR LEVEL) ── */
@@ -125,7 +127,7 @@
       transition: background 0.5s;
     }
     body.dark .calc-bg {
-      background: linear-gradient(145deg, #0d1117 0%, #0f1d2e 50%, #0a1628 100%);
+      background: linear-gradient(160deg, #0a0c10 0%, #0c1320 55%, #060810 100%); /* chuqur, deyarli qora — iOS hissi, tugmalar yorqin ajraladi */
     }
     body.light .calc-bg {
       background: linear-gradient(145deg, #f7f1e7 0%, #f0e8dc 50%, #e6dccb 100%);
@@ -273,6 +275,145 @@
       flex-direction: column;
     }
 
+    /* ── TARIX (HISTORY) — iPhone uslubi ── */
+    .hist-btn {
+      position: absolute;
+      top: 16px;
+      left: 18px;
+      z-index: 6;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: var(--btn-num);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: transform 0.12s ease, background 0.15s, opacity 0.15s;
+    }
+    .hist-btn:active { transform: scale(0.9); opacity: 0.85; }
+
+    /* To'liq ekranli tarix paneli — pastdan ko'tariladi (iPhone uslubi) */
+    .hist-panel {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      background: var(--hist-bg);
+      backdrop-filter: blur(42px) saturate(180%);
+      -webkit-backdrop-filter: blur(42px) saturate(180%);
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.16,1,0.3,1);
+      pointer-events: none;
+    }
+    .hist-panel.show {
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .hist-grabber {
+      width: 40px;
+      height: 5px;
+      border-radius: 100px;
+      background: var(--text-dim);
+      opacity: 0.4;
+      margin: 10px auto 4px;
+      flex-shrink: 0;
+    }
+    .hist-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .hist-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.01em;
+    }
+    .hist-actions { display: flex; align-items: center; gap: 6px; }
+    .hist-clear {
+      background: transparent;
+      border: none;
+      color: var(--btn-orange);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+    .hist-clear:active { opacity: 0.55; background: var(--mode-bg); }
+    .hist-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      background: var(--btn-gray);
+      color: #000;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.12s, opacity 0.15s;
+    }
+    .hist-close:active { transform: scale(0.9); opacity: 0.8; }
+    .hist-list {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: 8px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+      scrollbar-width: none;
+    }
+    .hist-list::-webkit-scrollbar { display: none; }
+    .hist-empty {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-style: italic;
+      color: var(--label);
+    }
+    .hist-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+      padding: 14px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s, transform 0.1s;
+    }
+    .hist-row:active { transform: scale(0.985); background: var(--mode-bg); }
+    .hist-row .he {
+      font-size: 14px;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+    .hist-row .hr {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: -0.015em;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
     /* ── DISPLAY ── */
     .display {
       flex: 1;
@@ -287,22 +428,28 @@
     }
     .expr {
       font-size: clamp(14px, 3.8vw, 19px);
-      font-weight: 300;
+      font-weight: 400;
       color: var(--text-dim);
       min-height: 22px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       margin-bottom: 2px;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: -0.01em;
     }
     .result {
       font-size: clamp(44px, 12vw, 68px); /* Safe, gorgeous dynamic font size */
-      font-weight: 200;
+      font-weight: 300; /* iOS SF Pro Display Light */
       color: var(--text-main);
       line-height: 1.35; /* Prevents text clipping of top and bottom */
       white-space: nowrap;
       transition: font-size 0.12s ease;
       padding-bottom: 6px;
+      font-variant-numeric: tabular-nums; /* iOS — raqamlar bir xil kenglikda, sakramaydi */
+      font-feature-settings: "tnum" 1;
+      letter-spacing: -0.022em; /* SF Pro Display katta o'lchamdagi zichligi */
     }
     .result span {
       display: inline-block;
@@ -333,9 +480,12 @@
       border-radius: 50%;
       border: none;
       cursor: pointer;
-      font-size: clamp(22px, 6.5vw, 34px);
+      font-size: clamp(24px, 7vw, 36px);
       font-weight: 400;
       color: var(--text-main);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: -0.01em;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1036,7 +1186,10 @@
       font-size: 15px;
       font-weight: 500;
       color: var(--text-main);
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
     }
+    .tape-expr { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
 
     /* ── CURRENCY WALLET MODE ── */
     .cur-mode-selector {
@@ -1192,8 +1345,10 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      max-height: 300px;
+      max-height: 60vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       scrollbar-width: none;
     }
     .modal-list::-webkit-scrollbar {
@@ -1243,12 +1398,27 @@
   <!-- HISOB -->
   <div id="p-calc" class="panel active">
     <div class="glass-card">
-      <div class="display">
-        <div class="branding" style="font-size: clamp(8px, 2.5vw, 10px); font-weight: 500; color: var(--text-dim); opacity: 0.38; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; padding: 0 4px; width: 100%;">
-          <span>Shahriyor Umaraliyev</span>
-          <span id="clear-tape-btn" style="cursor: pointer; pointer-events: auto; text-transform: none; text-decoration: underline;" onclick="clearTape(event)">Tarixni tozalash</span>
+      <!-- iPhone uslubidagi tarix tugmasi (yuqori-chap) -->
+      <button class="hist-btn" id="hist-btn" onclick="toggleHistory(event)" aria-label="Tarix">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/>
+          <polyline points="3 3 3 8 8 8"/>
+          <polyline points="12 7 12 12 15.5 14"/>
+        </svg>
+      </button>
+      <!-- Shaffof tarix paneli -->
+      <div class="hist-panel" id="hist-panel">
+        <div class="hist-grabber"></div>
+        <div class="hist-head">
+          <span class="hist-title">Tarix</span>
+          <div class="hist-actions">
+            <button class="hist-clear" onclick="clearTape(event)">Tozalash</button>
+            <button class="hist-close" onclick="closeHistory()" aria-label="Yopish">✕</button>
+          </div>
         </div>
-        <div class="calc-tape" id="calc-tape"></div>
+        <div class="hist-list" id="hist-list"></div>
+      </div>
+      <div class="display">
         <div class="expr" id="expr"></div>
         <div class="result" id="result"><span id="rspan">0</span></div>
       </div>
@@ -1474,106 +1644,70 @@ function triggerFeedback(el) {
     }
     
     var now = audioCtx.currentTime;
-    
-    // 1. Decaying warm sine wave (wooden hollow chamber)
+
+    /* ── YUMSHOQ iOS "TUP" TOVUSHI ──
+       Asosi: past-mid sof sine (warm), ustiga juda nozik, past-o'tkazgichli
+       (lowpass) "tik" transienti. Shovqin minimal, attack yumshoq (~1.5ms)
+       — bu keskin/qopol "qarsillash"ni yo'qotadi, dumaloq tail beradi. */
+
+    // 1. Iliq tonal o'zak (sine)
     var osc = audioCtx.createOscillator();
     var oscGain = audioCtx.createGain();
     osc.type = 'sine';
-    
-    // 2. Soft plastic tap transient (bandpass white noise burst)
-    var noiseGain = audioCtx.createGain();
-    var filter = audioCtx.createBiquadFilter();
-    filter.type = 'bandpass';
-    
     osc.connect(oscGain);
     oscGain.connect(audioCtx.destination);
-    
-    // Generate organic white noise transient
-    var bufferSize = audioCtx.sampleRate * 0.015; // 15ms buffer
+
+    // 2. Nozik, past-o'tkazgichli "tik" (bandpass emas — buzzy bo'lmasin)
+    var noiseGain = audioCtx.createGain();
+    var filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+
+    var bufferSize = Math.floor(audioCtx.sampleRate * 0.006); // qisqa 6ms tik
     var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     var data = buffer.getChannelData(0);
     for (var i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
+      data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize); // ichида so'nadigan shovqin
     }
-    
     var noise = audioCtx.createBufferSource();
     noise.buffer = buffer;
     noise.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
-    
-    var duration = 0.035; // Standard iOS duration
-    
+
+    /* Standart yumshoq klavish "tup" profili (juda tinch) */
+    var f0 = 230, f1 = 130;   // iliq past tushish
+    var peak = 0.075;          // ancha jim (oldin 0.20 edi)
+    var dur = 0.07;            // dumaloq tail
+    var nLP = 2600, nGain = 0.025; // nozik tik
+
     if (id === 'btn-back') {
-      // iOS Delete: Deep mechanical hollow "tock"
-      duration = 0.045;
-      osc.frequency.setValueAtTime(320, now);
-      osc.frequency.exponentialRampToValueAtTime(140, now + duration);
-      oscGain.gain.setValueAtTime(0.24, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      
-      filter.frequency.setValueAtTime(1200, now);
-      filter.Q.setValueAtTime(2.0, now);
-      noiseGain.gain.setValueAtTime(0.18, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.006);
-      
+      f0 = 190; f1 = 95;  peak = 0.085; dur = 0.085; nLP = 2200; nGain = 0.03;
     } else if (id === 'btn-eq' || id === 'btn-ac') {
-      // iOS Confirm/Clear: Rich metallic switch snap
-      duration = 0.038;
-      osc.frequency.setValueAtTime(460, now);
-      osc.frequency.exponentialRampToValueAtTime(220, now + duration);
-      oscGain.gain.setValueAtTime(0.22, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      
-      filter.frequency.setValueAtTime(1600, now);
-      filter.Q.setValueAtTime(2.5, now);
-      noiseGain.gain.setValueAtTime(0.20, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.006);
-      
+      f0 = 280; f1 = 150; peak = 0.085; dur = 0.075; nLP = 3000; nGain = 0.028;
     } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm' || id === 'btn-pct') {
-      // iOS Operator Action: Quick crisp operator tick
-      duration = 0.032;
-      osc.frequency.setValueAtTime(500, now);
-      osc.frequency.exponentialRampToValueAtTime(240, now + duration);
-      oscGain.gain.setValueAtTime(0.18, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      
-      filter.frequency.setValueAtTime(1800, now);
-      filter.Q.setValueAtTime(3.0, now);
-      noiseGain.gain.setValueAtTime(0.15, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.004);
-      
+      f0 = 250; f1 = 150; peak = 0.07;  dur = 0.06;  nLP = 2800; nGain = 0.022;
     } else if (isPill) {
-      // iOS Tab Pop: Airy bubble popping click
-      duration = 0.040;
-      osc.frequency.setValueAtTime(600, now);
-      osc.frequency.exponentialRampToValueAtTime(280, now + duration);
-      oscGain.gain.setValueAtTime(0.14, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      
-      filter.frequency.setValueAtTime(1400, now);
-      filter.Q.setValueAtTime(2.0, now);
-      noiseGain.gain.setValueAtTime(0.08, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.005);
-      
-    } else {
-      // iOS Standard Key Tap: Extremely crisp, woody "tock" (100% realistic iPhone keyboard sound)
-      duration = 0.035;
-      osc.frequency.setValueAtTime(420, now);
-      osc.frequency.exponentialRampToValueAtTime(200, now + duration);
-      oscGain.gain.setValueAtTime(0.20, now);
-      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-      
-      filter.frequency.setValueAtTime(1500, now);
-      filter.Q.setValueAtTime(2.5, now);
-      noiseGain.gain.setValueAtTime(0.16, now);
-      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.005);
+      f0 = 320; f1 = 200; peak = 0.06;  dur = 0.06;  nLP = 2400; nGain = 0.018;
     }
-    
+
+    // Ton: yumshoq pitch tushishi
+    osc.frequency.setValueAtTime(f0, now);
+    osc.frequency.exponentialRampToValueAtTime(f1, now + dur);
+
+    // Yumshoq attack (keskin transientни yo'qotadi) → eksponensial so'nish
+    oscGain.gain.setValueAtTime(0.0001, now);
+    oscGain.gain.exponentialRampToValueAtTime(peak, now + 0.0015);
+    oscGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+    // Nozik tik — tez so'nadi
+    filter.frequency.setValueAtTime(nLP, now);
+    noiseGain.gain.setValueAtTime(nGain, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+
     osc.start(now);
-    osc.stop(now + duration + 0.01);
+    osc.stop(now + dur + 0.02);
     noise.start(now);
-    noise.stop(now + duration + 0.01);
+    noise.stop(now + 0.03);
   } catch (e) {
     console.warn("Feedback audio failed to synthesize:", e);
   }
@@ -1735,26 +1869,50 @@ try {
 } catch(e) {}
 
 function renderTape() {
-  var tapeEl = document.getElementById('calc-tape');
-  if (!tapeEl) return;
-  
+  var listEl = document.getElementById('hist-list');
+  if (!listEl) return;
+
   if (calcTape.length === 0) {
-    tapeEl.innerHTML = '<div style="flex:1; display:flex; align-items:center; justify-content:center; opacity:0.3; font-size:11px; font-style:italic;">Hisoblar tarixi yo\'q</div>';
+    listEl.innerHTML = '<div class="hist-empty">Hisoblar tarixi yo\'q</div>';
     return;
   }
-  
+
   var html = '';
   calcTape.forEach(function(row) {
     var fmtExpr = formatEquation(row.expr);
     var fmtRes = formatEquation(row.res);
     var safeRes = row.res.replace(/'/g, "\\'");
-    html += '<div class="tape-row" onclick="insertTapeValue(\'' + safeRes + '\')">' +
-              '<span class="tape-expr">' + fmtExpr + ' =</span>' +
-              '<span class="tape-res">' + fmtRes + '</span>' +
+    html += '<div class="hist-row" onclick="insertTapeValue(\'' + safeRes + '\'); closeHistory();">' +
+              '<span class="he">' + fmtExpr + ' =</span>' +
+              '<span class="hr">' + fmtRes + '</span>' +
             '</div>';
   });
-  tapeEl.innerHTML = html;
+  listEl.innerHTML = html;
 }
+
+/* ─── TARIX PANELI ─── */
+window.toggleHistory = function(e) {
+  if (e) e.stopPropagation();
+  var p = document.getElementById('hist-panel');
+  if (!p) return;
+  if (p.classList.contains('show')) {
+    p.classList.remove('show');
+  } else {
+    renderTape();
+    p.classList.add('show');
+  }
+};
+window.closeHistory = function() {
+  var p = document.getElementById('hist-panel');
+  if (p) p.classList.remove('show');
+};
+/* Tashqariga bosilganda yopish */
+document.addEventListener('click', function(e) {
+  var p = document.getElementById('hist-panel');
+  if (!p || !p.classList.contains('show')) return;
+  if (e.target.closest('#hist-panel') || e.target.closest('#hist-btn')) return;
+  p.classList.remove('show');
+});
 
 window.insertTapeValue = function(val) {
   var valStr = String(val).replace(/-/g, '−');
@@ -1968,21 +2126,22 @@ function extractLastOpAndOperand(eqStr) {
   return null;
 }
 
-// Format numbers inside an equation string with commas (e.g. "12500.5×9" -> "12,500.5×9")
+// Format numbers inside an equation string with space thousands separators
+// (e.g. "12500.5×9" -> "12 500.5×9"). Butun ilova bilan bir xil format (fmtNum).
 function formatEquation(eqStr) {
   if (eqStr === 'Xato') return 'Xato';
   if (eqStr === 'Infinity') return 'Cheksizlik';
   if (eqStr === '−Infinity') return '−Cheksizlik';
   return eqStr.replace(/[0-9.]+/g, function(numStr) {
     var parts = numStr.split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     return parts.join('.');
   });
 }
 
 // Set display font sizes dynamically based on text length to prevent clipping
 function setFontSize(dispText) {
-  var L = dispText.replace(/[,.\-−]/g, '').length;
+  var L = dispText.replace(/[\s,.\-−]/g, '').length;
   resultEl.style.fontSize =
     L <= 6  ? 'clamp(44px,12vw,68px)'  :
     L <= 9  ? 'clamp(34px,9vw,52px)'   :
@@ -2287,6 +2446,65 @@ document.getElementById('btn-eq').addEventListener('click', function() {
 render();
 renderTape();
 
+/* ─── KLAVIATURA QO'LLAB-QUVVATLASH (DESKTOP) ──────────
+   Mavjud tugmalarni .click() qiladi — logika takrorlanmaydi,
+   haptik/audio feedback ham saqlanadi. */
+(function() {
+  var KEY_MAP = {
+    '0':'[data-n="0"]','1':'[data-n="1"]','2':'[data-n="2"]','3':'[data-n="3"]','4':'[data-n="4"]',
+    '5':'[data-n="5"]','6':'[data-n="6"]','7':'[data-n="7"]','8':'[data-n="8"]','9':'[data-n="9"]',
+    '.':'#btn-dot', ',':'#btn-dot',
+    '+':'#btn-add', '-':'#btn-sub', '*':'#btn-mul', '/':'#btn-div',
+    'Enter':'#btn-eq', '=':'#btn-eq',
+    'Backspace':'#btn-back', 'Delete':'#btn-back',
+    'Escape':'#btn-ac', 'c':'#btn-ac', 'C':'#btn-ac',
+    '%':'#btn-pct'
+  };
+  document.addEventListener('keydown', function(e) {
+    /* Faqat Hisob paneli ochiq va matn maydoniga yozilmayotgan bo'lsa */
+    var calcPanel = document.getElementById('p-calc');
+    if (!calcPanel || !calcPanel.classList.contains('active')) return;
+    var ae = document.activeElement;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'SELECT' || ae.tagName === 'TEXTAREA')) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    var sel = KEY_MAP[e.key];
+    if (!sel) return;
+    var btn = document.querySelector(sel);
+    if (btn) {
+      e.preventDefault();
+      btn.click();
+    }
+  });
+})();
+
+/* ─── NATIJANI BOSIB NUSXALASH ─────────────────────────
+   Asosiy natijaga bosilganda sof sonni clipboard'ga oladi. */
+(function() {
+  var resultEl = document.getElementById('result');
+  if (!resultEl) return;
+  resultEl.style.cursor = 'pointer';
+  resultEl.addEventListener('click', function() {
+    var txt = (document.getElementById('rspan').textContent || '').trim();
+    if (!txt || txt === 'Xato') return;
+    /* Ko'rsatilgan formatdan sof son: − → -, minglik probellarini olib tashlaymiz */
+    var clean = txt.replace(/−/g, '-').replace(/[\s,]/g, '');
+    var done = function() {
+      if (window.showToast) window.showToast('Natija nusxalandi!');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(clean).then(done).catch(function() {
+        var inp = document.createElement('input');
+        document.body.appendChild(inp);
+        inp.value = clean; inp.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        document.body.removeChild(inp);
+        done();
+      });
+    }
+  });
+})();
+
 /* ─── FOIZ ──────────────────────────────────────────── */
 
 /* Formatlash yordamchilari */
@@ -2391,7 +2609,8 @@ function setPct(mode) {
 }
 
 function money(n) {
-  return Math.round(n).toLocaleString('uz-UZ') + " so'm";
+  /* fmtNum bilan butun ilova bo'ylab bir xil format (probel minglik) */
+  return fmtNum(Math.round(n), 0) + " so'm";
 }
 
 function calcPct() {
@@ -2773,13 +2992,25 @@ function getFromData(data, ccy) {
   return (r !== undefined && r > 0) ? r : null;
 }
 
+/* Locale-mustaqil son formati — probel minglik ajratgich, nuqta o'nlik.
+   Butun ilova bo'ylab bitta standart (kalkulyator addSpaces bilan mos).
+   Ortiqcha nol kasrlar olib tashlanadi. */
+function fmtNum(val, maxDec) {
+  if (val === null || val === undefined || !isFinite(val)) return '—';
+  var neg = val < 0;
+  var s = Math.abs(val).toFixed(maxDec);
+  if (s.indexOf('.') !== -1) {
+    s = s.replace(/0+$/, '').replace(/\.$/, ''); /* "12.5000" → "12.5", "12.0000" → "12" */
+  }
+  var parts = s.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  var out = parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
+  return neg ? '-' + out : out;
+}
+
 function formatCurrencyDisplay(val, code) {
   var isLarge = (code === 'UZS' || code === 'KZT');
-  if (isLarge) {
-    return Math.round(val).toLocaleString('uz-UZ', { maximumFractionDigits: 0 });
-  } else {
-    return val.toLocaleString('uz-UZ', { maximumFractionDigits: 4 });
-  }
+  return fmtNum(val, isLarge ? 0 : 4);
 }
 
 function getActiveInputFormattedValue() {
@@ -3019,8 +3250,8 @@ function renderCurrencyCards() {
         if (code === curState.activeInputCode) {
           rateText = '1 ' + code + ' = 1 ' + code;
         } else {
-          rateText = '1 ' + curState.activeInputCode + ' = ' 
-            + reciprocal.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : 4 }) 
+          rateText = '1 ' + curState.activeInputCode + ' = '
+            + fmtNum(reciprocal, isLarge ? 0 : 4)
             + ' ' + code;
         }
         
@@ -3136,8 +3367,8 @@ function updateRateTexts() {
       if (code === curState.activeInputCode) {
         rateEl.textContent = '1 ' + code + ' = 1 ' + code;
       } else {
-        rateEl.textContent = '1 ' + curState.activeInputCode + ' = ' 
-          + reciprocal.toLocaleString('uz-UZ', { maximumFractionDigits: isLarge ? 0 : 4 }) 
+        rateEl.textContent = '1 ' + curState.activeInputCode + ' = '
+          + fmtNum(reciprocal, isLarge ? 0 : 4)
           + ' ' + code;
       }
     }
@@ -3169,7 +3400,7 @@ window.onCardClick = function(event, code) {
   
   if (curState.currencyMode !== 'wallet') {
     curState.activeValue = isFinite(convertedVal) ? convertedVal : 0;
-    curState.activeInputString = curState.activeValue === 0 ? '' : curState.activeValue.toString();
+    curState.activeInputString = curState.activeValue === 0 ? '' : formatCurrencyDisplay(curState.activeValue, code);
   }
   
   // Update background landmark dynamically (CEO Level UX)
@@ -3740,8 +3971,8 @@ window.addEventListener('load', function() { loadRates(); });
 
 /* ─── SCROLL LOCK (HIGH PERFORMANCE) ────────────────── */
 document.addEventListener('touchmove', function(e) {
-  if (e.target.closest && e.target.closest('.pct-wrap, .cur-wrap')) {
-    return; // Allow native scrolling in scrollable compartments
+  if (e.target.closest && e.target.closest('.pct-wrap, .cur-wrap, .modal-list, .modal-sheet, .autocomplete-dropdown')) {
+    return; // Allow native scrolling in scrollable compartments (panellar va modal ro'yxati)
   }
   e.preventDefault(); // Lock browser viewport bounce and pull-to-refresh
 }, { passive: false });
