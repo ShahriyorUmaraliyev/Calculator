@@ -1645,69 +1645,58 @@ function triggerFeedback(el) {
     
     var now = audioCtx.currentTime;
 
-    /* ── YUMSHOQ iOS "TUP" TOVUSHI ──
-       Asosi: past-mid sof sine (warm), ustiga juda nozik, past-o'tkazgichli
-       (lowpass) "tik" transienti. Shovqin minimal, attack yumshoq (~1.5ms)
-       — bu keskin/qopol "qarsillash"ni yo'qotadi, dumaloq tail beradi. */
+    /* ── iPhone "TOCK" — toza, shovqinsiz tonal "pok" ──
+       Ikki sof sinus: tana (body) + yorqin yuqori partial. Oq shovqin YO'Q —
+       qopollik aynan shundan edi. Tez attack, tez so'nish: quruq, yoqimli klik. */
 
-    // 1. Iliq tonal o'zak (sine)
+    // 1. Tana toni (body)
     var osc = audioCtx.createOscillator();
     var oscGain = audioCtx.createGain();
     osc.type = 'sine';
     osc.connect(oscGain);
     oscGain.connect(audioCtx.destination);
 
-    // 2. Nozik, past-o'tkazgichli "tik" (bandpass emas — buzzy bo'lmasin)
-    var noiseGain = audioCtx.createGain();
-    var filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
+    // 2. Yorqinlik partiali — klik hissi (shovqinsiz)
+    var osc2 = audioCtx.createOscillator();
+    var osc2Gain = audioCtx.createGain();
+    osc2.type = 'sine';
+    osc2.connect(osc2Gain);
+    osc2Gain.connect(audioCtx.destination);
 
-    var bufferSize = Math.floor(audioCtx.sampleRate * 0.006); // qisqa 6ms tik
-    var buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    var data = buffer.getChannelData(0);
-    for (var i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize); // ichида so'nadigan shovqin
-    }
-    var noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-    noise.connect(filter);
-    filter.connect(noiseGain);
-    noiseGain.connect(audioCtx.destination);
-
-    /* Standart yumshoq klavish "tup" profili (juda tinch) */
-    var f0 = 230, f1 = 130;   // iliq past tushish
-    var peak = 0.075;          // ancha jim (oldin 0.20 edi)
-    var dur = 0.07;            // dumaloq tail
-    var nLP = 2600, nGain = 0.025; // nozik tik
+    /* Standart raqam tugmasi "pok" — o'rta balandlik (bo'ng'illamaydi) */
+    var f0 = 560, f1 = 300;
+    var peak = 0.12;
+    var dur = 0.040;
 
     if (id === 'btn-back') {
-      f0 = 190; f1 = 95;  peak = 0.085; dur = 0.085; nLP = 2200; nGain = 0.03;
+      f0 = 440; f1 = 230; peak = 0.13;  dur = 0.050;
     } else if (id === 'btn-eq' || id === 'btn-ac') {
-      f0 = 280; f1 = 150; peak = 0.085; dur = 0.075; nLP = 3000; nGain = 0.028;
+      f0 = 620; f1 = 340; peak = 0.13;  dur = 0.045;
     } else if (id === 'btn-add' || id === 'btn-sub' || id === 'btn-mul' || id === 'btn-div' || id === 'btn-pm' || id === 'btn-pct') {
-      f0 = 250; f1 = 150; peak = 0.07;  dur = 0.06;  nLP = 2800; nGain = 0.022;
+      f0 = 680; f1 = 360; peak = 0.115; dur = 0.038;
     } else if (isPill) {
-      f0 = 320; f1 = 200; peak = 0.06;  dur = 0.06;  nLP = 2400; nGain = 0.018;
+      f0 = 720; f1 = 420; peak = 0.095; dur = 0.040;
     }
 
-    // Ton: yumshoq pitch tushishi
+    // Tana: tez pitch tushishi (bu "pok" xarakterini beradi)
     osc.frequency.setValueAtTime(f0, now);
     osc.frequency.exponentialRampToValueAtTime(f1, now + dur);
-
-    // Yumshoq attack (keskin transientни yo'qotadi) → eksponensial so'nish
+    // Tez attack (~1ms) → eksponensial so'nish (quruq tail)
     oscGain.gain.setValueAtTime(0.0001, now);
-    oscGain.gain.exponentialRampToValueAtTime(peak, now + 0.0015);
+    oscGain.gain.exponentialRampToValueAtTime(peak, now + 0.001);
     oscGain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 
-    // Nozik tik — tez so'nadi
-    filter.frequency.setValueAtTime(nLP, now);
-    noiseGain.gain.setValueAtTime(nGain, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+    // Yorqin partial: oktava yuqori, jimroq, undan ham tez so'nadi → "klik"
+    osc2.frequency.setValueAtTime(f0 * 2.0, now);
+    osc2.frequency.exponentialRampToValueAtTime(f1 * 2.0, now + dur * 0.5);
+    osc2Gain.gain.setValueAtTime(0.0001, now);
+    osc2Gain.gain.exponentialRampToValueAtTime(peak * 0.3, now + 0.0008);
+    osc2Gain.gain.exponentialRampToValueAtTime(0.0001, now + dur * 0.5);
 
     osc.start(now);
     osc.stop(now + dur + 0.02);
-    noise.start(now);
-    noise.stop(now + 0.03);
+    osc2.start(now);
+    osc2.stop(now + dur + 0.02);
   } catch (e) {
     console.warn("Feedback audio failed to synthesize:", e);
   }
